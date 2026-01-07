@@ -18,7 +18,6 @@ class PjatkParser {
     _emulator = AspEmulator(endpoint);
   }
 
-
   late final AspEmulator _emulator;
 
   // CSS Selectors
@@ -105,16 +104,12 @@ class PjatkParser {
 
     final room = _extractText(document, _roomSelector);
     if (room == null || room.isEmpty) {
-      throw const ParseException.parsingFailed(
-        message: 'Could not parse room',
-      );
+      throw const ParseException.parsingFailed(message: 'Could not parse room');
     }
 
     final date = _extractText(document, _dateSelector);
     if (date == null || date.isEmpty) {
-      throw const ParseException.parsingFailed(
-        message: 'Could not parse date',
-      );
+      throw const ParseException.parsingFailed(message: 'Could not parse date');
     }
 
     final from = _extractText(document, _fromTimeSelector);
@@ -132,7 +127,9 @@ class PjatkParser {
     }
 
     final isOnline = styleCode.contains(_onlineColorSubstr);
-    talker.info('✓ Parsed class: $name ($code) - $from to $to [${isOnline ? 'Online' : room}]');
+    talker.info(
+      '✓ Parsed class: $name ($code) - $from to $to [${isOnline ? 'Online' : room}]',
+    );
 
     return PjatkClass(
       id: classId,
@@ -208,7 +205,8 @@ class PjatkParser {
   Future<PjatkClass?> _parseDetail(String classId, String style) async {
     talker.debug('Fetching detail for class ID: $classId');
     final state = <String, String>{
-      'RadScriptManager1': 'RadToolTipManager1RTMPanel|RadToolTipManager1RTMPanel',
+      'RadScriptManager1':
+          'RadToolTipManager1RTMPanel|RadToolTipManager1RTMPanel',
       'RadToolTipManager1_ClientState': jsonEncode({
         'AjaxTargetControl': classId,
         'Value': classId,
@@ -247,19 +245,16 @@ class PjatkParser {
     final dateStr = DateFormat('yyyy-MM-dd').format(requestedDate);
     talker.info('Starting to parse schedule for date: $dateStr');
 
-    final classes = <PjatkClass>[];
-
     // Initial request
     talker.debug('Sending initial request to PJATK schedule');
-    final initialReq = AspRequest(
-      kind: const InitialRequest(),
-    );
+    final initialReq = AspRequest(kind: const InitialRequest());
     var response = await _emulator.request(initialReq);
     talker.debug('Initial request completed');
 
     // If not today, update to specific date
     final now = DateTime.now();
-    final isToday = requestedDate.year == now.year &&
+    final isToday =
+        requestedDate.year == now.year &&
         requestedDate.month == now.month &&
         requestedDate.day == now.day;
 
@@ -267,9 +262,7 @@ class PjatkParser {
       talker.debug('Updating calendar to date: $dateStr');
       final state = _prepareDateUpdateState(requestedDate);
       final dateReq = AspRequest(
-        kind: const EventRequest(
-          target: 'DataPicker',
-        ),
+        kind: const EventRequest(target: 'DataPicker'),
         isDelta: true,
         stateOverride: state,
       );
@@ -292,22 +285,30 @@ class PjatkParser {
 
     if (classIdStylePairs.isEmpty) {
       talker.info('No classes found for date: $dateStr');
-      return classes;
+      return [];
     }
 
     // Parse each class detail
     talker.info('Fetching details for ${classIdStylePairs.length} classes...');
-    for (final (classId, style) in classIdStylePairs) {
+
+    final jobList = classIdStylePairs.map((packed) async {
+      final (classId, style) = packed;
       try {
         final classData = await _parseDetail(classId, style);
         if (classData != null) {
-          classes.add(classData);
+          return classData;
+        } else {
+          throw const ParseException.parsingFailed(
+            message: 'Class is a reservation or invalid',
+          );
         }
       } catch (e, stackTrace) {
         talker.error('Failed to parse class $classId', e, stackTrace);
         rethrow;
       }
-    }
+    });
+
+    final classes = await Future.wait(jobList);
 
     talker.info('Successfully parsed ${classes.length} classes for $dateStr');
     return classes;
@@ -317,9 +318,13 @@ class PjatkParser {
   Future<List<Class>> parseDay(DateTime date) async {
     try {
       final raw = await _parseDayRaw(date);
-      talker.debug('Deducting and converting ${raw.length} raw classes to structured format');
+      talker.debug(
+        'Deducting and converting ${raw.length} raw classes to structured format',
+      );
       final deducted = deductMulti(raw);
-      talker.info('✓ Parsing complete: ${deducted.length} unique classes after deduction');
+      talker.info(
+        '✓ Parsing complete: ${deducted.length} unique classes after deduction',
+      );
       return deducted;
     } catch (e, stackTrace) {
       talker.error('Failed to parse schedule', e, stackTrace);
