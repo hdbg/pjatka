@@ -22,14 +22,14 @@ class UniversityClass extends Table {
 class ClassGroup extends Table {
   TextColumn get id => text().withLength(min: 1, max: 32)();
   TextColumn get classId => text().withLength(min: 1, max: 32).references(UniversityClass, #id)();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id, classId};
 }
 
 class Teacher extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().withLength(min: 1, max: 128)();
-
-  @override
-  Set<Column<Object>> get primaryKey => {id};
 }
 
 class ClassMeetings extends Table {
@@ -45,8 +45,28 @@ class ClassMeetings extends Table {
 @DriftDatabase(tables: [UniversityClass, ClassGroup, Teacher, ClassMeetings])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
+
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: (migrator, from, to) async {
+      if (from == 1) {
+        // Add indices for ClassMeetings
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_meetings_date ON class_meetings(start_time)'
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_meetings_composite ON class_meetings(class_id, start_time, end_time)'
+        );
+
+        // Note: ClassGroup PK change requires recreating table
+        // Drift handles this automatically via schema comparison
+        await migrator.recreateAllViews();
+      }
+    },
+  );
 
   static QueryExecutor _openConnection() {
     return driftDatabase(

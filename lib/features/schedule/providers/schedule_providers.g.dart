@@ -54,12 +54,104 @@ final class ParserProvider
 
 String _$parserHash() => r'2101fa7a48eb73802b71ba99511954eb442fddf5';
 
-/// Family provider for fetching classes by date
+/// Provider for the database instance
+
+@ProviderFor(appDatabase)
+final appDatabaseProvider = AppDatabaseProvider._();
+
+/// Provider for the database instance
+
+final class AppDatabaseProvider
+    extends $FunctionalProvider<AppDatabase, AppDatabase, AppDatabase>
+    with $Provider<AppDatabase> {
+  /// Provider for the database instance
+  AppDatabaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'appDatabaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$appDatabaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<AppDatabase> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  AppDatabase create(Ref ref) {
+    return appDatabase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AppDatabase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AppDatabase>(value),
+    );
+  }
+}
+
+String _$appDatabaseHash() => r'4cd3cbf5ffb31168e5da8b2b9154e07483d00352';
+
+/// Provider for the schedule DAO
+
+@ProviderFor(scheduleDao)
+final scheduleDaoProvider = ScheduleDaoProvider._();
+
+/// Provider for the schedule DAO
+
+final class ScheduleDaoProvider
+    extends $FunctionalProvider<ScheduleDao, ScheduleDao, ScheduleDao>
+    with $Provider<ScheduleDao> {
+  /// Provider for the schedule DAO
+  ScheduleDaoProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'scheduleDaoProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$scheduleDaoHash();
+
+  @$internal
+  @override
+  $ProviderElement<ScheduleDao> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  ScheduleDao create(Ref ref) {
+    return scheduleDao(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ScheduleDao value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ScheduleDao>(value),
+    );
+  }
+}
+
+String _$scheduleDaoHash() => r'ff6b9bccaac23817224139505f181c321286bb89';
+
+/// Family provider for fetching classes by date with cache-first strategy
 
 @ProviderFor(classes)
 final classesProvider = ClassesFamily._();
 
-/// Family provider for fetching classes by date
+/// Family provider for fetching classes by date with cache-first strategy
 
 final class ClassesProvider
     extends
@@ -69,7 +161,7 @@ final class ClassesProvider
           FutureOr<List<Class>>
         >
     with $FutureModifier<List<Class>>, $FutureProvider<List<Class>> {
-  /// Family provider for fetching classes by date
+  /// Family provider for fetching classes by date with cache-first strategy
   ClassesProvider._({
     required ClassesFamily super.from,
     required DateTime super.argument,
@@ -114,9 +206,9 @@ final class ClassesProvider
   }
 }
 
-String _$classesHash() => r'818ed2c38d4eff307896d7dc181d614f2c3edef9';
+String _$classesHash() => r'a1549b5df5d9d00e2d08e69190047b16ac14a1af';
 
-/// Family provider for fetching classes by date
+/// Family provider for fetching classes by date with cache-first strategy
 
 final class ClassesFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<Class>>, DateTime> {
@@ -129,7 +221,7 @@ final class ClassesFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// Family provider for fetching classes by date
+  /// Family provider for fetching classes by date with cache-first strategy
 
   ClassesProvider call(DateTime date) =>
       ClassesProvider._(argument: date, from: this);
@@ -137,3 +229,47 @@ final class ClassesFamily extends $Family
   @override
   String toString() => r'classesProvider';
 }
+
+/// Provider for today's classes (convenience wrapper)
+
+@ProviderFor(todayClasses)
+final todayClassesProvider = TodayClassesProvider._();
+
+/// Provider for today's classes (convenience wrapper)
+
+final class TodayClassesProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<Class>>,
+          List<Class>,
+          FutureOr<List<Class>>
+        >
+    with $FutureModifier<List<Class>>, $FutureProvider<List<Class>> {
+  /// Provider for today's classes (convenience wrapper)
+  TodayClassesProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'todayClassesProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$todayClassesHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<Class>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<Class>> create(Ref ref) {
+    return todayClasses(ref);
+  }
+}
+
+String _$todayClassesHash() => r'5bd708169b555c29783910875621996c79649ed0';
