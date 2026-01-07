@@ -3,6 +3,8 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart';
 import 'package:intl/intl.dart';
 
+import '../../../config/api_config.dart';
+import '../../../logging.dart';
 import '../models/class_models.dart';
 import '../exceptions/parse_exceptions.dart';
 import 'asp_emulator.dart';
@@ -11,11 +13,11 @@ import 'class_deductor.dart';
 /// PJATK schedule parser
 class PjatkParser {
   PjatkParser() {
-    _emulator = AspEmulator(_generalScheduleEndpoint);
+    final endpoint = ApiConfig.scheduleEndpoint;
+    talker.debug('Initializing parser with endpoint: $endpoint');
+    _emulator = AspEmulator(endpoint);
   }
 
-  static const _generalScheduleEndpoint =
-      'https://planzajec.pjwstk.edu.pl/PlanOgolny3.aspx';
 
   late final AspEmulator _emulator;
 
@@ -56,14 +58,17 @@ class PjatkParser {
     String fragment,
     String styleCode,
   ) {
+    talker.debug('Parsing class detail HTML for ID: $classId');
     final document = html_parser.parseFragment(fragment);
 
     if (_isReservation(document)) {
+      talker.debug('Skipping reservation for ID: $classId');
       return null;
     }
 
     final name = _extractText(document, _nameSelector);
     if (name == null || name.isEmpty) {
+      talker.error('Failed to parse class name for ID: $classId');
       throw const ParseException.parsingFailed(
         message: 'Could not parse class name',
       );
@@ -71,6 +76,7 @@ class PjatkParser {
 
     final code = _extractText(document, _codeSelector);
     if (code == null || code.isEmpty) {
+      talker.error('Failed to parse class code for ID: $classId');
       throw const ParseException.parsingFailed(
         message: 'Could not parse class code',
       );
@@ -125,6 +131,9 @@ class PjatkParser {
       );
     }
 
+    final isOnline = styleCode.contains(_onlineColorSubstr);
+    talker.info('✓ Parsed class: $name ($code) - $from to $to [${isOnline ? 'Online' : room}]');
+
     return PjatkClass(
       id: classId,
       name: name,
@@ -136,17 +145,19 @@ class PjatkParser {
       from: from,
       to: to,
       date: date,
-      isOnline: styleCode.contains(_onlineColorSubstr),
+      isOnline: isOnline,
     );
   }
 
   /// Collect class IDs from schedule table
   List<(String, String)> _collectClassIds(String documentText) {
+    talker.debug('Collecting class IDs from schedule table');
     final body = html_parser.parse(documentText);
 
     // Find the class table
     final table = body.querySelector(_classTableSelector);
     if (table == null) {
+      talker.warning('No class table found in document');
       return [];
     }
 
@@ -162,6 +173,7 @@ class PjatkParser {
       classIdStyleCollected.add((id, style));
     }
 
+    talker.debug('Found ${classIdStyleCollected.length} class items');
     return classIdStyleCollected;
   }
 
@@ -194,6 +206,7 @@ class PjatkParser {
 
   /// Parse class detail by triggering tooltip
   Future<PjatkClass?> _parseDetail(String classId, String style) async {
+    talker.debug('Fetching detail for class ID: $classId');
     final state = <String, String>{
       'RadScriptManager1': 'RadToolTipManager1RTMPanel|RadToolTipManager1RTMPanel',
       'RadToolTipManager1_ClientState': jsonEncode({
@@ -220,6 +233,7 @@ class PjatkParser {
 
     final fragmentHtml = response.body;
     if (fragmentHtml == null) {
+      talker.error('No body in tooltip response for class ID: $classId');
       throw const ParseException.bodyAbruptied(
         message: 'No body in tooltip response',
       );
@@ -230,13 +244,18 @@ class PjatkParser {
 
   /// Parse all classes for a given day (raw data)
   Future<List<PjatkClass>> _parseDayRaw(DateTime requestedDate) async {
+    final dateStr = DateFormat('yyyy-MM-dd').format(requestedDate);
+    talker.info('Starting to parse schedule for date: $dateStr');
+
     final classes = <PjatkClass>[];
 
     // Initial request
+    talker.debug('Sending initial request to PJATK schedule');
     final initialReq = AspRequest(
       kind: const InitialRequest(),
     );
     var response = await _emulator.request(initialReq);
+    talker.debug('Initial request completed');
 
     // If not today, update to specific date
     final now = DateTime.now();
@@ -245,6 +264,7 @@ class PjatkParser {
         requestedDate.day == now.day;
 
     if (!isToday) {
+      talker.debug('Updating calendar to date: $dateStr');
       final state = _prepareDateUpdateState(requestedDate);
       final dateReq = AspRequest(
         kind: const EventRequest(
@@ -254,11 +274,15 @@ class PjatkParser {
         stateOverride: state,
       );
       response = await _emulator.request(dateReq);
+      talker.debug('Date update completed');
+    } else {
+      talker.debug('Using today\'s schedule (no date update needed)');
     }
 
     // Collect class IDs
     final responseText = response.body;
     if (responseText == null) {
+      talker.error('No body in schedule response');
       throw const ParseException.bodyAbruptied(
         message: 'No body in schedule response',
       );
@@ -266,20 +290,40 @@ class PjatkParser {
 
     final classIdStylePairs = _collectClassIds(responseText);
 
+    if (classIdStylePairs.isEmpty) {
+      talker.info('No classes found for date: $dateStr');
+      return classes;
+    }
+
     // Parse each class detail
+    talker.info('Fetching details for ${classIdStylePairs.length} classes...');
     for (final (classId, style) in classIdStylePairs) {
-      final classData = await _parseDetail(classId, style);
-      if (classData != null) {
-        classes.add(classData);
+      try {
+        final classData = await _parseDetail(classId, style);
+        if (classData != null) {
+          classes.add(classData);
+        }
+      } catch (e, stackTrace) {
+        talker.error('Failed to parse class $classId', e, stackTrace);
+        rethrow;
       }
     }
 
+    talker.info('Successfully parsed ${classes.length} classes for $dateStr');
     return classes;
   }
 
   /// Parse all classes for a given day (public API)
   Future<List<Class>> parseDay(DateTime date) async {
-    final raw = await _parseDayRaw(date);
-    return deductMulti(raw);
+    try {
+      final raw = await _parseDayRaw(date);
+      talker.debug('Deducting and converting ${raw.length} raw classes to structured format');
+      final deducted = deductMulti(raw);
+      talker.info('✓ Parsing complete: ${deducted.length} unique classes after deduction');
+      return deducted;
+    } catch (e, stackTrace) {
+      talker.error('Failed to parse schedule', e, stackTrace);
+      rethrow;
+    }
   }
 }

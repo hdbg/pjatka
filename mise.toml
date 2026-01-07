@@ -2,3 +2,7 @@
 codex = "0.78.0"
 helix = "25.07.1"
 jj = "0.36.0"
+
+[tasks.web]
+description = "Run debug on the web"
+run = "flutter run -d chrome --web-browser-flag \"--disable-web-security\""
