@@ -3,7 +3,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'class_models.freezed.dart';
 part 'class_models.g.dart';
 
-/// Enum representing the type of class
 enum ClassKind {
   @JsonValue('lecture')
   lecture,
