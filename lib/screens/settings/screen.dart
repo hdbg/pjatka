@@ -1,5 +1,3 @@
-import 'dart:nativewrappers/_internal/vm_shared/lib/compact_hash.dart';
-
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pjatka/home.dart';
