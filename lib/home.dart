@@ -45,6 +45,31 @@ class Destination {
 
 final int _transitionDuration = 300;
 
+class Switcher extends StatelessWidget {
+  final Widget? child;
+
+  const Switcher({super.key, this.child});
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+        duration: Duration(milliseconds: _transitionDuration),
+        transitionBuilder: (child, animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+        child: child,
+      );
+  }
+
+}
+
+WidgetBuilder? patchAnimated<T>(WidgetBuilder? input) {
+  if (input == null) return null;
+  return (context) => Switcher(child: input(context));
+}
+
 class HomeRouter extends HookWidget {
   final List<Destination> destinations;
 
@@ -83,17 +108,17 @@ class HomeRouter extends HookWidget {
       transitionDuration: Duration(milliseconds: _transitionDuration),
       useDrawer: false,
       // actual render
-      smallBody: dispatcher.buildSmall,
-      body: dispatcher.build,
-      mediumLargeBody: dispatcher.buildMediumLarge,
-      largeBody: dispatcher.buildLarge,
-      extraLargeBody: dispatcher.buildExtraLarge,
+      smallBody: patchAnimated(dispatcher.buildSmall),
+      body: patchAnimated(dispatcher.build),
+      mediumLargeBody: patchAnimated(dispatcher.buildMediumLarge),
+      largeBody: patchAnimated(dispatcher.buildLarge),
+      extraLargeBody: patchAnimated(dispatcher.buildExtraLarge),
 
-      smallSecondaryBody: secondaryDispatcher?.buildSmall,
-      secondaryBody: secondaryDispatcher?.build,
-      mediumLargeSecondaryBody: secondaryDispatcher?.buildMediumLarge,
-      largeSecondaryBody: secondaryDispatcher?.buildLarge,
-      extraLargeSecondaryBody: secondaryDispatcher?.buildExtraLarge,
+      smallSecondaryBody: patchAnimated(secondaryDispatcher?.buildSmall),
+      secondaryBody: patchAnimated(secondaryDispatcher?.build),
+      mediumLargeSecondaryBody: patchAnimated(secondaryDispatcher?.buildMediumLarge),
+      largeSecondaryBody: patchAnimated(secondaryDispatcher?.buildLarge),
+      extraLargeSecondaryBody: patchAnimated(secondaryDispatcher?.buildExtraLarge),
     );
   }
 }
