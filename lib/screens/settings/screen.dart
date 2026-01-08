@@ -1,3 +1,5 @@
+import 'dart:nativewrappers/_internal/vm_shared/lib/compact_hash.dart';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pjatka/home.dart';
@@ -220,12 +222,13 @@ final settingsDestination = Destination(
   selectedIcon: const Icon(Icons.settings_outlined),
   main: Adaptive(
     buildSmall: (context) => SettingsScreenSmall(),
-    build: (context) => SettingsScreenSmall(),
+    build: (context) => const _SettingsList(),
     buildMediumLarge: (context) => const _SettingsList(),
     buildLarge: (context) => const _SettingsList(),
     buildExtraLarge: (context) => const _SettingsList(),
   ),
   secondary: Adaptive(
+    build: (context) => SettingsPane(),
     buildMediumLarge: (context) => SettingsPane(),
     buildLarge: (context) => SettingsPane(),
     buildExtraLarge: (context) => SettingsPane(),
