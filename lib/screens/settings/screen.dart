@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pjatka/home.dart';
+import 'package:pjatka/screens/settings/settings/debug.dart';
 import 'package:pjatka/screens/settings/settings/groups_manager.dart';
 import 'package:pjatka/utils.dart';
 import 'package:settings_ui/settings_ui.dart';
@@ -8,7 +9,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'screen.g.dart';
 
-final int _transitionDuration = 300;
+final List<Setting> allSettings = [groupSetting, debugSetting];
 
 class Setting {
   final String title;
@@ -23,8 +24,6 @@ class Setting {
     required this.builder,
   });
 }
-
-final List<Setting> allSettings = [groupSetting];
 
 @riverpod
 class Selected extends _$Selected {
@@ -129,7 +128,7 @@ class SettingsPane extends ConsumerWidget {
     }
 
     return AnimatedSwitcher(
-      duration: Duration(milliseconds: _transitionDuration),
+      duration: transitionDuration,
       transitionBuilder: (child, animation) {
         return FadeTransition(opacity: animation, child: child);
       },
@@ -137,7 +136,6 @@ class SettingsPane extends ConsumerWidget {
     );
   }
 }
-
 
 final settingsDestination = Destination(
   label: 'Settings',
@@ -147,9 +145,13 @@ final settingsDestination = Destination(
     buildSmall: (context) => SettingsScreenSmall(),
     build: (context) => SettingsScreenSmall(),
     buildMediumLarge: (context) => const _SettingsList(),
+    buildLarge: (context) => const _SettingsList(),
+    buildExtraLarge: (context) => const _SettingsList(),
   ),
   secondary: Adaptive(
     buildMediumLarge: (context) => SettingsPane(),
+    buildLarge: (context) => SettingsPane(),
+    buildExtraLarge: (context) => SettingsPane(),
   ),
   tooltip: 'App Settings',
 );

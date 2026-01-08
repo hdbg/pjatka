@@ -34,6 +34,7 @@ dependencies:
   riverpod: ^3.1.0
   settings_ui: ^2.0.2
   hooks_riverpod: ^3.1.0
+  talker_flutter: ^5.1.9
 
 dev_dependencies:
   flutter_test:

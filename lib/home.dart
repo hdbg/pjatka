@@ -1,6 +1,7 @@
 import 'package:canonical_adaptive_scaffold/canonical_adaptive_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:pjatka/utils.dart';
 import 'package:sizer/sizer.dart';
 
 class Adaptive {
@@ -38,27 +39,30 @@ class Destination {
   });
 }
 
-final int _transitionDuration = 300;
 
-class Switcher extends StatelessWidget {
-  final Widget? child;
+// class Switcher extends StatelessWidget {
+//   final Widget? child;
 
-  const Switcher({super.key, this.child});
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: Duration(milliseconds: _transitionDuration),
-      transitionBuilder: (child, animation) {
-        return FadeTransition(opacity: animation, child: child);
-      },
-      child: child,
-    );
-  }
-}
+//   const Switcher({super.key, this.child});
+//   @override
+//   Widget build(BuildContext context) {
+//     return AnimatedSwitcher(
+//       duration: Duration(milliseconds: transitionDuration.inMilliseconds ~/ 100),
+//       transitionBuilder: (child, animation) {
+//         return FadeTransition(opacity: animation, child: child);
+//       },
+//       child: child,
+//     );
+//   }
+// }
 
-WidgetBuilder? patchAnimated<T>(WidgetBuilder? input) {
-  if (input == null) return null;
-  return (context) => Switcher(child: input(context));
+// WidgetBuilder? patchAnimated(WidgetBuilder? input) {
+//   if (input == null) return null;
+//   return (context) => Switcher(child: input(context));
+// }
+
+WidgetBuilder? patchAnimated(WidgetBuilder? input) {
+  return input;
 }
 
 class HomeRouter extends HookWidget {
@@ -96,14 +100,14 @@ class HomeRouter extends HookWidget {
 
       selectedIndex: selectedIndex.value,
       onSelectedIndexChange: (index) => selectedIndex.value = index,
-      transitionDuration: Duration(milliseconds: _transitionDuration),
-      useDrawer: true,
+      transitionDuration: transitionDuration,
+      leadingUnextendedNavRail: Image(image: AssetImage('assets/icon.png'), height: 5.w),
       // actual render
       leadingExtendedNavRail: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Image(image: AssetImage('assets/icon.png'), height: 10.w),
+          Image(image: AssetImage('assets/icon.png'), height:8.w),
           Text(
             ' PJATK ',
             style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
