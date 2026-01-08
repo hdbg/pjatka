@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SettingsState {
 
- List<String> get groups;
+ Set<String> get groups;
 /// Create a copy of SettingsState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $SettingsStateCopyWith<$Res>  {
   factory $SettingsStateCopyWith(SettingsState value, $Res Function(SettingsState) _then) = _$SettingsStateCopyWithImpl;
 @useResult
 $Res call({
- List<String> groups
+ Set<String> groups
 });
 
 
@@ -68,7 +68,7 @@ class _$SettingsStateCopyWithImpl<$Res>
 @pragma('vm:prefer-inline') @override $Res call({Object? groups = null,}) {
   return _then(_self.copyWith(
 groups: null == groups ? _self.groups : groups // ignore: cast_nullable_to_non_nullable
-as List<String>,
+as Set<String>,
   ));
 }
 
@@ -153,7 +153,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<String> groups)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Set<String> groups)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SettingsState() when $default != null:
 return $default(_that.groups);case _:
@@ -174,7 +174,7 @@ return $default(_that.groups);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<String> groups)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Set<String> groups)  $default,) {final _that = this;
 switch (_that) {
 case _SettingsState():
 return $default(_that.groups);case _:
@@ -194,7 +194,7 @@ return $default(_that.groups);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<String> groups)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Set<String> groups)?  $default,) {final _that = this;
 switch (_that) {
 case _SettingsState() when $default != null:
 return $default(_that.groups);case _:
@@ -209,14 +209,14 @@ return $default(_that.groups);case _:
 @JsonSerializable()
 
 class _SettingsState implements SettingsState {
-  const _SettingsState({final  List<String> groups = const []}): _groups = groups;
+  const _SettingsState({final  Set<String> groups = const {}}): _groups = groups;
   factory _SettingsState.fromJson(Map<String, dynamic> json) => _$SettingsStateFromJson(json);
 
- final  List<String> _groups;
-@override@JsonKey() List<String> get groups {
-  if (_groups is EqualUnmodifiableListView) return _groups;
+ final  Set<String> _groups;
+@override@JsonKey() Set<String> get groups {
+  if (_groups is EqualUnmodifiableSetView) return _groups;
   // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_groups);
+  return EqualUnmodifiableSetView(_groups);
 }
 
 
@@ -253,7 +253,7 @@ abstract mixin class _$SettingsStateCopyWith<$Res> implements $SettingsStateCopy
   factory _$SettingsStateCopyWith(_SettingsState value, $Res Function(_SettingsState) _then) = __$SettingsStateCopyWithImpl;
 @override @useResult
 $Res call({
- List<String> groups
+ Set<String> groups
 });
 
 
@@ -273,7 +273,7 @@ class __$SettingsStateCopyWithImpl<$Res>
 @override @pragma('vm:prefer-inline') $Res call({Object? groups = null,}) {
   return _then(_SettingsState(
 groups: null == groups ? _self._groups : groups // ignore: cast_nullable_to_non_nullable
-as List<String>,
+as Set<String>,
   ));
 }
 
