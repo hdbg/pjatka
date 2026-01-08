@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pjatka/features/schedule/models.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:pjatka/features/parsing/parsers/class_deductor.dart';
-import 'package:pjatka/features/parsing/models/class_models.dart';
 
 void main() {
   setUpAll(() {
@@ -139,9 +139,9 @@ void main() {
         final groups = deductGroups(pjatkClass);
 
         expect(groups.length, 3);
-        expect(groups[0].code, 'WI1');
-        expect(groups[1].code, 'WI2');
-        expect(groups[2].code, 'WI3');
+        expect(groups[0], 'WI1');
+        expect(groups[1], 'WI2');
+        expect(groups[2], 'WI3');
       });
 
       test('trims whitespace from group codes', () {
@@ -161,8 +161,8 @@ void main() {
 
         final groups = deductGroups(pjatkClass);
 
-        expect(groups[0].code, 'WI1');
-        expect(groups[1].code, 'WI2');
+        expect(groups[0], 'WI1');
+        expect(groups[1], 'WI2');
       });
 
       test('handles single group', () {
@@ -183,7 +183,7 @@ void main() {
         final groups = deductGroups(pjatkClass);
 
         expect(groups.length, 1);
-        expect(groups[0].code, 'WI1');
+        expect(groups[0], 'WI1');
       });
     });
 
@@ -205,10 +205,7 @@ void main() {
 
         final place = deductPlace(pjatkClass);
 
-        expect(
-          place,
-          isA<ClassPlaceOnline>(),
-        );
+        expect(place, isA<ClassPlaceOnline>());
       });
 
       test('returns onSite with room when isOnline is false', () {
@@ -252,13 +249,11 @@ void main() {
           isOnline: false,
         );
 
-        final range = deductRange(pjatkClass);
+        final (start, end) = deductRange(pjatkClass);
 
-        // In summer (June), Warsaw is UTC+2
-        // So 10:00 Warsaw = 08:00 UTC
-        expect(range.start.hour, 8);
-        expect(range.end.hour, 9);
-        expect(range.end.minute, 30);
+        expect(start.hour, 8);
+        expect(end.hour, 9);
+        expect(end.minute, 30);
       });
 
       test('handles winter time (UTC+1)', () {
@@ -276,13 +271,13 @@ void main() {
           isOnline: false,
         );
 
-        final range = deductRange(pjatkClass);
+        final (start, end) = deductRange(pjatkClass);
 
         // In winter (January), Warsaw is UTC+1
         // So 10:00 Warsaw = 09:00 UTC
-        expect(range.start.hour, 9);
-        expect(range.end.hour, 10);
-        expect(range.end.minute, 30);
+        expect(start.hour, 9);
+        expect(end.hour, 10);
+        expect(end.minute, 30);
       });
     });
 

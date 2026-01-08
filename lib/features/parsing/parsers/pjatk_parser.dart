@@ -2,10 +2,11 @@ import 'dart:convert';
 import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart';
 import 'package:intl/intl.dart';
+import 'package:pjatka/features/schedule/models.dart';
+import 'package:semaphore/semaphore.dart';
 
 import '../../../config/api_config.dart';
-import '../../../logging.dart';
-import '../models/class_models.dart';
+import '../../../utils.dart';
 import '../exceptions/parse_exceptions.dart';
 import 'asp_emulator.dart';
 import 'class_deductor.dart';
@@ -57,7 +58,6 @@ class PjatkParser {
     String fragment,
     String styleCode,
   ) {
-    talker.debug('Parsing class detail HTML for ID: $classId');
     final document = html_parser.parseFragment(fragment);
 
     if (_isReservation(document)) {
@@ -203,7 +203,6 @@ class PjatkParser {
 
   /// Parse class detail by triggering tooltip
   Future<PjatkClass?> _parseDetail(String classId, String style) async {
-    talker.debug('Fetching detail for class ID: $classId');
     final state = <String, String>{
       'RadScriptManager1':
           'RadToolTipManager1RTMPanel|RadToolTipManager1RTMPanel',
@@ -291,7 +290,10 @@ class PjatkParser {
     // Parse each class detail
     talker.info('Fetching details for ${classIdStylePairs.length} classes...');
 
+     final sm = LocalSemaphore(8);
+
     final jobList = classIdStylePairs.map((packed) async {
+      await sm.acquire();
       final (classId, style) = packed;
       try {
         final classData = await _parseDetail(classId, style);
@@ -306,6 +308,9 @@ class PjatkParser {
         talker.error('Failed to parse class $classId', e, stackTrace);
         rethrow;
       }
+      finally {
+        sm.release();
+      }
     });
 
     final classes = await Future.wait(jobList);
@@ -314,8 +319,7 @@ class PjatkParser {
     return classes;
   }
 
-  /// Parse all classes for a given day (public API)
-  Future<List<Class>> parseDay(DateTime date) async {
+  Future<List<ScheduledClass>> parseDay(DateTime date) async {
     try {
       final raw = await _parseDayRaw(date);
       talker.debug(

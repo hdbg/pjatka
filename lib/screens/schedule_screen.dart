@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pjatka/features/schedule/models.dart';
+import 'package:pjatka/home.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
-import '../features/parsing/models/class_models.dart';
 import '../features/schedule/providers/schedule_providers.dart';
 import '../features/schedule/data/schedule_data_source.dart';
+
+final scheduleDestination = Destination(
+  label: 'Schedule',
+  icon: const Icon(Icons.schedule),
+  selectedIcon: const Icon(Icons.schedule_outlined),
+  main: () => ScheduleDispatcher(),
+);
 
 /// Main schedule screen displaying today's classes
 class ScheduleScreen extends ConsumerWidget {
@@ -13,27 +21,21 @@ class ScheduleScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final classesAsync = ref.watch(todayClassesProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Today\'s Schedule'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
-      body: classesAsync.when(
-        data: (classes) => _buildScheduleView(classes),
-        loading: () => _buildLoadingState(),
-        error: (error, stack) => _buildErrorState(error, ref),
-      ),
+    return classesAsync.when(
+      data: (classes) => _buildScheduleView(classes),
+      loading: () => _buildLoadingState(),
+      error: (error, stack) => _buildErrorState(error, ref),
     );
   }
 
   /// Build the calendar view with classes
-  Widget _buildScheduleView(List<Class> classes) {
+  Widget _buildScheduleView(List<ScheduledClass> classes) {
     if (classes.isEmpty) {
       return _buildEmptyState();
     }
 
     return SfCalendar(
-      view: CalendarView.day,
+      view: CalendarView.schedule,
       dataSource: ScheduleDataSource(classes),
       timeSlotViewSettings: const TimeSlotViewSettings(
         startHour: 8,
@@ -49,11 +51,6 @@ class ScheduleScreen extends ConsumerWidget {
         color: Colors.white,
         fontWeight: FontWeight.w500,
       ),
-      onTap: (CalendarTapDetails details) {
-        if (details.appointments != null && details.appointments!.isNotEmpty) {
-          _showAppointmentDetails(details.appointments!.first as Appointment);
-        }
-      },
     );
   }
 
@@ -124,10 +121,9 @@ class ScheduleScreen extends ConsumerWidget {
       ),
     );
   }
+}
 
-  /// Show appointment details (placeholder for future enhancement)
-  void _showAppointmentDetails(Appointment appointment) {
-    // Future enhancement: show bottom sheet with full details
-    debugPrint('Tapped on: ${appointment.subject}');
-  }
+class ScheduleDispatcher extends AdaptiveDispatcher {
+  @override
+  Widget build(BuildContext context) => ScheduleScreen();
 }

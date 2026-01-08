@@ -8,17 +8,13 @@ part of 'schedule_providers.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Provider for the parser singleton instance
 
 @ProviderFor(parser)
 final parserProvider = ParserProvider._();
 
-/// Provider for the parser singleton instance
-
 final class ParserProvider
     extends $FunctionalProvider<PjatkParser, PjatkParser, PjatkParser>
     with $Provider<PjatkParser> {
-  /// Provider for the parser singleton instance
   ParserProvider._()
     : super(
         from: null,
@@ -54,22 +50,60 @@ final class ParserProvider
 
 String _$parserHash() => r'2101fa7a48eb73802b71ba99511954eb442fddf5';
 
-/// Family provider for fetching classes by date
+@ProviderFor(scheduleDao)
+final scheduleDaoProvider = ScheduleDaoProvider._();
+
+final class ScheduleDaoProvider
+    extends $FunctionalProvider<ScheduleDao, ScheduleDao, ScheduleDao>
+    with $Provider<ScheduleDao> {
+  ScheduleDaoProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'scheduleDaoProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$scheduleDaoHash();
+
+  @$internal
+  @override
+  $ProviderElement<ScheduleDao> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  ScheduleDao create(Ref ref) {
+    return scheduleDao(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ScheduleDao value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ScheduleDao>(value),
+    );
+  }
+}
+
+String _$scheduleDaoHash() => r'10453be8692eedfbae008c6b2fc54735a9e64c74';
 
 @ProviderFor(classes)
 final classesProvider = ClassesFamily._();
 
-/// Family provider for fetching classes by date
-
 final class ClassesProvider
     extends
         $FunctionalProvider<
-          AsyncValue<List<Class>>,
-          List<Class>,
-          FutureOr<List<Class>>
+          AsyncValue<List<ScheduledClass>>,
+          List<ScheduledClass>,
+          FutureOr<List<ScheduledClass>>
         >
-    with $FutureModifier<List<Class>>, $FutureProvider<List<Class>> {
-  /// Family provider for fetching classes by date
+    with
+        $FutureModifier<List<ScheduledClass>>,
+        $FutureProvider<List<ScheduledClass>> {
   ClassesProvider._({
     required ClassesFamily super.from,
     required DateTime super.argument,
@@ -93,12 +127,12 @@ final class ClassesProvider
 
   @$internal
   @override
-  $FutureProviderElement<List<Class>> $createElement(
+  $FutureProviderElement<List<ScheduledClass>> $createElement(
     $ProviderPointer pointer,
   ) => $FutureProviderElement(pointer);
 
   @override
-  FutureOr<List<Class>> create(Ref ref) {
+  FutureOr<List<ScheduledClass>> create(Ref ref) {
     final argument = this.argument as DateTime;
     return classes(ref, argument);
   }
@@ -114,12 +148,10 @@ final class ClassesProvider
   }
 }
 
-String _$classesHash() => r'818ed2c38d4eff307896d7dc181d614f2c3edef9';
-
-/// Family provider for fetching classes by date
+String _$classesHash() => r'3c079f0fec52a668d54ba5be7c660ea40544069f';
 
 final class ClassesFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<List<Class>>, DateTime> {
+    with $FunctionalFamilyOverride<FutureOr<List<ScheduledClass>>, DateTime> {
   ClassesFamily._()
     : super(
         retry: null,
@@ -129,31 +161,26 @@ final class ClassesFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// Family provider for fetching classes by date
-
-  ClassesProvider call(DateTime date) =>
-      ClassesProvider._(argument: date, from: this);
+  ClassesProvider call(DateTime day) =>
+      ClassesProvider._(argument: day, from: this);
 
   @override
   String toString() => r'classesProvider';
 }
 
-/// Provider for today's classes
-
 @ProviderFor(todayClasses)
 final todayClassesProvider = TodayClassesProvider._();
-
-/// Provider for today's classes
 
 final class TodayClassesProvider
     extends
         $FunctionalProvider<
-          AsyncValue<List<Class>>,
-          List<Class>,
-          FutureOr<List<Class>>
+          AsyncValue<List<ScheduledClass>>,
+          List<ScheduledClass>,
+          FutureOr<List<ScheduledClass>>
         >
-    with $FutureModifier<List<Class>>, $FutureProvider<List<Class>> {
-  /// Provider for today's classes
+    with
+        $FutureModifier<List<ScheduledClass>>,
+        $FutureProvider<List<ScheduledClass>> {
   TodayClassesProvider._()
     : super(
         from: null,
@@ -170,14 +197,14 @@ final class TodayClassesProvider
 
   @$internal
   @override
-  $FutureProviderElement<List<Class>> $createElement(
+  $FutureProviderElement<List<ScheduledClass>> $createElement(
     $ProviderPointer pointer,
   ) => $FutureProviderElement(pointer);
 
   @override
-  FutureOr<List<Class>> create(Ref ref) {
+  FutureOr<List<ScheduledClass>> create(Ref ref) {
     return todayClasses(ref);
   }
 }
 
-String _$todayClassesHash() => r'99633cd08c30d1c0263e66ee9a0e063b60e45818';
+String _$todayClassesHash() => r'485cb0b2557457787585ee027420876386fe1f71';

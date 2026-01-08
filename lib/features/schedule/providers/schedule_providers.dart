@@ -1,26 +1,49 @@
+import 'package:pjatka/features/schedule/models.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../parsing/parsing.dart';
+import '../database.dart';
+import '../data/schedule_dao.dart';
+import '../../../utils.dart';
 
 part 'schedule_providers.g.dart';
 
-/// Provider for the parser singleton instance
 @riverpod
 PjatkParser parser(Ref ref) {
   return PjatkParser();
 }
 
-/// Family provider for fetching classes by date
 @riverpod
-Future<List<Class>> classes(Ref ref, DateTime date) async {
-  final parser = ref.watch(parserProvider);
-  return parser.parseDay(date);
+ScheduleDao scheduleDao(Ref ref) {
+  return ScheduleDao(database);
 }
 
-/// Provider for today's classes
 @riverpod
-Future<List<Class>> todayClasses(Ref ref) async {
+Future<List<ScheduledClass>> classes(Ref ref, DateTime day) async {
+  final dao = ref.watch(scheduleDaoProvider);
+  final parser = ref.watch(parserProvider);
+
+  final earliest = await dao.getEarliestUpdateForDate(day);
+
+  talker.debug('Earliest update for ${day.toIso8601String()}: $earliest');
+
+  if (earliest == null || DateTime.now().difference(earliest).inHours > 24) {
+    talker.info(
+      'No classes found for date or too late: ${day.toIso8601String()}',
+    );
+
+    final parsedClasses = await parser.parseDay(day);
+
+    await dao.syncClasses(day, parsedClasses);
+
+    return parsedClasses;
+  }
+
+  return dao.getMeetingsForDate(day);
+}
+
+@riverpod
+Future<List<ScheduledClass>> todayClasses(Ref ref) {
   final today = DateTime.now();
-  // Normalize to start of day for consistent caching
-  final normalizedDate = DateTime(today.year, today.month, today.day);
-  return ref.watch(classesProvider(normalizedDate).future);
+  final day = DateTime(today.year, today.month, today.day);
+  return ref.read(classesProvider(day).future);
 }

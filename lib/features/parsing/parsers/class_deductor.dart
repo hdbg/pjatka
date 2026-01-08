@@ -1,10 +1,9 @@
 import 'package:intl/intl.dart';
+import 'package:pjatka/features/schedule/models.dart';
 import 'package:timezone/timezone.dart' as tz;
 
-import '../models/class_models.dart';
 import '../exceptions/parse_exceptions.dart';
 
-/// Raw class data from PJATK HTML parsing
 class PjatkClass {
   PjatkClass({
     required this.id,
@@ -40,19 +39,19 @@ ClassKind deductKind(PjatkClass pjatkClass) {
     'Ćwiczenia' || 'Internet - ćwiczenia' => ClassKind.seminar,
     'Projekt dyplomowy' => ClassKind.diplomaThesis,
     _ => throw ParseException.parsingFailed(
-        message: "Can't deduct PJATK class kind '${pjatkClass.kind}'",
-      ),
+      message: "Can't deduct PJATK class kind '${pjatkClass.kind}'",
+    ),
   };
 }
 
 /// Deduct groups from comma-separated string
-List<Group> deductGroups(PjatkClass pjatkClass) {
+List<String> deductGroups(PjatkClass pjatkClass) {
   final rawGroups = pjatkClass.groups.split(',');
-  return rawGroups.map((g) => Group(code: g.trim())).toList();
+  return rawGroups.map((g) =>g.trim()).toList();
 }
 
 /// Deduct time range with timezone conversion (Warsaw → UTC)
-TimeRange deductRange(PjatkClass pjatkClass) {
+(DateTime, DateTime) deductRange(PjatkClass pjatkClass) {
   // Parse date and times
   final dateFormat = DateFormat('dd.MM.yyyy');
   final timeFormat = DateFormat('HH:mm:ss');
@@ -82,14 +81,10 @@ TimeRange deductRange(PjatkClass pjatkClass) {
     endTime.second,
   );
 
-  // Convert to Warsaw timezone then to UTC
   final utcBegin = tz.TZDateTime.from(datetimeBegin, warsaw).toUtc();
   final utcEnd = tz.TZDateTime.from(datetimeEnd, warsaw).toUtc();
 
-  return TimeRange(
-    start: utcBegin,
-    end: utcEnd,
-  );
+  return (utcBegin, utcEnd);
 }
 
 /// Deduct class place (online or on-site)
@@ -102,20 +97,22 @@ ClassPlace deductPlace(PjatkClass pjatkClass) {
 }
 
 /// Transform raw PjatkClass to structured Class
-Class deductAll(PjatkClass item) {
-  return Class(
+ScheduledClass deductAll(PjatkClass item) {
+  final (start, end) = deductRange(item);
+  return ScheduledClass(
     classId: item.id.replaceAll(';z', ''),
     name: item.name,
     code: item.code,
     kind: deductKind(item),
     lecturer: item.lecturer,
-    range: deductRange(item),
+    start: start,
+    end: end,
     place: deductPlace(item),
     groups: deductGroups(item),
   );
 }
 
 /// Transform multiple raw classes
-List<Class> deductMulti(Iterable<PjatkClass> items) {
+List<ScheduledClass> deductMulti(Iterable<PjatkClass> items) {
   return items.map(deductAll).toList();
 }
