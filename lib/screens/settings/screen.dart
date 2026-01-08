@@ -8,14 +8,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'screen.g.dart';
 
-final settingsDestination = Destination(
-  label: 'Settings',
-  icon: const Icon(Icons.settings),
-  selectedIcon: const Icon(Icons.settings_outlined),
-  main: () => SettingsDispatcher(),
-  // secondary: () => SettingsPaneDispatcher(),
-  tooltip: 'App Settings',
-);
+final int _transitionDuration = 300;
 
 class Setting {
   final String title;
@@ -124,21 +117,39 @@ class SettingsScreenSmall extends HookConsumerWidget {
   }
 }
 
-class SettingsDispatcher extends AdaptiveDispatcher {
+class SettingsPane extends ConsumerWidget {
   @override
-  Widget buildSmall(BuildContext context) => SettingsScreenSmall();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedSetting = ref.watch(selectedProvider);
 
-  @override
-  Widget build(BuildContext context) => SettingsScreenSmall();
+    if (selectedSetting == null) {
+      return const Center(
+        child: Text('Please select a setting from the list.'),
+      );
+    }
 
-  @override
-  Widget buildMediumLarge(BuildContext context) => const _SettingsList();
+    return AnimatedSwitcher(
+      duration: Duration(milliseconds: _transitionDuration),
+      transitionBuilder: (child, animation) {
+        return FadeTransition(opacity: animation, child: child);
+      },
+      child: selectedSetting.builder(context),
+    );
+  }
 }
 
-class SettingsPaneDispatcher extends AdaptiveDispatcher {
-  @override
-  Widget build(BuildContext context) => Container();
 
-  @override
-  Widget buildMediumLarge(BuildContext context) => Container();
-}
+final settingsDestination = Destination(
+  label: 'Settings',
+  icon: const Icon(Icons.settings),
+  selectedIcon: const Icon(Icons.settings_outlined),
+  main: Adaptive(
+    buildSmall: (context) => SettingsScreenSmall(),
+    build: (context) => SettingsScreenSmall(),
+    buildMediumLarge: (context) => const _SettingsList(),
+  ),
+  secondary: Adaptive(
+    buildMediumLarge: (context) => SettingsPane(),
+  ),
+  tooltip: 'App Settings',
+);

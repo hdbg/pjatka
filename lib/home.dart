@@ -3,27 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:sizer/sizer.dart';
 
-abstract class AdaptiveDispatcher {
-  Widget build(BuildContext context);
+class Adaptive {
+  WidgetBuilder? buildSmall;
+  WidgetBuilder? buildMediumLarge;
+  WidgetBuilder? buildLarge;
+  WidgetBuilder? buildExtraLarge;
+  WidgetBuilder? build;
 
-  Widget buildSmall(BuildContext context) {
-    return build(context);
-  }
-
-  Widget buildMediumLarge(BuildContext context) {
-    return build(context);
-  }
-
-  Widget buildLarge(BuildContext context) {
-    return buildMediumLarge(context);
-  }
-
-  Widget buildExtraLarge(BuildContext context) {
-    return buildExtraLarge(context);
-  }
+  Adaptive({
+    this.buildSmall,
+    this.buildMediumLarge,
+    this.buildLarge,
+    this.buildExtraLarge,
+    this.build,
+  });
 }
-
-typedef AdaptiveDispatcherBuilder = AdaptiveDispatcher Function();
 
 class Destination {
   final String label;
@@ -31,8 +25,8 @@ class Destination {
   final Icon icon;
   final Icon? selectedIcon;
 
-  final AdaptiveDispatcherBuilder main;
-  final AdaptiveDispatcherBuilder? secondary;
+  final Adaptive main;
+  final Adaptive? secondary;
 
   Destination({
     required this.label,
@@ -80,11 +74,11 @@ class HomeRouter extends HookWidget {
       selectedIndex.value,
     ]);
     final dispatcher = useMemoized(
-      () => destinations[selectedIndex.value].main(),
+      () => destination.main,
       [selectedIndex.value],
     );
     final secondaryDispatcher = useMemoized(
-      () => destination.secondary?.call(),
+      () => destination.secondary,
       [selectedIndex.value],
     );
 

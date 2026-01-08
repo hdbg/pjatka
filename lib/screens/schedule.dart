@@ -6,13 +6,7 @@ import 'package:syncfusion_flutter_calendar/calendar.dart';
 import '../features/schedule/providers/schedule_providers.dart';
 import '../features/schedule/data/schedule_data_source.dart';
 
-final scheduleDestination = Destination(
-  label: 'Schedule',
-  icon: const Icon(Icons.schedule),
-  selectedIcon: const Icon(Icons.schedule_outlined),
-  main: () => ScheduleDispatcher(),
-  tooltip: 'View your class schedule',
-);
+
 
 /// Main schedule screen displaying today's classes
 class ScheduleScreen extends ConsumerWidget {
@@ -102,7 +96,12 @@ class ScheduleScreen extends ConsumerWidget {
   }
 }
 
-class ScheduleDispatcher extends AdaptiveDispatcher {
-  @override
-  Widget build(BuildContext context) => ScheduleScreen();
-}
+final scheduleDestination = Destination(
+  label: 'Schedule',
+  icon: const Icon(Icons.schedule),
+  selectedIcon: const Icon(Icons.schedule_outlined),
+  main: Adaptive(
+    build: (context) => const ScheduleScreen(),
+  ),
+  tooltip: 'View your class schedule',
+);
