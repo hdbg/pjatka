@@ -122,9 +122,7 @@ class SettingsPane extends ConsumerWidget {
     final selectedSetting = ref.watch(selectedProvider);
 
     if (selectedSetting == null) {
-      return const Center(
-        child: Text('Please select a setting from the list.'),
-      );
+      return _EmptySettingsState();
     }
 
     return AnimatedSwitcher(
@@ -133,6 +131,85 @@ class SettingsPane extends ConsumerWidget {
         return FadeTransition(opacity: animation, child: child);
       },
       child: selectedSetting.builder(context),
+    );
+  }
+}
+
+class _EmptySettingsState extends StatelessWidget {
+  const _EmptySettingsState();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.settings_suggest,
+                size: 64,
+                color: colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'No Setting Selected',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Select a setting from the list to view its options',
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: colorScheme.surface.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: colorScheme.outline.withValues(alpha: 0.2),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 20,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Available settings will appear here when you select them from the sidebar.',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
