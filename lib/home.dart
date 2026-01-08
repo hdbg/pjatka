@@ -1,16 +1,14 @@
 import 'package:canonical_adaptive_scaffold/canonical_adaptive_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:sizer/sizer.dart';
 
 abstract class AdaptiveDispatcher {
-
-  
   Widget build(BuildContext context);
 
   Widget buildSmall(BuildContext context) {
     return build(context);
   }
-  
 
   Widget buildMediumLarge(BuildContext context) {
     return build(context);
@@ -55,17 +53,13 @@ class Switcher extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
-        duration: Duration(milliseconds: _transitionDuration),
-        transitionBuilder: (child, animation) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        },
-        child: child,
-      );
+      duration: Duration(milliseconds: _transitionDuration),
+      transitionBuilder: (child, animation) {
+        return FadeTransition(opacity: animation, child: child);
+      },
+      child: child,
+    );
   }
-
 }
 
 WidgetBuilder? patchAnimated<T>(WidgetBuilder? input) {
@@ -109,8 +103,19 @@ class HomeRouter extends HookWidget {
       selectedIndex: selectedIndex.value,
       onSelectedIndexChange: (index) => selectedIndex.value = index,
       transitionDuration: Duration(milliseconds: _transitionDuration),
-      useDrawer: false,
+      useDrawer: true,
       // actual render
+      leadingExtendedNavRail: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Image(image: AssetImage('assets/icon.png'), height: 10.w),
+          Text(
+            ' PJATK ',
+            style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
       smallBody: patchAnimated(dispatcher.buildSmall),
       body: patchAnimated(dispatcher.build),
       mediumLargeBody: patchAnimated(dispatcher.buildMediumLarge),
@@ -119,9 +124,13 @@ class HomeRouter extends HookWidget {
 
       smallSecondaryBody: patchAnimated(secondaryDispatcher?.buildSmall),
       secondaryBody: patchAnimated(secondaryDispatcher?.build),
-      mediumLargeSecondaryBody: patchAnimated(secondaryDispatcher?.buildMediumLarge),
+      mediumLargeSecondaryBody: patchAnimated(
+        secondaryDispatcher?.buildMediumLarge,
+      ),
       largeSecondaryBody: patchAnimated(secondaryDispatcher?.buildLarge),
-      extraLargeSecondaryBody: patchAnimated(secondaryDispatcher?.buildExtraLarge),
+      extraLargeSecondaryBody: patchAnimated(
+        secondaryDispatcher?.buildExtraLarge,
+      ),
     );
   }
 }

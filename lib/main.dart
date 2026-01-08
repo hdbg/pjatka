@@ -7,6 +7,7 @@ import 'package:talker_dio_logger/talker_dio_logger_interceptor.dart';
 import 'package:talker_dio_logger/talker_dio_logger_settings.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'screens/schedule.dart';
+import 'package:sizer/sizer.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,28 +30,36 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'PJATK',
+    return Sizer(
+      builder: (context, orientation, deviceType) {
+        return MaterialApp(
+          title: 'PJATK',
 
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.lightBlue,
-          brightness: Brightness.dark,
-        ),
-      ),
-      themeMode: ThemeMode.dark,
-      home: SafeArea(
-        child: Scaffold(
-          appBar: AppBar(
-            title: const Text('PJATK App'),
-            backgroundColor: Colors.blueGrey,
-            centerTitle: false,
+          darkTheme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.lightBlue,
+              brightness: Brightness.dark,
+            ),
           ),
-          body: HomeRouter(
-            destinations: [scheduleDestination, settingsDestination],
+          themeMode: ThemeMode.dark,
+          home: SafeArea(
+            child: Scaffold(
+              // appBar: AppBar(
+              //   title: FittedBox(
+              //     fit: BoxFit.scaleDown,
+              //     child: Text('PJATK App'),
+              //   ),
+              //   backgroundColor: Colors.blueGrey,
+              //   centerTitle: false,
+              //   toolbarHeight: 7.h,
+              // ),
+              body: HomeRouter(
+                destinations: [scheduleDestination, settingsDestination],
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
