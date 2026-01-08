@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pjatka/features/schedule/models.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
-import '../features/parsing/models/class_models.dart';
 import '../features/schedule/providers/schedule_providers.dart';
 import '../features/schedule/data/schedule_data_source.dart';
 
@@ -27,13 +27,13 @@ class ScheduleScreen extends ConsumerWidget {
   }
 
   /// Build the calendar view with classes
-  Widget _buildScheduleView(List<Class> classes) {
+  Widget _buildScheduleView(List<ScheduledClass> classes) {
     if (classes.isEmpty) {
       return _buildEmptyState();
     }
 
     return SfCalendar(
-      view: CalendarView.day,
+      view: CalendarView.schedule,
       dataSource: ScheduleDataSource(classes),
       timeSlotViewSettings: const TimeSlotViewSettings(
         startHour: 8,
@@ -49,11 +49,7 @@ class ScheduleScreen extends ConsumerWidget {
         color: Colors.white,
         fontWeight: FontWeight.w500,
       ),
-      onTap: (CalendarTapDetails details) {
-        if (details.appointments != null && details.appointments!.isNotEmpty) {
-          _showAppointmentDetails(details.appointments!.first as Appointment);
-        }
-      },
+      
     );
   }
 

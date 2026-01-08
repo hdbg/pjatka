@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'models.freezed.dart';
+part 'models.g.dart';
 
 enum StudyMode {
   @JsonValue('online')
@@ -47,6 +48,23 @@ abstract class ClassPlace with _$ClassPlace {
   const factory ClassPlace.online() = ClassPlaceOnline;
   const factory ClassPlace.onSite({required String room}) = ClassPlaceOnSite;
 
-  // factory ClassPlace.fromJson(Map<String, dynamic> json) =>
-  //     _$ClassPlaceFromJson(json);
+  factory ClassPlace.fromJson(Map<String, dynamic> json) =>
+      _$ClassPlaceFromJson(json);
+}
+
+@freezed
+abstract class ScheduledClass with _$ScheduledClass {
+  const factory ScheduledClass({
+    required String classId,
+    required String name,
+    required String code,
+    required ClassKind kind,
+    required String lecturer,
+    required  DateTime start, 
+    required DateTime end,
+    required ClassPlace place,
+    required List<String> groups,
+  }) = _ScheduledClass;
+
+  factory ScheduledClass.fromJson(Map<String, dynamic> json) => _$ScheduledClassFromJson(json);
 }

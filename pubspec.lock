@@ -672,6 +672,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.0+1"
+  semaphore:
+    dependency: "direct main"
+    description:
+      name: semaphore
+      sha256: "01fe9efb33f88e4401d72c6f4d85bdd07c63b662e2bd0abdfee2fc9cb5849555"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1"
   shelf:
     dependency: transitive
     description:
@@ -858,6 +866,14 @@ packages:
     description:
       name: talker
       sha256: e5d4f7cce6a639037e551660ae1b93b451f107e78dabcc9f89fc52ffeb6d63d5
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.1.9"
+  talker_dio_logger:
+    dependency: "direct main"
+    description:
+      name: talker_dio_logger
+      sha256: "634434970a8f9428fd753aaae204f453eee65244562f69af117a4474d9b98d35"
       url: "https://pub.dev"
     source: hosted
     version: "5.1.9"

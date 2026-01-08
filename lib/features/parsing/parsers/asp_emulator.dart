@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:pjatka/utils.dart';
 
 import '../exceptions/parse_exceptions.dart';
 
@@ -11,12 +12,10 @@ typedef AspState = Map<String, String>;
 
 /// Type of ASP.NET request
 @freezed
-class RequestKind with _$RequestKind {
+sealed class RequestKind with _$RequestKind {
   const factory RequestKind.initial() = InitialRequest;
-  const factory RequestKind.event({
-    required String target,
-    String? argument,
-  }) = EventRequest;
+  const factory RequestKind.event({required String target, String? argument}) =
+      EventRequest;
 }
 
 /// ASP.NET request configuration
@@ -33,22 +32,20 @@ abstract class AspRequest with _$AspRequest {
 /// ASP.NET response
 @freezed
 abstract class AspResponse with _$AspResponse {
-  const factory AspResponse({
-    required int statusCode,
-    String? body,
-  }) = _AspResponse;
+  const factory AspResponse({required int statusCode, String? body}) =
+      _AspResponse;
 }
 
 /// ASP.NET emulator that maintains ViewState between requests
 class AspEmulator {
-  AspEmulator(this.urlBase) : _client = Dio() {
-    _client.options.connectTimeout = const Duration(seconds: 30);
-    _client.options.receiveTimeout = const Duration(seconds: 30);
+  AspEmulator(this.urlBase) {
+    dio.options.connectTimeout = const Duration(seconds: 30);
+    dio.options.receiveTimeout = const Duration(seconds: 30);
   }
 
   final String urlBase;
-  final Dio _client;
   final AspState _state = {};
+  final Dio dio = Dio();
 
   static const _eventTargetState = '__EVENTTARGET';
   static const _eventArgState = '__EVENTARGUMENT';
@@ -124,10 +121,7 @@ class AspEmulator {
       }
     }
 
-    return AspResponse(
-      statusCode: statusCode,
-      body: body,
-    );
+    return AspResponse(statusCode: statusCode, body: body);
   }
 
   /// Execute an ASP.NET request
@@ -135,70 +129,71 @@ class AspEmulator {
     final url = urlBase + req.endpoint;
 
     try {
-      if (req.kind is InitialRequest) {
-        // Initial GET request
-        final response = await _client.get<String>(url);
-        return await _processResponse(response, (body) {
-          _updateStateFromHtml(body);
-          return body;
-        });
-      } else if (req.kind is EventRequest) {
-        // Event POST request
-        final event = req.kind as EventRequest;
-
-        // Build form data
-        final state = Map<String, String>.from(_state);
-        state[_eventTargetState] = event.target;
-        state[_eventArgState] = event.argument ?? '';
-
-        // Apply state overrides
-        state.addAll(req.stateOverride);
-
-        // Set headers
-        final headers = _eventHeaders(req.isDelta);
-
-        // Send POST request
-        final response = await _client.post<String>(
-          url,
-          data: state,
-          options: Options(
-            headers: headers,
-            contentType: Headers.formUrlEncodedContentType,
-          ),
-        );
-
-        return await _processResponse(response, (body) {
-          final lines = body.split('\n');
-          if (lines.length <= 1) {
-            throw const ParseException.bodyAbruptied(
-              message: 'Response has no fragment line',
-            );
+      switch (req.kind) {
+        case InitialRequest():
+          {
+            final response = await dio.get<String>(url);
+            return await _processResponse(response, (body) {
+              _updateStateFromHtml(body);
+              return body;
+            });
           }
-
-          // Last line contains state updates
-          final fragment = lines.last;
-          _updateStateFromFragment(fragment);
-
-          // Update body to exclude the last line (fragment)
-          lines.removeLast();
-          // Skip first line as well (per Rust implementation)
-          if (lines.isNotEmpty) {
-            lines.removeAt(0);
+        case EventRequest(:final target, :final argument):
+          {
+            return await _eventRequest(target, argument, req, url);
           }
-
-          return lines.join('\n');
-        });
-      } else {
-        throw const ParseException.parsingFailed(
-          message: 'Unknown request kind',
-        );
       }
     } on DioException catch (e, st) {
+      talker.handle(e, st);
       throw ParseException.http(
         message: 'HTTP request failed: ${e.message}',
         stackTrace: st,
       );
     }
+  }
+
+  Future<AspResponse> _eventRequest(String target, String? argument, AspRequest req, String url) async {
+    final state = Map<String, String>.from(_state);
+    state[_eventTargetState] = target;
+    state[_eventArgState] = argument ?? '';
+    
+    // Apply state overrides
+    state.addAll(req.stateOverride);
+    
+    // Set headers
+    final headers = _eventHeaders(req.isDelta);
+    
+    // Send POST request
+    final response = await dio.post<String>(
+      url,
+      data: state,
+      options: Options(
+        headers: headers,
+        contentType: Headers.formUrlEncodedContentType,
+      ),
+    );
+    
+    return await _processResponse(response, (body) {
+      final lines = body.split('\n');
+      if (lines.length <= 1) {
+        throw const ParseException.bodyAbruptied(
+          message: 'Response has no fragment line',
+        );
+      }
+    
+      // Last line contains state updates
+      final fragment = lines.last;
+      _updateStateFromFragment(fragment);
+    
+      // Update body to exclude the last line (fragment)
+      lines.removeLast();
+      
+      if (lines.isNotEmpty) {
+        lines.removeAt(0);
+      }
+    
+      return lines.join('\n');
+    });
   }
 
   /// Get current ViewState (for debugging)
