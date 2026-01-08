@@ -58,6 +58,9 @@ class _SettingsList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return SettingsList(
+      darkTheme: SettingsThemeData(
+        settingsListBackground: Theme.of(context).colorScheme.surface,
+      ),
       sections: [
         SettingsSection(
           title: const Text('Settings'),
@@ -108,7 +111,7 @@ class SettingsScreenSmall extends HookConsumerWidget {
           ),
         ),
       );
-      
+
       // Reset selection so the listener can trigger again for the same setting
       ref.read(selectedProvider.notifier).clear();
     });
@@ -116,11 +119,7 @@ class SettingsScreenSmall extends HookConsumerWidget {
     return Navigator(
       key: _navigatorKey,
       onGenerateInitialRoutes: (navigator, initialRoute) {
-        return [
-          MaterialPageRoute(
-            builder: (context) => _SettingsList(),
-          ),
-        ];
+        return [MaterialPageRoute(builder: (context) => _SettingsList())];
       },
     );
   }

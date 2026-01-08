@@ -41,7 +41,7 @@ class ScheduleScreen extends ConsumerWidget {
       ],
       timeSlotViewSettings: const TimeSlotViewSettings(
         startHour: 8,
-        endHour: 20,
+        endHour: 21,
         timeInterval: Duration(minutes: 30),
         timeFormat: 'HH:mm',
       ),
