@@ -11,6 +11,7 @@ final scheduleDestination = Destination(
   icon: const Icon(Icons.schedule),
   selectedIcon: const Icon(Icons.schedule_outlined),
   main: () => ScheduleDispatcher(),
+  tooltip: 'View your class schedule',
 );
 
 /// Main schedule screen displaying today's classes

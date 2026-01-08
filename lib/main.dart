@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pjatka/home.dart';
-import 'package:pjatka/screens/settings.dart';
+import 'package:pjatka/screens/settings/screen.dart';
 import 'package:pjatka/utils.dart';
 import 'package:talker_dio_logger/talker_dio_logger_interceptor.dart';
 import 'package:talker_dio_logger/talker_dio_logger_settings.dart';
 import 'package:timezone/data/latest.dart' as tz;
-import 'screens/schedule_screen.dart';
+import 'screens/schedule.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,13 +39,16 @@ class MyApp extends StatelessWidget {
         ),
       ),
       themeMode: ThemeMode.dark,
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('PJATK App'),
-          backgroundColor: Theme.of(context).colorScheme.secondary,
-        ),
-        body: HomeRouter(
-          destinations: [scheduleDestination, settingsDestination],
+      home: SafeArea(
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('PJATK App'),
+            backgroundColor: Colors.blueGrey,
+            centerTitle: false,
+          ),
+          body: HomeRouter(
+            destinations: [scheduleDestination, settingsDestination],
+          ),
         ),
       ),
     );

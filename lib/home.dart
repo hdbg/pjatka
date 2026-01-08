@@ -3,22 +3,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
 abstract class AdaptiveDispatcher {
+
+  
   Widget build(BuildContext context);
 
   Widget buildSmall(BuildContext context) {
     return build(context);
   }
+  
 
   Widget buildMediumLarge(BuildContext context) {
     return build(context);
   }
 
   Widget buildLarge(BuildContext context) {
-    return build(context);
+    return buildMediumLarge(context);
   }
 
   Widget buildExtraLarge(BuildContext context) {
-    return build(context);
+    return buildExtraLarge(context);
   }
 }
 
