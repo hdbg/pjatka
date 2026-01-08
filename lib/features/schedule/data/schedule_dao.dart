@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
+import 'package:pjatka/features/database/database.dart';
 import 'package:pjatka/features/schedule/models.dart';
 import 'package:pjatka/utils.dart';
-import '../database.dart';
 
 class ScheduleDao {
   const ScheduleDao(this.db);

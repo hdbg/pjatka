@@ -28,15 +28,16 @@ class ScheduleScreen extends ConsumerWidget {
     );
   }
 
-  /// Build the calendar view with classes
   Widget _buildScheduleView(List<ScheduledClass> classes) {
-    if (classes.isEmpty) {
-      return _buildEmptyState();
-    }
-
     return SfCalendar(
       view: CalendarView.schedule,
       dataSource: ScheduleDataSource(classes),
+      allowedViews: [
+        CalendarView.day,
+        CalendarView.week,
+        CalendarView.month,
+        CalendarView.schedule,
+      ],
       timeSlotViewSettings: const TimeSlotViewSettings(
         startHour: 8,
         endHour: 20,
@@ -67,29 +68,6 @@ class ScheduleScreen extends ConsumerWidget {
       ),
     );
   }
-
-  /// Empty state when no classes found
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.calendar_today, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(
-            'No classes today!',
-            style: TextStyle(fontSize: 20, color: Colors.grey[600]),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Enjoy your free day',
-            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-          ),
-        ],
-      ),
-    );
-  }
-
   /// Error state with retry button
   Widget _buildErrorState(Object error, WidgetRef ref) {
     return Center(

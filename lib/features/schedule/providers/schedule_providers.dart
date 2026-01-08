@@ -1,7 +1,7 @@
 import 'package:pjatka/features/schedule/models.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../parsing/parsing.dart';
-import '../database.dart';
+import '../../database/database.dart';
 import '../data/schedule_dao.dart';
 import '../../../utils.dart';
 

@@ -148,7 +148,7 @@ final class ClassesProvider
   }
 }
 
-String _$classesHash() => r'3c079f0fec52a668d54ba5be7c660ea40544069f';
+String _$classesHash() => r'77474bd615e89e7cc83e1bae0a9fdd7989770c6e';
 
 final class ClassesFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<ScheduledClass>>, DateTime> {

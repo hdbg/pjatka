@@ -83,10 +83,7 @@ final _that = this;
 switch (_that) {
 case InitialRequest():
 return initial(_that);case EventRequest():
-return event(_that);case _:
-  throw StateError('Unexpected subclass');
-
-}
+return event(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -148,10 +145,7 @@ return event(_that.target,_that.argument);case _:
 switch (_that) {
 case InitialRequest():
 return initial();case EventRequest():
-return event(_that.target,_that.argument);case _:
-  throw StateError('Unexpected subclass');
-
-}
+return event(_that.target,_that.argument);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///

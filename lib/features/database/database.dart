@@ -1,9 +1,15 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:path_provider/path_provider.dart';
-import 'models.dart';
+import 'package:pjatka/features/schedule/models.dart';
 
 part 'database.g.dart';
+
+class PersistedObject extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get key => text().withLength(min: 1, max: 64)();
+  TextColumn get value => text()();
+}
 
 class UniversityClass extends Table {
   TextColumn get id => text().withLength(min: 1, max: 32)();
