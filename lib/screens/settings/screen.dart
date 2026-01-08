@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pjatka/home.dart';
-import 'package:pjatka/screens/settings/settings/groups_setting.dart';
+import 'package:pjatka/screens/settings/settings/groups_manager.dart';
 import 'package:pjatka/utils.dart';
 import 'package:settings_ui/settings_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -53,7 +52,7 @@ class Selected extends _$Selected {
 }
 
 class _SettingsList extends ConsumerWidget {
-  const _SettingsList({super.key});
+  const _SettingsList();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
