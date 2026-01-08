@@ -105,6 +105,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "8.12.1"
+  canonical_adaptive_scaffold:
+    dependency: "direct main"
+    description:
+      name: canonical_adaptive_scaffold
+      sha256: "4c0f48e7ed97850dd103a8063fc63aacb6aeece4a709b69d3e894ea5065325bd"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.3+1"
   characters:
     dependency: transitive
     description:
@@ -209,14 +217,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.8"
-  custom_adaptive_scaffold:
-    dependency: "direct main"
-    description:
-      name: custom_adaptive_scaffold
-      sha256: "0e5a1969cc056b6c5974ed1434dda4f2f5b7c92c6805cda4d0f7925d58259bd5"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.2"
   dart_style:
     dependency: transitive
     description:
@@ -302,6 +302,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_hooks:
+    dependency: "direct main"
+    description:
+      name: flutter_hooks
+      sha256: "8ae1f090e5f4ef5cfa6670ce1ab5dddadd33f3533a7f9ba19d9f958aa2a89f42"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.21.3+1"
   flutter_lints:
     dependency: "direct dev"
     description:

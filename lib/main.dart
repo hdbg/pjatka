@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pjatka/home.dart';
+import 'package:pjatka/screens/settings.dart';
 import 'package:pjatka/utils.dart';
 import 'package:talker_dio_logger/talker_dio_logger_interceptor.dart';
 import 'package:talker_dio_logger/talker_dio_logger_settings.dart';
@@ -11,13 +13,13 @@ void main() {
   tz.initializeTimeZones();
   dio.interceptors.add(
     TalkerDioLogger(
-        settings: const TalkerDioLoggerSettings(
-          printRequestHeaders: true,
-          printResponseHeaders: true,
-          printResponseMessage: true,
-        ),
+      settings: const TalkerDioLoggerSettings(
+        printRequestHeaders: true,
+        printResponseHeaders: true,
+        printResponseMessage: true,
+      ),
     ),
-);
+  );
 
   runApp(const ProviderScope(child: MyApp()));
 }
@@ -29,11 +31,23 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'PJATK',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.lightBlue,
+          brightness: Brightness.dark,
+        ),
       ),
-      home: const ScheduleScreen(),
+      themeMode: ThemeMode.dark,
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('PJATK App'),
+          backgroundColor: Theme.of(context).colorScheme.secondary,
+        ),
+        body: HomeRouter(
+          destinations: [scheduleDestination, settingsDestination],
+        ),
+      ),
     );
   }
 }
-
