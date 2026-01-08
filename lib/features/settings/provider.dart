@@ -76,7 +76,8 @@ PrefStorage settingsStorage(Ref ref) {
   return PrefStorage();
 }
 
-@Riverpod(keepAlive: true)
+
+@riverpod
 class Settings extends _$Settings {
   @override
   SettingsState build() {
@@ -86,6 +87,7 @@ class Settings extends _$Settings {
       key: 'settings',
       encode: (state) => state.toJson(),
       decode: SettingsState.fromJson,
+      
     );
 
     return SettingsState();

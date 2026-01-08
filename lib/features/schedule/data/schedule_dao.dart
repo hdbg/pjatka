@@ -91,7 +91,7 @@ class ScheduleDao {
     for (final scheduledClass in parsedClasses) {
       await db
           .into(db.universityClass)
-          .insert(
+          .insertOnConflictUpdate(
             UniversityClassCompanion(
               id: Value(scheduledClass.classId),
               name: Value(scheduledClass.name),

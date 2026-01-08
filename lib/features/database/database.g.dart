@@ -551,7 +551,7 @@ class $TeacherTable extends Teacher with TableInfo<$TeacherTable, TeacherData> {
     false,
     additionalChecks: GeneratedColumn.checkTextLength(
       minTextLength: 1,
-      maxTextLength: 128,
+      maxTextLength: 512,
     ),
     type: DriftSqlType.string,
     requiredDuringInsert: true,

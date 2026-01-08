@@ -5,8 +5,13 @@ part 'model.g.dart';
 
 @freezed
 abstract class SettingsState with _$SettingsState {
-  const factory SettingsState({@Default({}) Set<String> groups}) =
-      _SettingsState;
+  const factory SettingsState({
+    @Default({}) Set<String> groups,
+
+    @Default(7) int minDateDaysOffset,
+
+    @Default(30) int maxDateDaysOffset,
+  }) = _SettingsState;
 
   factory SettingsState.fromJson(Map<String, dynamic> json) =>
       _$SettingsStateFromJson(json);

@@ -31,7 +31,7 @@ class UniversityClass extends Table {
 
 class Teacher extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get name => text().withLength(min: 1, max: 128)();
+  TextColumn get name => text().withLength(min: 1, max: 512)();
   TextColumn get classId =>
       text().references(UniversityClass, #id, onDelete: KeyAction.cascade)();
 }

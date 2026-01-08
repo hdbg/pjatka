@@ -148,7 +148,7 @@ final class ClassesProvider
   }
 }
 
-String _$classesHash() => r'77474bd615e89e7cc83e1bae0a9fdd7989770c6e';
+String _$classesHash() => r'ff480c42a404790a45591c53148a4c3c60086374';
 
 final class ClassesFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<ScheduledClass>>, DateTime> {
@@ -168,10 +168,10 @@ final class ClassesFamily extends $Family
   String toString() => r'classesProvider';
 }
 
-@ProviderFor(todayClasses)
-final todayClassesProvider = TodayClassesProvider._();
+@ProviderFor(onlySelectedClasses)
+final onlySelectedClassesProvider = OnlySelectedClassesFamily._();
 
-final class TodayClassesProvider
+final class OnlySelectedClassesProvider
     extends
         $FunctionalProvider<
           AsyncValue<List<ScheduledClass>>,
@@ -181,19 +181,26 @@ final class TodayClassesProvider
     with
         $FutureModifier<List<ScheduledClass>>,
         $FutureProvider<List<ScheduledClass>> {
-  TodayClassesProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'todayClassesProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
+  OnlySelectedClassesProvider._({
+    required OnlySelectedClassesFamily super.from,
+    required DateTime super.argument,
+  }) : super(
+         retry: null,
+         name: r'onlySelectedClassesProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
-  String debugGetCreateSourceHash() => _$todayClassesHash();
+  String debugGetCreateSourceHash() => _$onlySelectedClassesHash();
+
+  @override
+  String toString() {
+    return r'onlySelectedClassesProvider'
+        ''
+        '($argument)';
+  }
 
   @$internal
   @override
@@ -203,8 +210,92 @@ final class TodayClassesProvider
 
   @override
   FutureOr<List<ScheduledClass>> create(Ref ref) {
-    return todayClasses(ref);
+    final argument = this.argument as DateTime;
+    return onlySelectedClasses(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is OnlySelectedClassesProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
   }
 }
 
-String _$todayClassesHash() => r'485cb0b2557457787585ee027420876386fe1f71';
+String _$onlySelectedClassesHash() =>
+    r'f3e6183fc2f152077dab60a26e7a79758f8da5dd';
+
+final class OnlySelectedClassesFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<List<ScheduledClass>>, DateTime> {
+  OnlySelectedClassesFamily._()
+    : super(
+        retry: null,
+        name: r'onlySelectedClassesProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  OnlySelectedClassesProvider call(DateTime day) =>
+      OnlySelectedClassesProvider._(argument: day, from: this);
+
+  @override
+  String toString() => r'onlySelectedClassesProvider';
+}
+
+@ProviderFor(Schedule)
+final scheduleProvider = ScheduleProvider._();
+
+final class ScheduleProvider
+    extends
+        $AsyncNotifierProvider<Schedule, Map<DateTime, List<ScheduledClass>>> {
+  ScheduleProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'scheduleProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$scheduleHash();
+
+  @$internal
+  @override
+  Schedule create() => Schedule();
+}
+
+String _$scheduleHash() => r'e472f6d1678c1d8c8e4aa377c2c680be5ba20bd9';
+
+abstract class _$Schedule
+    extends $AsyncNotifier<Map<DateTime, List<ScheduledClass>>> {
+  FutureOr<Map<DateTime, List<ScheduledClass>>> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref =
+        this.ref
+            as $Ref<
+              AsyncValue<Map<DateTime, List<ScheduledClass>>>,
+              Map<DateTime, List<ScheduledClass>>
+            >;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<
+                AsyncValue<Map<DateTime, List<ScheduledClass>>>,
+                Map<DateTime, List<ScheduledClass>>
+              >,
+              AsyncValue<Map<DateTime, List<ScheduledClass>>>,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}

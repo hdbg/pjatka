@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SettingsState {
 
- Set<String> get groups;
+ Set<String> get groups; int get minDateDaysOffset; int get maxDateDaysOffset;
 /// Create a copy of SettingsState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $SettingsStateCopyWith<SettingsState> get copyWith => _$SettingsStateCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SettingsState&&const DeepCollectionEquality().equals(other.groups, groups));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SettingsState&&const DeepCollectionEquality().equals(other.groups, groups)&&(identical(other.minDateDaysOffset, minDateDaysOffset) || other.minDateDaysOffset == minDateDaysOffset)&&(identical(other.maxDateDaysOffset, maxDateDaysOffset) || other.maxDateDaysOffset == maxDateDaysOffset));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(groups));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(groups),minDateDaysOffset,maxDateDaysOffset);
 
 @override
 String toString() {
-  return 'SettingsState(groups: $groups)';
+  return 'SettingsState(groups: $groups, minDateDaysOffset: $minDateDaysOffset, maxDateDaysOffset: $maxDateDaysOffset)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $SettingsStateCopyWith<$Res>  {
   factory $SettingsStateCopyWith(SettingsState value, $Res Function(SettingsState) _then) = _$SettingsStateCopyWithImpl;
 @useResult
 $Res call({
- Set<String> groups
+ Set<String> groups, int minDateDaysOffset, int maxDateDaysOffset
 });
 
 
@@ -65,10 +65,12 @@ class _$SettingsStateCopyWithImpl<$Res>
 
 /// Create a copy of SettingsState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? groups = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? groups = null,Object? minDateDaysOffset = null,Object? maxDateDaysOffset = null,}) {
   return _then(_self.copyWith(
 groups: null == groups ? _self.groups : groups // ignore: cast_nullable_to_non_nullable
-as Set<String>,
+as Set<String>,minDateDaysOffset: null == minDateDaysOffset ? _self.minDateDaysOffset : minDateDaysOffset // ignore: cast_nullable_to_non_nullable
+as int,maxDateDaysOffset: null == maxDateDaysOffset ? _self.maxDateDaysOffset : maxDateDaysOffset // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -153,10 +155,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Set<String> groups)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Set<String> groups,  int minDateDaysOffset,  int maxDateDaysOffset)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SettingsState() when $default != null:
-return $default(_that.groups);case _:
+return $default(_that.groups,_that.minDateDaysOffset,_that.maxDateDaysOffset);case _:
   return orElse();
 
 }
@@ -174,10 +176,10 @@ return $default(_that.groups);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Set<String> groups)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Set<String> groups,  int minDateDaysOffset,  int maxDateDaysOffset)  $default,) {final _that = this;
 switch (_that) {
 case _SettingsState():
-return $default(_that.groups);case _:
+return $default(_that.groups,_that.minDateDaysOffset,_that.maxDateDaysOffset);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -194,10 +196,10 @@ return $default(_that.groups);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Set<String> groups)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Set<String> groups,  int minDateDaysOffset,  int maxDateDaysOffset)?  $default,) {final _that = this;
 switch (_that) {
 case _SettingsState() when $default != null:
-return $default(_that.groups);case _:
+return $default(_that.groups,_that.minDateDaysOffset,_that.maxDateDaysOffset);case _:
   return null;
 
 }
@@ -209,7 +211,7 @@ return $default(_that.groups);case _:
 @JsonSerializable()
 
 class _SettingsState implements SettingsState {
-  const _SettingsState({final  Set<String> groups = const {}}): _groups = groups;
+  const _SettingsState({final  Set<String> groups = const {}, this.minDateDaysOffset = 7, this.maxDateDaysOffset = 30}): _groups = groups;
   factory _SettingsState.fromJson(Map<String, dynamic> json) => _$SettingsStateFromJson(json);
 
  final  Set<String> _groups;
@@ -219,6 +221,8 @@ class _SettingsState implements SettingsState {
   return EqualUnmodifiableSetView(_groups);
 }
 
+@override@JsonKey() final  int minDateDaysOffset;
+@override@JsonKey() final  int maxDateDaysOffset;
 
 /// Create a copy of SettingsState
 /// with the given fields replaced by the non-null parameter values.
@@ -233,16 +237,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SettingsState&&const DeepCollectionEquality().equals(other._groups, _groups));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SettingsState&&const DeepCollectionEquality().equals(other._groups, _groups)&&(identical(other.minDateDaysOffset, minDateDaysOffset) || other.minDateDaysOffset == minDateDaysOffset)&&(identical(other.maxDateDaysOffset, maxDateDaysOffset) || other.maxDateDaysOffset == maxDateDaysOffset));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_groups));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_groups),minDateDaysOffset,maxDateDaysOffset);
 
 @override
 String toString() {
-  return 'SettingsState(groups: $groups)';
+  return 'SettingsState(groups: $groups, minDateDaysOffset: $minDateDaysOffset, maxDateDaysOffset: $maxDateDaysOffset)';
 }
 
 
@@ -253,7 +257,7 @@ abstract mixin class _$SettingsStateCopyWith<$Res> implements $SettingsStateCopy
   factory _$SettingsStateCopyWith(_SettingsState value, $Res Function(_SettingsState) _then) = __$SettingsStateCopyWithImpl;
 @override @useResult
 $Res call({
- Set<String> groups
+ Set<String> groups, int minDateDaysOffset, int maxDateDaysOffset
 });
 
 
@@ -270,10 +274,12 @@ class __$SettingsStateCopyWithImpl<$Res>
 
 /// Create a copy of SettingsState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? groups = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? groups = null,Object? minDateDaysOffset = null,Object? maxDateDaysOffset = null,}) {
   return _then(_SettingsState(
 groups: null == groups ? _self._groups : groups // ignore: cast_nullable_to_non_nullable
-as Set<String>,
+as Set<String>,minDateDaysOffset: null == minDateDaysOffset ? _self.minDateDaysOffset : minDateDaysOffset // ignore: cast_nullable_to_non_nullable
+as int,maxDateDaysOffset: null == maxDateDaysOffset ? _self.maxDateDaysOffset : maxDateDaysOffset // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

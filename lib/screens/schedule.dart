@@ -1,32 +1,112 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pjatka/features/schedule/models.dart';
+import 'package:pjatka/features/settings/provider.dart';
 import 'package:pjatka/home.dart';
+import 'package:pjatka/utils.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import '../features/schedule/providers/schedule_providers.dart';
-import '../features/schedule/data/schedule_data_source.dart';
 
+class ScheduleDataSource extends CalendarDataSource {
+  final WidgetRef ref;
 
+  late final ProviderSubscription<Future<Map<DateTime, List<ScheduledClass>>>>
+  subscription;
 
-/// Main schedule screen displaying today's classes
+  ScheduleDataSource({required this.ref}) {
+    appointments = [];
+
+    subscription = ref
+        .listenManual<Future<Map<DateTime, List<ScheduledClass>>>>(
+          scheduleProvider.future,
+          (previous, next) {
+            talker.debug('Schedule data source received new schedule data');
+            next.then((newClasses) {
+              final newAppointments = <Appointment>[];
+
+              for (final classesForDay in newClasses.values) {
+                for (final classItem in classesForDay) {
+                  newAppointments.add(_classToAppointment(classItem));
+                }
+              }
+
+              talker.debug(
+                'Loaded ${newAppointments.length} appointments for schedule',
+              );
+              appointments = newAppointments;
+              notifyListeners(CalendarDataSourceAction.reset, appointments!);
+            });
+          },
+          fireImmediately: true,
+        );
+
+    ref.read(scheduleProvider.notifier).getClassesForDate(DateTime.now());
+  }
+
+  Appointment _classToAppointment(ScheduledClass classItem) {
+    final startTime = classItem.start.toLocal();
+    final endTime = classItem.end.toLocal();
+
+    final color = _getColorForKind(classItem.kind);
+
+    final location = classItem.place.when(
+      online: () => 'Online',
+      onSite: (room) => room,
+    );
+
+    final subject = '${classItem.name} (${classItem.code})';
+
+    return Appointment(
+      startTime: startTime,
+      endTime: endTime,
+      subject: subject,
+      notes: 'Lecturer: ${classItem.lecturer}',
+      location: location,
+      color: color,
+      id: classItem.classId,
+    );
+  }
+
+  Color _getColorForKind(ClassKind kind) {
+    return switch (kind) {
+      ClassKind.lecture => Colors.blue,
+      ClassKind.seminar => Colors.green,
+      ClassKind.diplomaThesis => Colors.purple,
+    };
+  }
+
+  @override
+  Future<void> handleLoadMore(DateTime startDate, DateTime endDate) async {
+    talker.debug(
+      'Loading more appointments from ${startDate.toIso8601String()} to ${endDate.toIso8601String()}',
+    );
+    final dateDiff = endDate.difference(startDate).inDays;
+
+    for (int i = 0; i <= dateDiff; i += 1) {
+      final day = startDate.add(Duration(days: i));
+      talker.debug('Loading classes for date: ${day.toIso8601String()}');
+      await ref.read(scheduleProvider.notifier).getClassesForDate(day);
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    subscription.close();
+  }
+}
+
+/// Main schedule screen displaying classes
 class ScheduleScreen extends ConsumerWidget {
   const ScheduleScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final classesAsync = ref.watch(todayClassesProvider);
+    final settings = ref.watch(settingsProvider);
 
-    return classesAsync.when(
-      data: (classes) => _buildScheduleView(classes),
-      loading: () => _buildLoadingState(),
-      error: (error, stack) => _buildErrorState(error, ref),
-    );
-  }
-
-  Widget _buildScheduleView(List<ScheduledClass> classes) {
     return SfCalendar(
       view: CalendarView.schedule,
-      dataSource: ScheduleDataSource(classes),
+      dataSource: ScheduleDataSource(ref: ref),
       allowedViews: [
         CalendarView.day,
         CalendarView.week,
@@ -39,6 +119,10 @@ class ScheduleScreen extends ConsumerWidget {
         timeInterval: Duration(minutes: 30),
         timeFormat: 'HH:mm',
       ),
+      minDate: DateTime.now().subtract(
+        Duration(days: settings.minDateDaysOffset),
+      ),
+      maxDate: DateTime.now().add(Duration(days: settings.maxDateDaysOffset)),
       showDatePickerButton: true,
       showCurrentTimeIndicator: true,
       todayHighlightColor: Colors.deepPurple,
@@ -47,51 +131,10 @@ class ScheduleScreen extends ConsumerWidget {
         color: Colors.white,
         fontWeight: FontWeight.w500,
       ),
-    );
-  }
-
-  /// Loading state with spinner
-  Widget _buildLoadingState() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
-          Text('Loading today\'s schedule...'),
-        ],
-      ),
-    );
-  }
-  /// Error state with retry button
-  Widget _buildErrorState(Object error, WidgetRef ref) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
-            const SizedBox(height: 16),
-            const Text(
-              'Failed to load schedule',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              error.toString(),
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () => ref.invalidate(todayClassesProvider),
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
-            ),
-          ],
-        ),
-      ),
+      loadMoreWidgetBuilder: (context, loadMore) {
+        loadMore();
+        return CircularProgressIndicator.adaptive();
+      },
     );
   }
 }
@@ -100,8 +143,6 @@ final scheduleDestination = Destination(
   label: 'Schedule',
   icon: const Icon(Icons.schedule),
   selectedIcon: const Icon(Icons.schedule_outlined),
-  main: Adaptive(
-    build: (context) => const ScheduleScreen(),
-  ),
+  main: Adaptive(build: (context) => const ScheduleScreen()),
   tooltip: 'View your class schedule',
 );
