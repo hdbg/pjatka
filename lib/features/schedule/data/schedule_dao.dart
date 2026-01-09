@@ -38,23 +38,42 @@ class ScheduleDao {
     final rows = query.watch();
 
     return rows.map((rows) {
-      return rows.map((row) {
+      final classMap = <String, (UniversityClassData, Set<String>, Set<String>)>{};
+
+      for (final row in rows) {
         final universityClass = row.readTable(database.universityClass);
         final teacher = row.readTableOrNull(database.teacher);
         final group = row.readTableOrNull(database.group);
+
+        if (!classMap.containsKey(universityClass.id)) {
+          classMap[universityClass.id] = (universityClass, {}, {});
+        }
+
+        if (teacher != null) {
+          classMap[universityClass.id]!.$2.add(teacher.name);
+        }
+        if (group != null) {
+          classMap[universityClass.id]!.$3.add(group.name);
+        }
+      }
+
+      return classMap.values.map((entry) {
+        final universityClass = entry.$1;
+        final teachers = entry.$2;
+        final groups = entry.$3;
 
         return ScheduledClass(
           classId: universityClass.id,
           name: universityClass.name,
           code: universityClass.code,
           kind: universityClass.kind,
-          lecturer: teacher?.name ?? 'Unknown',
+          lecturer: teachers.isNotEmpty ? teachers.first : 'Unknown',
           start: universityClass.startTime,
           end: universityClass.endTime,
           place: universityClass.room != null
               ? ClassPlaceOnSite(room: universityClass.room!)
               : ClassPlaceOnline(),
-          groups: group != null ? [group.name] : [],
+          groups: groups.toList(),
         );
       }).toList();
     });
@@ -65,17 +84,6 @@ class ScheduleDao {
     List<ScheduledClass> parsedClasses,
   ) async {
     talker.debug('Syncing ${parsedClasses.length} meetings for date');
-
-    final oldCount = await database.managers.universityClass
-        .filter(
-          (f) =>
-              f.startTime.column.year.equals(date.year) &
-              f.startTime.column.month.equals(date.month) &
-              f.startTime.column.day.equals(date.day),
-        )
-        .delete();
-
-    talker.debug('Deleted $oldCount old meetings from database');
 
     // await db.transaction(() async {
     for (final scheduledClass in parsedClasses) {
@@ -97,14 +105,14 @@ class ScheduleDao {
 
       await database.batch((batch) {
         // add here a `.map` if we upgrade parser to handle multiple lecturers
-        batch.insertAll(database.teacher, [
+        batch.insertAllOnConflictUpdate(database.teacher, [
           TeacherCompanion(
             name: Value(scheduledClass.lecturer),
             classId: Value(scheduledClass.classId),
           ),
         ]);
 
-        batch.insertAll(
+        batch.insertAllOnConflictUpdate(
           database.group,
           scheduledClass.groups
               .map(
