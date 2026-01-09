@@ -33,7 +33,7 @@ Future<void> globalLoader(Ref ref) async {
     final earliestUpdate = await ScheduleDao.getEarliestUpdateForDate(date);
     if (earliestUpdate != null) {
       final hoursSinceUpdate = today.difference(earliestUpdate).inHours;
-      if (hoursSinceUpdate < settings.cacheTTLHours) {
+      if (hoursSinceUpdate.abs() > settings.cacheTTLHours) {
         talker.debug(
           'Skipping schedule load for ${date}; last update was $hoursSinceUpdate hours ago',
         );

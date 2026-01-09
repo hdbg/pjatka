@@ -81,4 +81,4 @@ final class GlobalLoaderProvider
   }
 }
 
-String _$globalLoaderHash() => r'bea471a879ce362ddc5cecab79bf55d104bf98a2';
+String _$globalLoaderHash() => r'14dc36612c475df0d70b91f81d885ac9a77e127e';

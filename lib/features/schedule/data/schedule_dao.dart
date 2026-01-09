@@ -94,6 +94,14 @@ class ScheduleDao {
   ) async {
     talker.debug('Syncing ${parsedClasses.length} meetings for date');
 
+    await database.delete(database.universityClass)
+      ..where((tbl) {
+        return tbl.startTime.year.equals(date.year) &
+            tbl.startTime.month.equals(date.month) &
+            tbl.startTime.day.equals(date.day);
+      })
+      ..go();
+
     var totalInserted = 0;
     for (final scheduledClass in parsedClasses) {
       totalInserted += await database
@@ -109,6 +117,7 @@ class ScheduleDao {
               room: scheduledClass.place is ClassPlaceOnSite
                   ? Value((scheduledClass.place as ClassPlaceOnSite).room)
                   : const Value.absent(),
+              lastChecked: Value(DateTime.now()),
             ),
           );
 
