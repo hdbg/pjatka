@@ -3,13 +3,14 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pjatka/home.dart';
 import 'package:pjatka/screens/settings/settings/debug.dart';
 import 'package:pjatka/screens/settings/settings/groups_manager.dart';
+import 'package:pjatka/screens/settings/settings/parser_range.dart';
 import 'package:pjatka/utils.dart';
 import 'package:settings_ui/settings_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'screen.g.dart';
 
-final List<Setting> allSettings = [groupSetting, debugSetting];
+final List<Setting> allSettings = [groupSetting, parserRangeSetting, debugSetting];
 
 class Setting {
   final String title;

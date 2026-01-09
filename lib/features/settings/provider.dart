@@ -107,4 +107,12 @@ class Settings extends _$Settings {
     final newGroups = {...state.groups}..remove(group);
     state = state.copyWith(groups: newGroups);
   }
+
+  void setMinDateDaysOffset(int offset) {
+    state = state.copyWith(minDateDaysOffset: offset);
+  }
+
+  void setMaxDateDaysOffset(int offset) {
+    state = state.copyWith(maxDateDaysOffset: offset);
+  }
 }
