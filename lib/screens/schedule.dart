@@ -30,7 +30,7 @@ class ScheduleDataSource extends CalendarDataSource {
             'Loaded ${newAppointments.length} appointments for schedule',
           );
           appointments = newAppointments;
-          notifyListeners(CalendarDataSourceAction.add, appointments!);
+          notifyListeners(CalendarDataSourceAction.reset, appointments!);
         });
       },
       fireImmediately: true,
