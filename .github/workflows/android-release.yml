@@ -5,6 +5,11 @@ on:
     branches:
       - main
 
+# Allow only one concurrent Android release build
+concurrency:
+  group: "android-release"
+  cancel-in-progress: true
+
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
