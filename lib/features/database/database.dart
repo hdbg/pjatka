@@ -35,21 +35,24 @@ class UniversityClass extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
-@TableIndex(name: 'teacher_class_id', columns: {#classId})
 class Teacher extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().withLength(min: 1, max: 512)();
   TextColumn get classId =>
       text().references(UniversityClass, #id, onDelete: KeyAction.cascade)();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [{name, classId}];
 }
 
-@TableIndex(name: 'group_name', columns: {#name})
-@TableIndex(name: 'group_class_id', columns: {#classId})
 class Group extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().withLength(min: 1, max: 64)();
   TextColumn get classId =>
       text().references(UniversityClass, #id, onDelete: KeyAction.cascade)();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [{name, classId}];
 }
 
 @DriftDatabase(tables: [UniversityClass, Teacher, Group])

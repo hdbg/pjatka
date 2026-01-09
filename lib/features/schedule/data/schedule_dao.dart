@@ -23,7 +23,10 @@ class ScheduleDao {
     return result?.startTime;
   }
 
-  static Stream<List<ScheduledClass>> watchClasses(SettingsState settings) {
+  static Stream<List<ScheduledClass>> watchClasses(
+    SettingsState settings, {
+    bool filterByGroups = true,
+  }) {
     final query = database.select(database.universityClass).join([
       leftOuterJoin(
         database.teacher,
@@ -33,12 +36,18 @@ class ScheduleDao {
         database.group,
         database.group.classId.equalsExp(database.universityClass.id),
       ),
-    ])..where(database.group.name.isIn(settings.groups));
+    ]);
+
+    if (filterByGroups) {
+      query.where(database.group.name.isIn(settings.groups));
+    }
 
     final rows = query.watch();
 
     return rows.map((rows) {
-      final classMap = <String, (UniversityClassData, Set<String>, Set<String>)>{};
+      talker.debug('Mapping ${rows.length} database rows to ScheduledClass');
+      final classMap =
+          <String, (UniversityClassData, Set<String>, Set<String>)>{};
 
       for (final row in rows) {
         final universityClass = row.readTable(database.universityClass);
@@ -85,9 +94,9 @@ class ScheduleDao {
   ) async {
     talker.debug('Syncing ${parsedClasses.length} meetings for date');
 
-    // await db.transaction(() async {
+    var totalInserted = 0;
     for (final scheduledClass in parsedClasses) {
-      await database
+      totalInserted += await database
           .into(database.universityClass)
           .insertOnConflictUpdate(
             UniversityClassCompanion(
@@ -125,7 +134,8 @@ class ScheduleDao {
         );
       });
     }
-    return;
-    // });
+    talker.info(
+      'Synced classes for ${date.toIso8601String()}: $totalInserted inserted/updated',
+    );
   }
 }

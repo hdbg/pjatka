@@ -127,9 +127,6 @@ class PjatkParser {
     }
 
     final isOnline = styleCode.contains(_onlineColorSubstr);
-    talker.info(
-      '✓ Parsed class: $name ($code) - $from to $to [${isOnline ? 'Online' : room}]',
-    );
 
     return PjatkClass(
       id: classId,

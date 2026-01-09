@@ -17,9 +17,12 @@ class ScheduleDataSource extends CalendarDataSource {
     appointments = [];
 
     subscription = container.listen<Future<List<ScheduledClass>>>(
-      classesProvider.future,
+      userClassesProvider.future,
       (previous, next) {
         next.then((newClasses) {
+          if (newClasses.isEmpty) {
+            return;
+          }
           final newAppointments = <Appointment>[];
 
           for (final classItem in newClasses) {
@@ -116,6 +119,8 @@ class ScheduleScreen extends ConsumerWidget {
             CalendarView.week,
             CalendarView.month,
             CalendarView.schedule,
+            CalendarView.timelineDay,
+            CalendarView.timelineWeek,
           ],
           firstDayOfWeek: 1,
           timeSlotViewSettings: const TimeSlotViewSettings(
@@ -133,6 +138,8 @@ class ScheduleScreen extends ConsumerWidget {
           showDatePickerButton: true,
           showCurrentTimeIndicator: true,
           todayHighlightColor: Colors.deepPurple,
+          showNavigationArrow: true,
+          showTodayButton: true,
           appointmentTextStyle: const TextStyle(
             fontSize: 12,
             color: Colors.white,

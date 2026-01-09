@@ -613,6 +613,10 @@ class $TeacherTable extends Teacher with TableInfo<$TeacherTable, TeacherData> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {name, classId},
+  ];
+  @override
   TeacherData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TeacherData(
@@ -867,6 +871,10 @@ class $GroupTable extends Group with TableInfo<$GroupTable, GroupData> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {name, classId},
+  ];
+  @override
   GroupData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return GroupData(
@@ -1049,18 +1057,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'class_start',
     'CREATE INDEX class_start ON university_class (start_time)',
   );
-  late final Index teacherClassId = Index(
-    'teacher_class_id',
-    'CREATE INDEX teacher_class_id ON teacher (class_id)',
-  );
-  late final Index groupName = Index(
-    'group_name',
-    'CREATE INDEX group_name ON "group" (name)',
-  );
-  late final Index groupClassId = Index(
-    'group_class_id',
-    'CREATE INDEX group_class_id ON "group" (class_id)',
-  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1070,9 +1066,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     teacher,
     group,
     classStart,
-    teacherClassId,
-    groupName,
-    groupClassId,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
