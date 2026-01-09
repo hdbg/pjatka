@@ -103,13 +103,19 @@ class HomeRouter extends HookWidget {
       useDrawer: true,
       // actual render
       leadingExtendedNavRail: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Image(image: AssetImage('assets/icon.png'), height:8.w),
-          Text(
-            ' PJATK ',
-            style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+          Flexible(flex: 1, child: Image(image: AssetImage('assets/icon.png'))),
+          Flexible(
+            flex: 2,
+            child: FittedBox(
+              fit: BoxFit.fitWidth,
+              child: Text(
+                ' PJATK ',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
           ),
         ],
       ),
