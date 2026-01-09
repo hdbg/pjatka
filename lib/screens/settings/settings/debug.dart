@@ -1,6 +1,7 @@
 import 'package:drift_db_viewer/drift_db_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:pjatka/features/database/database.dart';
+import 'package:pjatka/screens/groups_retriever.dart';
 import 'package:pjatka/screens/settings/screen.dart';
 import 'package:pjatka/utils.dart';
 import 'package:talker_flutter/talker_flutter.dart';
@@ -52,7 +53,7 @@ class _DebugHeader extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Advanced debugging and diagnostic tools',
+              'Diagnostic & Recovery tools',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
               ),
@@ -89,11 +90,21 @@ class _DebugActionCards extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         _DebugCard(
+          icon: Icons.login_outlined,
+          title: 'Trigger Group Retriever',
+          subtitle: 'Invokes gakko login to retrieve your study groups',
+          color: Colors.purple.shade300,
+          iconColor: colorScheme.primary,
+          isDangerous: true,
+          onTap: () => showGroupsRetriever(context),
+        ),
+        const SizedBox(height: 12),
+        _DebugCard(
           icon: Icons.storage_outlined,
           title: 'View Database',
           subtitle: 'View all cached data and database contents',
           color: colorScheme.primaryContainer,
-          iconColor: colorScheme.error,
+          iconColor: colorScheme.primary,
           isDangerous: true,
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (context) => DriftDbViewer(database)),

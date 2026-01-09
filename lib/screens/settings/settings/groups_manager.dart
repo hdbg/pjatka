@@ -169,6 +169,7 @@ class GroupsManager extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    talker.debug(ref.read(  settingsProvider).groups.toString());
     return Scaffold(
       body: Column(
         children: [

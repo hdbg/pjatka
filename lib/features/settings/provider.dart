@@ -76,8 +76,7 @@ PrefStorage settingsStorage(Ref ref) {
   return PrefStorage();
 }
 
-
-@riverpod
+@Riverpod(keepAlive: true)
 class Settings extends _$Settings {
   @override
   SettingsState build() {
@@ -87,7 +86,6 @@ class Settings extends _$Settings {
       key: 'settings',
       encode: (state) => state.toJson(),
       decode: SettingsState.fromJson,
-      
     );
 
     return SettingsState();
@@ -106,6 +104,10 @@ class Settings extends _$Settings {
     }
     final newGroups = {...state.groups}..remove(group);
     state = state.copyWith(groups: newGroups);
+  }
+
+  void replaceGroups(Set<String> groups) {
+    state = state.copyWith(groups: groups);
   }
 
   void setMinDateDaysOffset(int offset) {

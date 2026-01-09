@@ -37,6 +37,7 @@ dependencies:
   talker_flutter: ^5.1.9
   drift_db_viewer: ^2.1.0
   flutter_background_service: ^5.1.0
+  flutter_inappwebview: ^6.1.5
 
 dev_dependencies:
   flutter_test:
