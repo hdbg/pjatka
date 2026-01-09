@@ -4,20 +4,21 @@ import 'package:pjatka/features/schedule/models.dart';
 import 'package:pjatka/features/settings/provider.dart';
 import 'package:pjatka/home.dart';
 import 'package:pjatka/utils.dart';
+import 'package:sizer/sizer.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import '../features/schedule/providers/schedule_providers.dart';
 
 class ScheduleDataSource extends CalendarDataSource {
-  final WidgetRef ref;
+  final ProviderContainer container;
 
   late final ProviderSubscription<Future<Map<DateTime, List<ScheduledClass>>>>
   subscription;
 
-  ScheduleDataSource({required this.ref}) {
+  ScheduleDataSource({required this.container}) {
     appointments = [];
 
-    subscription = ref
-        .listenManual<Future<Map<DateTime, List<ScheduledClass>>>>(
+    subscription = container
+        .listen<Future<Map<DateTime, List<ScheduledClass>>>>(
           scheduleProvider.future,
           (previous, next) {
             talker.debug('Schedule data source received new schedule data');
@@ -40,7 +41,7 @@ class ScheduleDataSource extends CalendarDataSource {
           fireImmediately: true,
         );
 
-    ref.read(scheduleProvider.notifier).getClassesForDate(DateTime.now());
+    container.read(scheduleProvider.notifier).getClassesForDate(DateTime.now());
   }
 
   Appointment _classToAppointment(ScheduledClass classItem) {
@@ -85,7 +86,7 @@ class ScheduleDataSource extends CalendarDataSource {
     for (int i = 0; i <= dateDiff; i += 1) {
       final day = startDate.add(Duration(days: i));
       talker.debug('Loading classes for date: ${day.toIso8601String()}');
-      await ref.read(scheduleProvider.notifier).getClassesForDate(day);
+      await container.read(scheduleProvider.notifier).getClassesForDate(day);
     }
   }
 
@@ -106,7 +107,7 @@ class ScheduleScreen extends ConsumerWidget {
 
     return SfCalendar(
       view: CalendarView.schedule,
-      dataSource: ScheduleDataSource(ref: ref),
+      dataSource: ScheduleDataSource(container: ref.container),
       allowedViews: [
         CalendarView.day,
         CalendarView.week,
@@ -133,7 +134,14 @@ class ScheduleScreen extends ConsumerWidget {
       ),
       loadMoreWidgetBuilder: (context, loadMore) {
         loadMore();
-        return CircularProgressIndicator.adaptive();
+        return Center(
+          child: Padding(
+            padding: EdgeInsets.all(16.0.w),
+            child: CircularProgressIndicator(
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+        );
       },
     );
   }
@@ -143,6 +151,6 @@ final scheduleDestination = Destination(
   label: 'Schedule',
   icon: const Icon(Icons.schedule),
   selectedIcon: const Icon(Icons.schedule_outlined),
-  main: Adaptive(build: (context) => const ScheduleScreen()),
+  main: AdaptiveBuilders(build: (context) => const ScheduleScreen()),
   tooltip: 'View your class schedule',
 );

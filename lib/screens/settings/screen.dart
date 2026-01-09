@@ -218,15 +218,15 @@ final settingsDestination = Destination(
   label: 'Settings',
   icon: const Icon(Icons.settings),
   selectedIcon: const Icon(Icons.settings_outlined),
-  main: Adaptive(
-    buildSmall: (context) => SettingsScreenSmall(),
-    build: (context) => const _SettingsList(),
+  main: AdaptiveBuilders(
+    // buildSmall: (context) => SettingsScreenSmall(),
+    build: (context) => SettingsScreenSmall(),
     buildMediumLarge: (context) => const _SettingsList(),
     buildLarge: (context) => const _SettingsList(),
     buildExtraLarge: (context) => const _SettingsList(),
   ),
-  secondary: Adaptive(
-    build: (context) => SettingsPane(),
+  secondary: AdaptiveBuilders(
+    // build: (context) => SettingsPane(),
     buildMediumLarge: (context) => SettingsPane(),
     buildLarge: (context) => SettingsPane(),
     buildExtraLarge: (context) => SettingsPane(),

@@ -4,14 +4,14 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:pjatka/utils.dart';
 import 'package:sizer/sizer.dart';
 
-class Adaptive {
+class AdaptiveBuilders {
   WidgetBuilder? buildSmall;
   WidgetBuilder? buildMediumLarge;
   WidgetBuilder? buildLarge;
   WidgetBuilder? buildExtraLarge;
   WidgetBuilder? build;
 
-  Adaptive({
+  AdaptiveBuilders({
     this.buildSmall,
     this.buildMediumLarge,
     this.buildLarge,
@@ -26,8 +26,8 @@ class Destination {
   final Icon icon;
   final Icon? selectedIcon;
 
-  final Adaptive main;
-  final Adaptive? secondary;
+  final AdaptiveBuilders main;
+  final AdaptiveBuilders? secondary;
 
   Destination({
     required this.label,
@@ -40,30 +40,28 @@ class Destination {
 }
 
 
-// class Switcher extends StatelessWidget {
-//   final Widget? child;
+class Switcher extends StatelessWidget {
+  final Widget? child;
 
-//   const Switcher({super.key, this.child});
-//   @override
-//   Widget build(BuildContext context) {
-//     return AnimatedSwitcher(
-//       duration: Duration(milliseconds: transitionDuration.inMilliseconds ~/ 100),
-//       transitionBuilder: (child, animation) {
-//         return FadeTransition(opacity: animation, child: child);
-//       },
-//       child: child,
-//     );
-//   }
-// }
-
-// WidgetBuilder? patchAnimated(WidgetBuilder? input) {
-//   if (input == null) return null;
-//   return (context) => Switcher(child: input(context));
-// }
+  const Switcher({super.key, this.child});
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: Duration(milliseconds: transitionDuration.inMilliseconds ~/ 100),
+      transitionBuilder: (child, animation) {
+        return FadeTransition(opacity: animation, child: child);
+      },
+      child: child,
+    );
+  }
+}
 
 WidgetBuilder? patchAnimated(WidgetBuilder? input) {
-  return input;
+  if (input == null) return null;
+  return (context) => Switcher(child: input(context));
 }
+
+
 
 class HomeRouter extends HookWidget {
   final List<Destination> destinations;
@@ -102,6 +100,7 @@ class HomeRouter extends HookWidget {
       onSelectedIndexChange: (index) => selectedIndex.value = index,
       transitionDuration: transitionDuration,
       leadingUnextendedNavRail: Image(image: AssetImage('assets/icon.png'), height: 5.w),
+      useDrawer: true,
       // actual render
       leadingExtendedNavRail: Row(
         mainAxisAlignment: MainAxisAlignment.center,

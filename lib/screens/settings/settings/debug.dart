@@ -1,3 +1,4 @@
+import 'package:drift_db_viewer/drift_db_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:pjatka/features/database/database.dart';
 import 'package:pjatka/screens/settings/screen.dart';
@@ -84,6 +85,18 @@ class _DebugActionCards extends StatelessWidget {
             MaterialPageRoute(
               builder: (context) => TalkerScreen(talker: talker),
             ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        _DebugCard(
+          icon: Icons.storage_outlined,
+          title: 'View Database',
+          subtitle: 'View all cached data and database contents',
+          color: colorScheme.primaryContainer,
+          iconColor: colorScheme.error,
+          isDangerous: true,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => DriftDbViewer(database)),
           ),
         ),
         const SizedBox(height: 12),
