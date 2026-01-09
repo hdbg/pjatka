@@ -271,7 +271,7 @@ final class ScheduleProvider
   Schedule create() => Schedule();
 }
 
-String _$scheduleHash() => r'e472f6d1678c1d8c8e4aa377c2c680be5ba20bd9';
+String _$scheduleHash() => r'4918312d61ebdd7bee00fd0d309e47732b6f725a';
 
 abstract class _$Schedule
     extends $AsyncNotifier<Map<DateTime, List<ScheduledClass>>> {
@@ -299,3 +299,36 @@ abstract class _$Schedule
     element.handleCreate(ref, build);
   }
 }
+
+@ProviderFor(globalLoader)
+final globalLoaderProvider = GlobalLoaderProvider._();
+
+final class GlobalLoaderProvider
+    extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
+    with $FutureModifier<void>, $FutureProvider<void> {
+  GlobalLoaderProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'globalLoaderProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$globalLoaderHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<void> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<void> create(Ref ref) {
+    return globalLoader(ref);
+  }
+}
+
+String _$globalLoaderHash() => r'e2603e0ba73c28630021fa0f3c15d9e2a9b417df';

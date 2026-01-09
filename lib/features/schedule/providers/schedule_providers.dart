@@ -69,10 +69,7 @@ Future<List<ScheduledClass>> onlySelectedClasses(Ref ref, DateTime day) async {
 class Schedule extends _$Schedule {
   @override
   Future<Map<DateTime, List<ScheduledClass>>> build() async {
-    final today = DateTime.now();
-    final todayClasses = await ref.read(onlySelectedClassesProvider(today).future);
-
-    return {_stripTime(today): todayClasses};
+    return {};
   }
 
   Future<List<ScheduledClass>> getClassesForDate(DateTime date) async {
@@ -88,5 +85,22 @@ class Schedule extends _$Schedule {
     });
 
     return additional;
+  }
+}
+
+@riverpod
+Future<void> globalLoader(Ref ref) async {
+  final settings = await ref.watch(settingsProvider);
+
+  final today = DateTime.now();
+
+  final initialDate = today.subtract(
+    Duration(days: settings.minDateDaysOffset),
+  );
+  var totalDelta = settings.maxDateDaysOffset + settings.minDateDaysOffset;
+  for (var i = 0; i <= totalDelta; i++) {
+    final date = initialDate.add(Duration(days: i));
+
+    await ref.read(scheduleProvider.notifier).getClassesForDate(date);
   }
 }

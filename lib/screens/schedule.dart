@@ -38,10 +38,7 @@ class ScheduleDataSource extends CalendarDataSource {
               notifyListeners(CalendarDataSourceAction.reset, appointments!);
             });
           },
-          fireImmediately: true,
         );
-
-    container.read(scheduleProvider.notifier).getClassesForDate(DateTime.now());
   }
 
   Appointment _classToAppointment(ScheduledClass classItem) {
@@ -97,6 +94,28 @@ class ScheduleDataSource extends CalendarDataSource {
   }
 }
 
+class TopLoader extends ConsumerWidget {
+  const TopLoader({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isLoading = ref.watch(globalLoaderProvider).isLoading;
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: isLoading
+          ? LinearProgressIndicator(
+              color: Theme.of(context).colorScheme.primary,
+              backgroundColor: Theme.of(
+                context,
+              ).colorScheme.primary.withAlpha(30),
+              minHeight: 0.5.h,
+            )
+          : const SizedBox.shrink(),
+    );
+  }
+}
+
 /// Main schedule screen displaying classes
 class ScheduleScreen extends ConsumerWidget {
   const ScheduleScreen({super.key});
@@ -105,44 +124,55 @@ class ScheduleScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
 
-    return SfCalendar(
-      view: CalendarView.schedule,
-      dataSource: ScheduleDataSource(container: ref.container),
-      allowedViews: [
-        CalendarView.day,
-        CalendarView.week,
-        CalendarView.month,
-        CalendarView.schedule,
-      ],
-      timeSlotViewSettings: const TimeSlotViewSettings(
-        startHour: 8,
-        endHour: 21,
-        timeInterval: Duration(minutes: 30),
-        timeFormat: 'HH:mm',
-      ),
-      minDate: DateTime.now().subtract(
-        Duration(days: settings.minDateDaysOffset),
-      ),
-      maxDate: DateTime.now().add(Duration(days: settings.maxDateDaysOffset)),
-      showDatePickerButton: true,
-      showCurrentTimeIndicator: true,
-      todayHighlightColor: Colors.deepPurple,
-      appointmentTextStyle: const TextStyle(
-        fontSize: 12,
-        color: Colors.white,
-        fontWeight: FontWeight.w500,
-      ),
-      loadMoreWidgetBuilder: (context, loadMore) {
-        loadMore();
-        return Center(
-          child: Padding(
-            padding: EdgeInsets.all(16.0.w),
-            child: CircularProgressIndicator(
-              color: Theme.of(context).colorScheme.primary,
-            ),
+    return Stack(
+      children: [
+        SfCalendar(
+          view: CalendarView.schedule,
+          dataSource: ScheduleDataSource(container: ref.container),
+          allowedViews: [
+            CalendarView.day,
+            CalendarView.week,
+            CalendarView.month,
+            CalendarView.schedule,
+          ],
+          firstDayOfWeek: 1,
+          timeSlotViewSettings: const TimeSlotViewSettings(
+            startHour: 8,
+            endHour: 21,
+            timeInterval: Duration(minutes: 30),
+            timeFormat: 'HH:mm',
           ),
-        );
-      },
+          minDate: DateTime.now().subtract(
+            Duration(days: settings.minDateDaysOffset),
+          ),
+          maxDate: DateTime.now().add(Duration(days: settings.maxDateDaysOffset)),
+          showDatePickerButton: true,
+          showCurrentTimeIndicator: true,
+          todayHighlightColor: Colors.deepPurple,
+          appointmentTextStyle: const TextStyle(
+            fontSize: 12,
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+          ),
+          // loadMoreWidgetBuilder: (context, loadMore) {
+          //   loadMore();
+          //   return Center(
+          //     child: Padding(
+          //       padding: EdgeInsets.all(16.0.w),
+          //       child: CircularProgressIndicator(
+          //         color: Theme.of(context).colorScheme.primary,
+          //       ),
+          //     ),
+          //   );
+          // },
+        ),
+        const Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: TopLoader(),
+        ),
+      ],
     );
   }
 }
