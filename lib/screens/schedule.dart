@@ -11,34 +11,30 @@ import '../features/schedule/providers/schedule_providers.dart';
 class ScheduleDataSource extends CalendarDataSource {
   final ProviderContainer container;
 
-  late final ProviderSubscription<Future<Map<DateTime, List<ScheduledClass>>>>
-  subscription;
+  late final ProviderSubscription<Future<List<ScheduledClass>>> subscription;
 
   ScheduleDataSource({required this.container}) {
     appointments = [];
 
-    subscription = container
-        .listen<Future<Map<DateTime, List<ScheduledClass>>>>(
-          scheduleProvider.future,
-          (previous, next) {
-            talker.debug('Schedule data source received new schedule data');
-            next.then((newClasses) {
-              final newAppointments = <Appointment>[];
+    subscription = container.listen<Future<List<ScheduledClass>>>(
+      classesProvider.future,
+      (previous, next) {
+        next.then((newClasses) {
+          final newAppointments = <Appointment>[];
 
-              for (final classesForDay in newClasses.values) {
-                for (final classItem in classesForDay) {
-                  newAppointments.add(_classToAppointment(classItem));
-                }
-              }
+          for (final classItem in newClasses) {
+            newAppointments.add(_classToAppointment(classItem));
+          }
 
-              talker.debug(
-                'Loaded ${newAppointments.length} appointments for schedule',
-              );
-              appointments = newAppointments;
-              notifyListeners(CalendarDataSourceAction.reset, appointments!);
-            });
-          },
-        );
+          talker.debug(
+            'Loaded ${newAppointments.length} appointments for schedule',
+          );
+          appointments = newAppointments;
+          notifyListeners(CalendarDataSourceAction.add, appointments!);
+        });
+      },
+      fireImmediately: true,
+    );
   }
 
   Appointment _classToAppointment(ScheduledClass classItem) {
@@ -71,20 +67,6 @@ class ScheduleDataSource extends CalendarDataSource {
       ClassKind.seminar => Colors.green,
       ClassKind.diplomaThesis => Colors.purple,
     };
-  }
-
-  @override
-  Future<void> handleLoadMore(DateTime startDate, DateTime endDate) async {
-    talker.debug(
-      'Loading more appointments from ${startDate.toIso8601String()} to ${endDate.toIso8601String()}',
-    );
-    final dateDiff = endDate.difference(startDate).inDays;
-
-    for (int i = 0; i <= dateDiff; i += 1) {
-      final day = startDate.add(Duration(days: i));
-      talker.debug('Loading classes for date: ${day.toIso8601String()}');
-      await container.read(scheduleProvider.notifier).getClassesForDate(day);
-    }
   }
 
   @override
@@ -145,7 +127,9 @@ class ScheduleScreen extends ConsumerWidget {
           minDate: DateTime.now().subtract(
             Duration(days: settings.minDateDaysOffset),
           ),
-          maxDate: DateTime.now().add(Duration(days: settings.maxDateDaysOffset)),
+          maxDate: DateTime.now().add(
+            Duration(days: settings.maxDateDaysOffset),
+          ),
           showDatePickerButton: true,
           showCurrentTimeIndicator: true,
           todayHighlightColor: Colors.deepPurple,
@@ -154,24 +138,8 @@ class ScheduleScreen extends ConsumerWidget {
             color: Colors.white,
             fontWeight: FontWeight.w500,
           ),
-          // loadMoreWidgetBuilder: (context, loadMore) {
-          //   loadMore();
-          //   return Center(
-          //     child: Padding(
-          //       padding: EdgeInsets.all(16.0.w),
-          //       child: CircularProgressIndicator(
-          //         color: Theme.of(context).colorScheme.primary,
-          //       ),
-          //     ),
-          //   );
-          // },
         ),
-        const Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: TopLoader(),
-        ),
+        const Positioned(top: 0, left: 0, right: 0, child: TopLoader()),
       ],
     );
   }

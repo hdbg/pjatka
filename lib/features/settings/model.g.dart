@@ -13,6 +13,7 @@ _SettingsState _$SettingsStateFromJson(Map<String, dynamic> json) =>
           const {},
       minDateDaysOffset: (json['minDateDaysOffset'] as num?)?.toInt() ?? 7,
       maxDateDaysOffset: (json['maxDateDaysOffset'] as num?)?.toInt() ?? 30,
+      cacheTTLHours: (json['cacheTTLHours'] as num?)?.toInt() ?? 24,
     );
 
 Map<String, dynamic> _$SettingsStateToJson(_SettingsState instance) =>
@@ -20,4 +21,5 @@ Map<String, dynamic> _$SettingsStateToJson(_SettingsState instance) =>
       'groups': instance.groups.toList(),
       'minDateDaysOffset': instance.minDateDaysOffset,
       'maxDateDaysOffset': instance.maxDateDaysOffset,
+      'cacheTTLHours': instance.cacheTTLHours,
     };

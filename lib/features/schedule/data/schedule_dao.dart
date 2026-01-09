@@ -1,15 +1,12 @@
 import 'package:drift/drift.dart';
 import 'package:pjatka/features/database/database.dart';
 import 'package:pjatka/features/schedule/models.dart';
+import 'package:pjatka/features/settings/model.dart';
 import 'package:pjatka/utils.dart';
 
 class ScheduleDao {
-  const ScheduleDao(this.db);
-
-  final AppDatabase db;
-
-  Future<DateTime?> getEarliestUpdateForDate(DateTime date) async {
-    final earliest = await db.select(db.universityClass)
+  static Future<DateTime?> getEarliestUpdateForDate(DateTime date) async {
+    final earliest = await database.select(database.universityClass)
       ..limit(1)
       ..where(
         (t) =>
@@ -26,51 +23,44 @@ class ScheduleDao {
     return result?.startTime;
   }
 
-  Future<List<ScheduledClass>> getMeetingsForDate(DateTime date) async {
-    talker.debug('Querying meetings for date: ${date.toIso8601String()}');
+  static Stream<List<ScheduledClass>> watchClasses(SettingsState settings) {
+    final query = database.select(database.universityClass).join([
+      leftOuterJoin(
+        database.teacher,
+        database.teacher.classId.equalsExp(database.universityClass.id),
+      ),
+      leftOuterJoin(
+        database.group,
+        database.group.classId.equalsExp(database.universityClass.id),
+      ),
+    ])..where(database.group.name.isIn(settings.groups));
 
-    final query =
-        db.select(db.universityClass).join([
-          leftOuterJoin(
-            db.teacher,
-            db.teacher.classId.equalsExp(db.universityClass.id),
-          ),
-          leftOuterJoin(
-            db.group,
-            db.group.classId.equalsExp(db.universityClass.id),
-          ),
-        ])..where(
-          db.universityClass.startTime.year.equals(date.year) &
-              db.universityClass.startTime.month.equals(date.month) &
-              db.universityClass.startTime.day.equals(date.day),
+    final rows = query.watch();
+
+    return rows.map((rows) {
+      return rows.map((row) {
+        final universityClass = row.readTable(database.universityClass);
+        final teacher = row.readTableOrNull(database.teacher);
+        final group = row.readTableOrNull(database.group);
+
+        return ScheduledClass(
+          classId: universityClass.id,
+          name: universityClass.name,
+          code: universityClass.code,
+          kind: universityClass.kind,
+          lecturer: teacher?.name ?? 'Unknown',
+          start: universityClass.startTime,
+          end: universityClass.endTime,
+          place: universityClass.room != null
+              ? ClassPlaceOnSite(room: universityClass.room!)
+              : ClassPlaceOnline(),
+          groups: group != null ? [group.name] : [],
         );
-
-    final rows = await query.get();
-
-    talker.debug('Found ${rows.length} meetings for date');
-
-    return rows.map((row) {
-      final universityClass = row.readTable(db.universityClass);
-      final teacher = row.readTableOrNull(db.teacher);
-      final group = row.readTableOrNull(db.group);
-
-      return ScheduledClass(
-        classId: universityClass.id,
-        name: universityClass.name,
-        code: universityClass.code,
-        kind: universityClass.kind,
-        lecturer: teacher?.name ?? 'Unknown',
-        start: universityClass.startTime,
-        end: universityClass.endTime,
-        place: universityClass.room != null
-            ? ClassPlaceOnSite(room: universityClass.room!)
-            : ClassPlaceOnline(),
-        groups: group != null ? [group.name] : [],
-      );
-    }).toList();
+      }).toList();
+    });
   }
 
-  Future<void> syncClasses(
+  static Future<void> syncClasses(
     DateTime date,
     List<ScheduledClass> parsedClasses,
   ) async {
@@ -89,8 +79,8 @@ class ScheduleDao {
 
     // await db.transaction(() async {
     for (final scheduledClass in parsedClasses) {
-      await db
-          .into(db.universityClass)
+      await database
+          .into(database.universityClass)
           .insertOnConflictUpdate(
             UniversityClassCompanion(
               id: Value(scheduledClass.classId),
@@ -105,9 +95,9 @@ class ScheduleDao {
             ),
           );
 
-      await db.batch((batch) {
+      await database.batch((batch) {
         // add here a `.map` if we upgrade parser to handle multiple lecturers
-        batch.insertAll(db.teacher, [
+        batch.insertAll(database.teacher, [
           TeacherCompanion(
             name: Value(scheduledClass.lecturer),
             classId: Value(scheduledClass.classId),
@@ -115,7 +105,7 @@ class ScheduleDao {
         ]);
 
         batch.insertAll(
-          db.group,
+          database.group,
           scheduledClass.groups
               .map(
                 (groupName) => GroupCompanion(
