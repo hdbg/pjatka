@@ -11,6 +11,7 @@ class PersistedObject extends Table {
   TextColumn get value => text()();
 }
 
+@TableIndex(name: 'class_start', columns: {#startTime})
 class UniversityClass extends Table {
   TextColumn get id => text().withLength(min: 1, max: 32)();
   TextColumn get name => text().withLength(min: 1, max: 128)();
@@ -23,12 +24,18 @@ class UniversityClass extends Table {
   DateTimeColumn get lastChecked =>
       dateTime().withDefault(currentDateAndTime)();
 
-  TextColumn? get room => text().withLength(min: 1, max: 32).nullable()();
+  TextColumn get room => text().withLength(min: 1, max: 32).nullable()();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+    {name, code, kind, startTime, endTime, room},
+  ];
 
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
 
+@TableIndex(name: 'teacher_class_id', columns: {#classId})
 class Teacher extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().withLength(min: 1, max: 512)();
@@ -36,6 +43,8 @@ class Teacher extends Table {
       text().references(UniversityClass, #id, onDelete: KeyAction.cascade)();
 }
 
+@TableIndex(name: 'group_name', columns: {#name})
+@TableIndex(name: 'group_class_id', columns: {#classId})
 class Group extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().withLength(min: 1, max: 64)();

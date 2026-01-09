@@ -185,6 +185,10 @@ class $UniversityClassTable extends UniversityClass
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {name, code, kind, startTime, endTime, room},
+  ];
+  @override
   UniversityClassData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return UniversityClassData(
@@ -1041,6 +1045,22 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $TeacherTable teacher = $TeacherTable(this);
   late final $GroupTable group = $GroupTable(this);
+  late final Index classStart = Index(
+    'class_start',
+    'CREATE INDEX class_start ON university_class (start_time)',
+  );
+  late final Index teacherClassId = Index(
+    'teacher_class_id',
+    'CREATE INDEX teacher_class_id ON teacher (class_id)',
+  );
+  late final Index groupName = Index(
+    'group_name',
+    'CREATE INDEX group_name ON "group" (name)',
+  );
+  late final Index groupClassId = Index(
+    'group_class_id',
+    'CREATE INDEX group_class_id ON "group" (class_id)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1049,6 +1069,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     universityClass,
     teacher,
     group,
+    classStart,
+    teacherClassId,
+    groupName,
+    groupClassId,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
