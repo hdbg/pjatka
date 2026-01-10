@@ -118,3 +118,19 @@ class Settings extends _$Settings {
     state = state.copyWith(maxDateDaysOffset: offset);
   }
 }
+
+const _onboardingKey = 'onboarding_completed';
+
+@Riverpod(keepAlive: true)
+class Onboarding extends _$Onboarding {
+  @override
+  Future<bool> build() async {
+    final isCompleted = await asyncPrefs.getBool(_onboardingKey);
+    return isCompleted ?? false;
+  }
+
+  Future<void> completeOnboarding() async {
+    await asyncPrefs.setBool(_onboardingKey, true);
+    state = AsyncData(true);
+  }
+}
