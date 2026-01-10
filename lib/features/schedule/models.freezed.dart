@@ -109,10 +109,7 @@ final _that = this;
 switch (_that) {
 case ClassPlaceOnline():
 return online(_that);case ClassPlaceOnSite():
-return onSite(_that);case _:
-  throw StateError('Unexpected subclass');
-
-}
+return onSite(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -174,10 +171,7 @@ return onSite(_that.room);case _:
 switch (_that) {
 case ClassPlaceOnline():
 return online();case ClassPlaceOnSite():
-return onSite(_that.room);case _:
-  throw StateError('Unexpected subclass');
-
-}
+return onSite(_that.room);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///

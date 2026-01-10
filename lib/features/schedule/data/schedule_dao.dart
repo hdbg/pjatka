@@ -4,9 +4,21 @@ import 'package:pjatka/features/schedule/models.dart';
 import 'package:pjatka/features/settings/model.dart';
 import 'package:pjatka/utils.dart';
 
+class _AppointmentData {
+  final SubjectData subject;
+  final ClassAppointmentData appointment;
+  final Set<String> groups;
+
+  _AppointmentData({
+    required this.subject,
+    required this.appointment,
+    required this.groups,
+  });
+}
+
 class ScheduleDao {
   static Future<DateTime?> getEarliestUpdateForDate(DateTime date) async {
-    final earliest = await database.select(database.universityClass)
+    final earliest = await db.select(db.classAppointment)
       ..limit(1)
       ..where(
         (t) =>
@@ -15,75 +27,88 @@ class ScheduleDao {
             t.startTime.day.equals(date.day),
       )
       ..orderBy([
-        (t) => OrderingTerm(expression: t.lastChecked, mode: OrderingMode.asc),
+        (t) => OrderingTerm(expression: t.lastUpdated, mode: OrderingMode.asc),
       ]);
 
     final result = await earliest.getSingleOrNull();
 
-    return result?.lastChecked;
+    return result?.lastUpdated;
   }
 
   static Stream<List<ScheduledClass>> watchClasses(
     SettingsState settings, {
     bool filterByGroups = true,
   }) {
-    final query = database.select(database.universityClass).join([
-      leftOuterJoin(
-        database.teacher,
-        database.teacher.classId.equalsExp(database.universityClass.id),
+    // Main query - join only subject and appointment, plus groups for filtering
+    final query = db.select(db.subject).join([
+      innerJoin(
+        db.classAppointment,
+        db.classAppointment.subjectId.equalsExp(db.subject.id),
       ),
-      leftOuterJoin(
-        database.group,
-        database.group.classId.equalsExp(database.universityClass.id),
+      innerJoin(
+        db.classGroup,
+        db.classGroup.appointmentId.equalsExp(db.classAppointment.id),
       ),
+      innerJoin(db.group, db.classGroup.groupId.equalsExp(db.group.id)),
     ]);
 
     if (filterByGroups) {
-      query.where(database.group.name.isIn(settings.groups));
+      query.where(db.group.name.isIn(settings.groups));
     }
 
     final rows = query.watch();
 
-    return rows.map((rows) {
-      final classMap =
-          <String, (UniversityClassData, Set<String>, Set<String>)>{};
-
+    return rows.asyncMap((rows) async {
+      // Group rows by appointment ID to avoid duplicates
+      final appointmentMap = <int, _AppointmentData>{};
+      
       for (final row in rows) {
-        final universityClass = row.readTable(database.universityClass);
-        final teacher = row.readTableOrNull(database.teacher);
-        final group = row.readTableOrNull(database.group);
+        final subject = row.readTable(db.subject);
+        final appointment = row.readTable(db.classAppointment);
+        final group = row.readTable(db.group);
 
-        if (!classMap.containsKey(universityClass.id)) {
-          classMap[universityClass.id] = (universityClass, {}, {});
+        if (!appointmentMap.containsKey(appointment.id)) {
+          appointmentMap[appointment.id] = _AppointmentData(
+            subject: subject,
+            appointment: appointment,
+            groups: {},
+          );
         }
-
-        if (teacher != null) {
-          classMap[universityClass.id]!.$2.add(teacher.name);
-        }
-        if (group != null) {
-          classMap[universityClass.id]!.$3.add(group.name);
-        }
+        
+        appointmentMap[appointment.id]!.groups.add(group.name);
       }
 
-      return classMap.values.map((entry) {
-        final universityClass = entry.$1;
-        final teachers = entry.$2;
-        final groups = entry.$3;
+      final classes = <ScheduledClass>[];
+      for (final data in appointmentMap.values) {
+        final teachersQuery = db.select(db.teacher).join([
+          innerJoin(
+            db.classTeacher,
+            db.classTeacher.teacherId.equalsExp(db.teacher.id),
+          ),
+        ])..where(db.classTeacher.appointmentId.equals(data.appointment.id));
 
-        return ScheduledClass(
-          classId: universityClass.id,
-          name: universityClass.name,
-          code: universityClass.code,
-          kind: universityClass.kind,
-          lecturer: teachers.isNotEmpty ? teachers.first : 'Unknown',
-          start: universityClass.startTime,
-          end: universityClass.endTime,
-          place: universityClass.room != null
-              ? ClassPlaceOnSite(room: universityClass.room!)
-              : ClassPlaceOnline(),
-          groups: groups.toList(),
+        final teacherRows = await teachersQuery.get();
+        final teachers = teacherRows.map((row) => row.readTable(db.teacher).name).toList();
+        final teacherStr = teachers.isNotEmpty ? teachers.first : '';
+
+        classes.add(
+          ScheduledClass(
+            classId: data.subject.id.toString(),
+            name: data.subject.name,
+            code: data.subject.code,
+            kind: data.subject.kind,
+            lecturer: teacherStr,
+            start: data.appointment.startTime,
+            end: data.appointment.endTime,
+            place: data.appointment.location != null
+                ? ClassPlaceOnSite(room: data.appointment.location!)
+                : ClassPlaceOnline(),
+            groups: data.groups.toList(),
+          ),
         );
-      }).toList();
+      }
+
+      return classes;
     });
   }
 
@@ -93,57 +118,101 @@ class ScheduleDao {
   ) async {
     talker.debug('Syncing ${parsedClasses.length} meetings for date');
 
-    await database.delete(database.universityClass)
-      ..where((tbl) {
-        return tbl.startTime.year.equals(date.year) &
-            tbl.startTime.month.equals(date.month) &
-            tbl.startTime.day.equals(date.day);
-      })
-      ..go();
-
-    var totalInserted = 0;
     for (final scheduledClass in parsedClasses) {
-      totalInserted += await database
-          .into(database.universityClass)
-          .insertOnConflictUpdate(
-            UniversityClassCompanion(
-              id: Value(scheduledClass.classId),
-              name: Value(scheduledClass.name),
-              code: Value(scheduledClass.code),
-              kind: Value(scheduledClass.kind),
-              startTime: Value(scheduledClass.start),
-              endTime: Value(scheduledClass.end),
-              room: scheduledClass.place is ClassPlaceOnSite
-                  ? Value((scheduledClass.place as ClassPlaceOnSite).room)
-                  : const Value.absent(),
-              lastChecked: Value(DateTime.now()),
+      await db.transaction(() async {
+        await db.batch((batch) async {
+          batch.insertAll(
+            db.teacher,
+            [scheduledClass.lecturer].map(
+              (lecturerName) => TeacherCompanion(name: Value(lecturerName)),
             ),
+            onConflict: DoNothing(target: [db.teacher.name]),
           );
 
-      await database.batch((batch) {
-        // add here a `.map` if we upgrade parser to handle multiple lecturers
-        batch.insertAllOnConflictUpdate(database.teacher, [
-          TeacherCompanion(
-            name: Value(scheduledClass.lecturer),
-            classId: Value(scheduledClass.classId),
-          ),
-        ]);
+          batch.insertAll(
+            db.group,
+            scheduledClass.groups.map(
+              (groupName) => GroupCompanion(name: Value(groupName)),
+            ),
+            onConflict: DoNothing(target: [db.group.name]),
+          );
+        });
 
-        batch.insertAllOnConflictUpdate(
-          database.group,
-          scheduledClass.groups
-              .map(
-                (groupName) => GroupCompanion(
-                  name: Value(groupName),
-                  classId: Value(scheduledClass.classId),
+        final subject = await db
+            .into(db.subject)
+            .insertReturning(
+              SubjectCompanion(
+                name: Value(scheduledClass.name),
+                code: Value(scheduledClass.code),
+                kind: Value(scheduledClass.kind),
+              ),
+              onConflict: DoUpdate(
+                (old) => SubjectCompanion(
+                  name: Value(scheduledClass.name),
+                  code: Value(scheduledClass.code),
+                  kind: Value(scheduledClass.kind),
                 ),
-              )
-              .toList(),
-        );
+                target: [db.subject.name, db.subject.code, db.subject.kind],
+              ),
+            );
+
+        final location = switch (scheduledClass.place) {
+          ClassPlaceOnline() => null,
+          ClassPlaceOnSite(:final room) => room,
+        };
+
+        final appointment = await db
+            .into(db.classAppointment)
+            .insertReturning(
+              ClassAppointmentCompanion(
+                subjectId: Value(subject.id),
+                location: Value.absentIfNull(location),
+                startTime: Value(scheduledClass.start),
+                endTime: Value(scheduledClass.end),
+              ),
+              onConflict: DoUpdate(
+                (old) => ClassAppointmentCompanion(
+                  subjectId: Value(subject.id),
+                  location: Value.absentIfNull(location),
+                  startTime: Value(scheduledClass.start),
+                  endTime: Value(scheduledClass.end),
+                  lastUpdated: Value(DateTime.now()),
+                ),
+                target: [
+                  db.classAppointment.subjectId,
+                  db.classAppointment.startTime,
+                  db.classAppointment.endTime,
+                  db.classAppointment.location,
+                ],
+              ),
+            );
+
+        final appointmentId = Variable<int>(appointment.id);
+        await db
+            .into(db.classGroup)
+            .insertFromSelect(
+              db.selectOnly(db.group, distinct: true)
+                ..addColumns([db.group.id, appointmentId])
+                ..where(db.group.name.isIn(scheduledClass.groups)),
+              columns: {
+                db.classGroup.groupId: db.group.id,
+                db.classGroup.appointmentId: appointmentId,
+              },
+              onConflict: DoNothing(),
+            );
+        await db
+            .into(db.classTeacher)
+            .insertFromSelect(
+              db.selectOnly(db.teacher, distinct: true)
+                ..addColumns([db.teacher.id, appointmentId])
+                ..where(db.teacher.name.isIn([scheduledClass.lecturer])),
+              columns: {
+                db.classTeacher.teacherId: db.teacher.id,
+                db.classTeacher.appointmentId: appointmentId,
+              },
+              onConflict: DoNothing(),
+            );
       });
     }
-    talker.info(
-      'Synced classes for ${date.toIso8601String()}: $totalInserted inserted/updated',
-    );
   }
 }

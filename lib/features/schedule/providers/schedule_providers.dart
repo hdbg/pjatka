@@ -50,10 +50,10 @@ Future<void> globalLoader(Ref ref) async {
 
     try {
       await ScheduleDao.syncClasses(date, parsedDays);
-    } catch (e) {
+    } catch (e, stackTrace) {
       talker.handle(
         e,
-        null,
+        stackTrace,
         'Error syncing classes for date ${date.toIso8601String()}',
       );
     }

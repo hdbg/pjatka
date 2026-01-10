@@ -107,7 +107,7 @@ class _DebugActionCards extends StatelessWidget {
           iconColor: colorScheme.primary,
           isDangerous: true,
           onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => DriftDbViewer(database)),
+            MaterialPageRoute(builder: (context) => DriftDbViewer(db)),
           ),
         ),
         const SizedBox(height: 12),
@@ -151,10 +151,10 @@ class _DebugActionCards extends StatelessWidget {
 
     if (confirmed == true && context.mounted) {
       talker.debug('Clearing database');
-      await database.transaction(() async {
-        await database.customStatement('PRAGMA foreign_keys = OFF;');
-        for (final table in database.allTables) {
-          await database.delete(table).go();
+      await db.transaction(() async {
+        await db.customStatement('PRAGMA foreign_keys = OFF;');
+        for (final table in db.allTables) {
+          await db.delete(table).go();
         }
       });
 

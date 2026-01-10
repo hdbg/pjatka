@@ -5,61 +5,75 @@ import 'package:pjatka/features/schedule/models.dart';
 
 part 'database.g.dart';
 
-class PersistedObject extends Table {
+class Subject extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get key => text().withLength(min: 1, max: 64)();
-  TextColumn get value => text()();
-}
-
-@TableIndex(name: 'class_start', columns: {#startTime})
-class UniversityClass extends Table {
-  TextColumn get id => text().withLength(min: 1, max: 32)();
   TextColumn get name => text().withLength(min: 1, max: 128)();
   TextColumn get code => text().withLength(min: 2, max: 32)();
   TextColumn get kind => textEnum<ClassKind>()();
 
+  @override
+  List<Set<Column>> get uniqueKeys => [
+    {name, code, kind},
+  ];
+}
+
+@TableIndex(name: 'appointment_start', columns: {#startTime})
+class ClassAppointment extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get subjectId => integer().references(Subject, #id)();
+
+  TextColumn get location => text().withLength(min: 0, max: 256).nullable()();
+
   DateTimeColumn get startTime => dateTime()();
   DateTimeColumn get endTime => dateTime()();
 
-  DateTimeColumn get lastChecked =>
+  DateTimeColumn get lastUpdated =>
       dateTime().withDefault(currentDateAndTime)();
-
-  TextColumn get room => text().withLength(min: 1, max: 32).nullable()();
 
   @override
   List<Set<Column>> get uniqueKeys => [
-    {name, code, kind, startTime, endTime, room},
+    {subjectId, startTime, endTime, location},
   ];
-
-  @override
-  Set<Column<Object>> get primaryKey => {id};
 }
 
 class Teacher extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().withLength(min: 1, max: 512)();
-  TextColumn get classId =>
-      text().references(UniversityClass, #id, onDelete: KeyAction.cascade)();
 
   @override
   List<Set<Column>> get uniqueKeys => [
-    {name, classId},
+    {name},
   ];
 }
 
 class Group extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().withLength(min: 1, max: 64)();
-  TextColumn get classId =>
-      text().references(UniversityClass, #id, onDelete: KeyAction.cascade)();
 
-  @override
   List<Set<Column>> get uniqueKeys => [
-    {name, classId},
+    {name},
   ];
 }
 
-@DriftDatabase(tables: [UniversityClass, Teacher, Group])
+class ClassGroup extends Table {
+  IntColumn get groupId => integer().references(Group, #id)();
+  IntColumn get appointmentId => integer().references(ClassAppointment, #id)();
+
+  @override
+  Set<Column> get primaryKey => {groupId, appointmentId};
+}
+
+class ClassTeacher extends Table {
+  IntColumn get teacherId => integer().references(Teacher, #id)();
+  IntColumn get appointmentId => integer().references(ClassAppointment, #id)();
+
+  @override
+  Set<Column> get primaryKey => {teacherId, appointmentId};
+}
+
+@DriftDatabase(
+  tables: [Teacher, Group, ClassGroup, ClassTeacher, ClassAppointment, Subject],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
@@ -86,14 +100,12 @@ MigrationStrategy get migration {
     onCreate: (Migrator m) async {
       await m.createAll();
     },
-    onUpgrade: (Migrator m, int from, int to) async {
-      // Handle database upgrades if needed in the future
-    },
+    onUpgrade: (Migrator m, int from, int to) async {},
     beforeOpen: (details) async {
-      await database.customStatement('PRAGMA journal_mode=WAL');
-      await database.customStatement('PRAGMA foreign_keys = ON');
+      await db.customStatement('PRAGMA journal_mode=WAL');
+      await db.customStatement('PRAGMA foreign_keys = ON');
     },
   );
 }
 
-final database = AppDatabase();
+final db = AppDatabase();

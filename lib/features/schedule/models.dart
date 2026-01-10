@@ -44,7 +44,7 @@ enum ClassKind {
 }
 
 @freezed
-abstract class ClassPlace with _$ClassPlace {
+sealed class ClassPlace with _$ClassPlace {
   const factory ClassPlace.online() = ClassPlaceOnline;
   const factory ClassPlace.onSite({required String room}) = ClassPlaceOnSite;
 

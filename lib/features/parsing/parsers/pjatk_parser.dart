@@ -264,9 +264,7 @@ class PjatkParser {
       );
       response = await _emulator.request(dateReq);
       talker.debug('Date update completed');
-    } else {
-      talker.debug('Using today\'s schedule (no date update needed)');
-    }
+    } 
 
     // Collect class IDs
     final responseText = response.body;
