@@ -117,3 +117,47 @@ abstract class _$Settings extends $Notifier<SettingsState> {
     element.handleCreate(ref, build);
   }
 }
+
+@ProviderFor(Onboarding)
+final onboardingProvider = OnboardingProvider._();
+
+final class OnboardingProvider
+    extends $AsyncNotifierProvider<Onboarding, bool> {
+  OnboardingProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'onboardingProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$onboardingHash();
+
+  @$internal
+  @override
+  Onboarding create() => Onboarding();
+}
+
+String _$onboardingHash() => r'8b95a6530a5b134bb2bc9c5ce789c8a59a49739c';
+
+abstract class _$Onboarding extends $AsyncNotifier<bool> {
+  FutureOr<bool> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<bool>, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<bool>, bool>,
+              AsyncValue<bool>,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}

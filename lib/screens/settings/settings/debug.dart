@@ -1,6 +1,8 @@
 import 'package:drift_db_viewer/drift_db_viewer.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pjatka/features/database/database.dart';
+import 'package:pjatka/features/settings/provider.dart';
 import 'package:pjatka/screens/groups_retriever.dart';
 import 'package:pjatka/screens/settings/screen.dart';
 import 'package:pjatka/utils.dart';
@@ -66,11 +68,11 @@ class _DebugHeader extends StatelessWidget {
   }
 }
 
-class _DebugActionCards extends StatelessWidget {
+class _DebugActionCards extends ConsumerWidget {
   const _DebugActionCards();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -95,7 +97,7 @@ class _DebugActionCards extends StatelessWidget {
           subtitle: 'Invokes gakko login to retrieve your study groups',
           color: Colors.purple.shade300,
           iconColor: colorScheme.primary,
-          isDangerous: true,
+          isDangerous: false,
           onTap: () => showGroupsRetriever(context),
         ),
         const SizedBox(height: 12),
@@ -105,10 +107,20 @@ class _DebugActionCards extends StatelessWidget {
           subtitle: 'View all cached data and database contents',
           color: colorScheme.primaryContainer,
           iconColor: colorScheme.primary,
-          isDangerous: true,
+          isDangerous: false,
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (context) => DriftDbViewer(db)),
           ),
+        ),
+         const SizedBox(height: 12),
+        _DebugCard(
+          icon: Icons.restart_alt,
+          title: 'Restart Onboarding',
+          subtitle: 'Reset onboarding completion status',
+          color: colorScheme.surface,
+          iconColor: colorScheme.primary,
+          isDangerous: false,
+          onTap: () => ref.read(onboardingProvider.notifier).resetOnboarding(),
         ),
         const SizedBox(height: 12),
         _DebugCard(

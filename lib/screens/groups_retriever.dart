@@ -119,7 +119,12 @@ Future<void> showGroupsRetriever(BuildContext context) {
   final completer = Completer<void>();
 
   Navigator.of(context).push(
-    MaterialPageRoute(builder: (context) => GroupsRetriever(onDone: completer)),
+    MaterialPageRoute(builder: (context) => Scaffold(
+      
+      appBar: AppBar(
+        title: const Text('Retrieve Groups'),
+      ),
+      body: GroupsRetriever(onDone: completer))),
   );
 
   return completer.future

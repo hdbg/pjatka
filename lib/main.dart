@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pjatka/features/onboarding/onboarding_screen.dart';
+import 'package:pjatka/features/settings/provider.dart';
 import 'package:pjatka/home.dart';
 import 'package:pjatka/screens/settings/screen.dart';
 import 'package:pjatka/utils.dart';
@@ -25,11 +27,13 @@ void main() {
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hasCompletedOnboarding = ref.watch(onboardingProvider).value ?? false;
+
     return Sizer(
       builder: (context, orientation, deviceType) {
         return MaterialApp(
@@ -43,20 +47,22 @@ class MyApp extends StatelessWidget {
           ),
           themeMode: ThemeMode.dark,
           home: SafeArea(
-            child: Scaffold(
-              // appBar: AppBar(
-              //   title: FittedBox(
-              //     fit: BoxFit.scaleDown,
-              //     child: Text('PJATK App'),
-              //   ),
-              //   backgroundColor: Colors.blueGrey,
-              //   centerTitle: false,
-              //   toolbarHeight: 7.h,
-              // ),
-              body: HomeRouter(
-                destinations: [scheduleDestination, settingsDestination],
-              ),
-            ),
+            child: hasCompletedOnboarding
+                ? Scaffold(
+                    // appBar: AppBar(
+                    //   title: FittedBox(
+                    //     fit: BoxFit.scaleDown,
+                    //     child: Text('PJATK App'),
+                    //   ),
+                    //   backgroundColor: Colors.blueGrey,
+                    //   centerTitle: false,
+                    //   toolbarHeight: 7.h,
+                    // ),
+                    body: HomeRouter(
+                      destinations: [scheduleDestination, settingsDestination],
+                    ),
+                  )
+                : const OnboardingScreen(),
           ),
         );
       },
