@@ -87,6 +87,9 @@ class $TeacherTable extends Teacher with TableInfo<$TeacherTable, TeacherData> {
   $TeacherTable createAlias(String alias) {
     return $TeacherTable(attachedDatabase, alias);
   }
+
+  @override
+  bool get isStrict => true;
 }
 
 class TeacherData extends DataClass implements Insertable<TeacherData> {
@@ -281,6 +284,9 @@ class $GroupTable extends Group with TableInfo<$GroupTable, GroupData> {
   $GroupTable createAlias(String alias) {
     return $GroupTable(attachedDatabase, alias);
   }
+
+  @override
+  bool get isStrict => true;
 }
 
 class GroupData extends DataClass implements Insertable<GroupData> {
@@ -729,7 +735,7 @@ class $ClassAppointmentTable extends ClassAppointment
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES subject (id)',
+      'REFERENCES subject (id) ON UPDATE CASCADE ON DELETE CASCADE',
     ),
   );
   static const VerificationMeta _locationMeta = const VerificationMeta(
@@ -739,13 +745,13 @@ class $ClassAppointmentTable extends ClassAppointment
   late final GeneratedColumn<String> location = GeneratedColumn<String>(
     'location',
     aliasedName,
-    true,
+    false,
     additionalChecks: GeneratedColumn.checkTextLength(
       minTextLength: 0,
       maxTextLength: 256,
     ),
     type: DriftSqlType.string,
-    requiredDuringInsert: false,
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _startTimeMeta = const VerificationMeta(
     'startTime',
@@ -818,6 +824,8 @@ class $ClassAppointmentTable extends ClassAppointment
         _locationMeta,
         location.isAcceptableOrUnknown(data['location']!, _locationMeta),
       );
+    } else if (isInserting) {
+      context.missing(_locationMeta);
     }
     if (data.containsKey('start_time')) {
       context.handle(
@@ -868,7 +876,7 @@ class $ClassAppointmentTable extends ClassAppointment
       location: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}location'],
-      ),
+      )!,
       startTime: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}start_time'],
@@ -888,20 +896,23 @@ class $ClassAppointmentTable extends ClassAppointment
   $ClassAppointmentTable createAlias(String alias) {
     return $ClassAppointmentTable(attachedDatabase, alias);
   }
+
+  @override
+  bool get isStrict => true;
 }
 
 class ClassAppointmentData extends DataClass
     implements Insertable<ClassAppointmentData> {
   final int id;
   final int subjectId;
-  final String? location;
+  final String location;
   final DateTime startTime;
   final DateTime endTime;
   final DateTime lastUpdated;
   const ClassAppointmentData({
     required this.id,
     required this.subjectId,
-    this.location,
+    required this.location,
     required this.startTime,
     required this.endTime,
     required this.lastUpdated,
@@ -911,9 +922,7 @@ class ClassAppointmentData extends DataClass
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['subject_id'] = Variable<int>(subjectId);
-    if (!nullToAbsent || location != null) {
-      map['location'] = Variable<String>(location);
-    }
+    map['location'] = Variable<String>(location);
     map['start_time'] = Variable<DateTime>(startTime);
     map['end_time'] = Variable<DateTime>(endTime);
     map['last_updated'] = Variable<DateTime>(lastUpdated);
@@ -924,9 +933,7 @@ class ClassAppointmentData extends DataClass
     return ClassAppointmentCompanion(
       id: Value(id),
       subjectId: Value(subjectId),
-      location: location == null && nullToAbsent
-          ? const Value.absent()
-          : Value(location),
+      location: Value(location),
       startTime: Value(startTime),
       endTime: Value(endTime),
       lastUpdated: Value(lastUpdated),
@@ -941,7 +948,7 @@ class ClassAppointmentData extends DataClass
     return ClassAppointmentData(
       id: serializer.fromJson<int>(json['id']),
       subjectId: serializer.fromJson<int>(json['subjectId']),
-      location: serializer.fromJson<String?>(json['location']),
+      location: serializer.fromJson<String>(json['location']),
       startTime: serializer.fromJson<DateTime>(json['startTime']),
       endTime: serializer.fromJson<DateTime>(json['endTime']),
       lastUpdated: serializer.fromJson<DateTime>(json['lastUpdated']),
@@ -953,7 +960,7 @@ class ClassAppointmentData extends DataClass
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'subjectId': serializer.toJson<int>(subjectId),
-      'location': serializer.toJson<String?>(location),
+      'location': serializer.toJson<String>(location),
       'startTime': serializer.toJson<DateTime>(startTime),
       'endTime': serializer.toJson<DateTime>(endTime),
       'lastUpdated': serializer.toJson<DateTime>(lastUpdated),
@@ -963,14 +970,14 @@ class ClassAppointmentData extends DataClass
   ClassAppointmentData copyWith({
     int? id,
     int? subjectId,
-    Value<String?> location = const Value.absent(),
+    String? location,
     DateTime? startTime,
     DateTime? endTime,
     DateTime? lastUpdated,
   }) => ClassAppointmentData(
     id: id ?? this.id,
     subjectId: subjectId ?? this.subjectId,
-    location: location.present ? location.value : this.location,
+    location: location ?? this.location,
     startTime: startTime ?? this.startTime,
     endTime: endTime ?? this.endTime,
     lastUpdated: lastUpdated ?? this.lastUpdated,
@@ -1019,7 +1026,7 @@ class ClassAppointmentData extends DataClass
 class ClassAppointmentCompanion extends UpdateCompanion<ClassAppointmentData> {
   final Value<int> id;
   final Value<int> subjectId;
-  final Value<String?> location;
+  final Value<String> location;
   final Value<DateTime> startTime;
   final Value<DateTime> endTime;
   final Value<DateTime> lastUpdated;
@@ -1034,11 +1041,12 @@ class ClassAppointmentCompanion extends UpdateCompanion<ClassAppointmentData> {
   ClassAppointmentCompanion.insert({
     this.id = const Value.absent(),
     required int subjectId,
-    this.location = const Value.absent(),
+    required String location,
     required DateTime startTime,
     required DateTime endTime,
     this.lastUpdated = const Value.absent(),
   }) : subjectId = Value(subjectId),
+       location = Value(location),
        startTime = Value(startTime),
        endTime = Value(endTime);
   static Insertable<ClassAppointmentData> custom({
@@ -1062,7 +1070,7 @@ class ClassAppointmentCompanion extends UpdateCompanion<ClassAppointmentData> {
   ClassAppointmentCompanion copyWith({
     Value<int>? id,
     Value<int>? subjectId,
-    Value<String?>? location,
+    Value<String>? location,
     Value<DateTime>? startTime,
     Value<DateTime>? endTime,
     Value<DateTime>? lastUpdated,
@@ -1132,7 +1140,7 @@ class $ClassGroupTable extends ClassGroup
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES "group" (id)',
+      'REFERENCES "group" (id) ON UPDATE CASCADE ON DELETE CASCADE',
     ),
   );
   static const VerificationMeta _appointmentIdMeta = const VerificationMeta(
@@ -1146,7 +1154,7 @@ class $ClassGroupTable extends ClassGroup
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES class_appointment (id)',
+      'REFERENCES class_appointment (id) ON UPDATE CASCADE ON DELETE CASCADE',
     ),
   );
   @override
@@ -1206,6 +1214,9 @@ class $ClassGroupTable extends ClassGroup
   $ClassGroupTable createAlias(String alias) {
     return $ClassGroupTable(attachedDatabase, alias);
   }
+
+  @override
+  bool get isStrict => true;
 }
 
 class ClassGroupData extends DataClass implements Insertable<ClassGroupData> {
@@ -1360,7 +1371,7 @@ class $ClassTeacherTable extends ClassTeacher
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES teacher (id)',
+      'REFERENCES teacher (id) ON UPDATE CASCADE ON DELETE CASCADE',
     ),
   );
   static const VerificationMeta _appointmentIdMeta = const VerificationMeta(
@@ -1374,7 +1385,7 @@ class $ClassTeacherTable extends ClassTeacher
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES class_appointment (id)',
+      'REFERENCES class_appointment (id) ON UPDATE CASCADE ON DELETE CASCADE',
     ),
   );
   @override
@@ -1434,6 +1445,9 @@ class $ClassTeacherTable extends ClassTeacher
   $ClassTeacherTable createAlias(String alias) {
     return $ClassTeacherTable(attachedDatabase, alias);
   }
+
+  @override
+  bool get isStrict => true;
 }
 
 class ClassTeacherData extends DataClass
@@ -1604,6 +1618,79 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     classTeacher,
     appointmentStart,
   ];
+  @override
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'subject',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('class_appointment', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'subject',
+        limitUpdateKind: UpdateKind.update,
+      ),
+      result: [TableUpdate('class_appointment', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'group',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('class_group', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'group',
+        limitUpdateKind: UpdateKind.update,
+      ),
+      result: [TableUpdate('class_group', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'class_appointment',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('class_group', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'class_appointment',
+        limitUpdateKind: UpdateKind.update,
+      ),
+      result: [TableUpdate('class_group', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'teacher',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('class_teacher', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'teacher',
+        limitUpdateKind: UpdateKind.update,
+      ),
+      result: [TableUpdate('class_teacher', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'class_appointment',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('class_teacher', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'class_appointment',
+        limitUpdateKind: UpdateKind.update,
+      ),
+      result: [TableUpdate('class_teacher', kind: UpdateKind.update)],
+    ),
+  ]);
 }
 
 typedef $$TeacherTableCreateCompanionBuilder =
@@ -2329,7 +2416,7 @@ typedef $$ClassAppointmentTableCreateCompanionBuilder =
     ClassAppointmentCompanion Function({
       Value<int> id,
       required int subjectId,
-      Value<String?> location,
+      required String location,
       required DateTime startTime,
       required DateTime endTime,
       Value<DateTime> lastUpdated,
@@ -2338,7 +2425,7 @@ typedef $$ClassAppointmentTableUpdateCompanionBuilder =
     ClassAppointmentCompanion Function({
       Value<int> id,
       Value<int> subjectId,
-      Value<String?> location,
+      Value<String> location,
       Value<DateTime> startTime,
       Value<DateTime> endTime,
       Value<DateTime> lastUpdated,
@@ -2721,7 +2808,7 @@ class $$ClassAppointmentTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<int> subjectId = const Value.absent(),
-                Value<String?> location = const Value.absent(),
+                Value<String> location = const Value.absent(),
                 Value<DateTime> startTime = const Value.absent(),
                 Value<DateTime> endTime = const Value.absent(),
                 Value<DateTime> lastUpdated = const Value.absent(),
@@ -2737,7 +2824,7 @@ class $$ClassAppointmentTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required int subjectId,
-                Value<String?> location = const Value.absent(),
+                required String location,
                 required DateTime startTime,
                 required DateTime endTime,
                 Value<DateTime> lastUpdated = const Value.absent(),

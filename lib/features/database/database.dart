@@ -20,9 +20,15 @@ class Subject extends Table {
 @TableIndex(name: 'appointment_start', columns: {#startTime})
 class ClassAppointment extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get subjectId => integer().references(Subject, #id)();
+  IntColumn get subjectId => integer().references(
+    Subject,
+    #id,
+    onDelete: KeyAction.cascade,
+    onUpdate: KeyAction.cascade,
+  )();
 
-  TextColumn get location => text().withLength(min: 0, max: 256).nullable()();
+  // Empty location is treated as "online"
+  TextColumn get location => text().withLength(min: 0, max: 256)();
 
   DateTimeColumn get startTime => dateTime()();
   DateTimeColumn get endTime => dateTime()();
@@ -34,6 +40,9 @@ class ClassAppointment extends Table {
   List<Set<Column>> get uniqueKeys => [
     {subjectId, startTime, endTime, location},
   ];
+
+  @override
+  bool get isStrict => true;
 }
 
 class Teacher extends Table {
@@ -44,6 +53,9 @@ class Teacher extends Table {
   List<Set<Column>> get uniqueKeys => [
     {name},
   ];
+
+  @override
+  bool get isStrict => true;
 }
 
 class Group extends Table {
@@ -53,22 +65,51 @@ class Group extends Table {
   List<Set<Column>> get uniqueKeys => [
     {name},
   ];
+
+  @override
+  bool get isStrict => true;
 }
 
 class ClassGroup extends Table {
-  IntColumn get groupId => integer().references(Group, #id)();
-  IntColumn get appointmentId => integer().references(ClassAppointment, #id)();
+  IntColumn get groupId => integer().references(
+    Group,
+    #id,
+    onDelete: KeyAction.cascade,
+    onUpdate: KeyAction.cascade,
+  )();
+  IntColumn get appointmentId => integer().references(
+    ClassAppointment,
+    #id,
+    onDelete: KeyAction.cascade,
+    onUpdate: KeyAction.cascade,
+  )();
 
   @override
   Set<Column> get primaryKey => {groupId, appointmentId};
+
+  @override
+  bool get isStrict => true;
 }
 
 class ClassTeacher extends Table {
-  IntColumn get teacherId => integer().references(Teacher, #id)();
-  IntColumn get appointmentId => integer().references(ClassAppointment, #id)();
+  IntColumn get teacherId => integer().references(
+    Teacher,
+    #id,
+    onDelete: KeyAction.cascade,
+    onUpdate: KeyAction.cascade,
+  )();
+  IntColumn get appointmentId => integer().references(
+    ClassAppointment,
+    #id,
+    onDelete: KeyAction.cascade,
+    onUpdate: KeyAction.cascade,
+  )();
 
   @override
   Set<Column> get primaryKey => {teacherId, appointmentId};
+
+  @override
+  bool get isStrict => true;
 }
 
 @DriftDatabase(

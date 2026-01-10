@@ -61,7 +61,7 @@ class ScheduleDao {
     return rows.asyncMap((rows) async {
       // Group rows by appointment ID to avoid duplicates
       final appointmentMap = <int, _AppointmentData>{};
-      
+
       for (final row in rows) {
         final subject = row.readTable(db.subject);
         final appointment = row.readTable(db.classAppointment);
@@ -74,7 +74,7 @@ class ScheduleDao {
             groups: {},
           );
         }
-        
+
         appointmentMap[appointment.id]!.groups.add(group.name);
       }
 
@@ -88,7 +88,9 @@ class ScheduleDao {
         ])..where(db.classTeacher.appointmentId.equals(data.appointment.id));
 
         final teacherRows = await teachersQuery.get();
-        final teachers = teacherRows.map((row) => row.readTable(db.teacher).name).toList();
+        final teachers = teacherRows
+            .map((row) => row.readTable(db.teacher).name)
+            .toList();
         final teacherStr = teachers.isNotEmpty ? teachers.first : '';
 
         classes.add(
@@ -100,8 +102,8 @@ class ScheduleDao {
             lecturer: teacherStr,
             start: data.appointment.startTime,
             end: data.appointment.endTime,
-            place: data.appointment.location != null
-                ? ClassPlaceOnSite(room: data.appointment.location!)
+            place: data.appointment.location.isNotEmpty
+                ? ClassPlaceOnSite(room: data.appointment.location)
                 : ClassPlaceOnline(),
             groups: data.groups.toList(),
           ),
@@ -146,6 +148,7 @@ class ScheduleDao {
                 code: Value(scheduledClass.code),
                 kind: Value(scheduledClass.kind),
               ),
+              // dumb do update to make sqlite return rowid on conflict
               onConflict: DoUpdate(
                 (old) => SubjectCompanion(
                   name: Value(scheduledClass.name),
@@ -157,7 +160,7 @@ class ScheduleDao {
             );
 
         final location = switch (scheduledClass.place) {
-          ClassPlaceOnline() => null,
+          ClassPlaceOnline() => '',
           ClassPlaceOnSite(:final room) => room,
         };
 
@@ -166,16 +169,12 @@ class ScheduleDao {
             .insertReturning(
               ClassAppointmentCompanion(
                 subjectId: Value(subject.id),
-                location: Value.absentIfNull(location),
+                location: Value(location),
                 startTime: Value(scheduledClass.start),
                 endTime: Value(scheduledClass.end),
               ),
               onConflict: DoUpdate(
                 (old) => ClassAppointmentCompanion(
-                  subjectId: Value(subject.id),
-                  location: Value.absentIfNull(location),
-                  startTime: Value(scheduledClass.start),
-                  endTime: Value(scheduledClass.end),
                   lastUpdated: Value(DateTime.now()),
                 ),
                 target: [
