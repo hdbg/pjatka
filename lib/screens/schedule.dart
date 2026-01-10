@@ -8,6 +8,33 @@ import 'package:sizer/sizer.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import '../features/schedule/providers/schedule_providers.dart';
 
+String _getPlaceDescription(ClassPlace place) {
+  return place.when(online: () => 'Online', onSite: (room) => room);
+}
+
+Color _getColorForKind(ClassKind kind) {
+  return switch (kind) {
+    ClassKind.lecture => Colors.blue,
+    ClassKind.seminar => Colors.green,
+    ClassKind.diplomaThesis => Colors.purple,
+  };
+}
+
+// Exploit the fact that it can be casted to Appointment later, so calendar is compatible
+class _CustomAppointment extends Appointment {
+  final ScheduledClass scheduledClass;
+
+  _CustomAppointment(this.scheduledClass)
+    : super(
+        startTime: scheduledClass.start.toLocal(),
+        endTime: scheduledClass.end.toLocal(),
+        subject:
+            '${scheduledClass.code} - ${_getPlaceDescription(scheduledClass.place)}',
+        location: _getPlaceDescription(scheduledClass.place),
+        color: _getColorForKind(scheduledClass.kind),
+      );
+}
+
 class ScheduleDataSource extends CalendarDataSource {
   final ProviderContainer container;
 
@@ -26,7 +53,7 @@ class ScheduleDataSource extends CalendarDataSource {
           final newAppointments = <Appointment>[];
 
           for (final classItem in newClasses) {
-            newAppointments.add(_classToAppointment(classItem));
+            newAppointments.add(_CustomAppointment(classItem));
           }
 
           talker.debug(
@@ -38,38 +65,6 @@ class ScheduleDataSource extends CalendarDataSource {
       },
       fireImmediately: true,
     );
-  }
-
-  Appointment _classToAppointment(ScheduledClass classItem) {
-    final startTime = classItem.start.toLocal();
-    final endTime = classItem.end.toLocal();
-
-    final color = _getColorForKind(classItem.kind);
-
-    final location = classItem.place.when(
-      online: () => 'Online',
-      onSite: (room) => room,
-    );
-
-    final subject ='${classItem.code} - ${location}';
-
-    return Appointment(
-      startTime: startTime,
-      endTime: endTime,
-      subject: subject,
-      notes: 'Teacher: ${classItem.lecturer}',
-      location: location,
-      color: color,
-      id: classItem.classId,
-    );
-  }
-
-  Color _getColorForKind(ClassKind kind) {
-    return switch (kind) {
-      ClassKind.lecture => Colors.blue,
-      ClassKind.seminar => Colors.green,
-      ClassKind.diplomaThesis => Colors.purple,
-    };
   }
 
   @override
@@ -145,9 +140,99 @@ class ScheduleScreen extends ConsumerWidget {
             color: Colors.white,
             fontWeight: FontWeight.w500,
           ),
+          onTap: (calendarTapDetails) {
+            if (calendarTapDetails.targetElement ==
+                    CalendarElement.appointment &&
+                calendarTapDetails.appointments != null) {
+              final appointment =
+                  calendarTapDetails.appointments!.first as _CustomAppointment;
+
+              _showClassDetailsDialog(context, appointment);
+            }
+          },
         ),
         const Positioned(top: 0, left: 0, right: 0, child: TopLoader()),
       ],
+    );
+  }
+}
+
+void _showClassDetailsDialog(
+  BuildContext context,
+  _CustomAppointment appointment,
+) {
+  final groups = appointment.scheduledClass.groups.join(', ');
+
+  // Calculate duration
+  final duration = appointment.endTime.difference(appointment.startTime);
+  final hours = duration.inHours;
+  final minutes = duration.inMinutes.remainder(60);
+  final durationText = hours > 0 ? '${hours}h ${minutes}min' : '${minutes}min';
+
+
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(appointment.scheduledClass.name),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _DetailRow(label: 'Code', value: appointment.scheduledClass.code),
+            _DetailRow(
+              label: 'Type',
+              value: appointment.scheduledClass.kind.name,
+            ),
+            _DetailRow(
+              label: 'Location',
+              value: _getPlaceDescription(appointment.scheduledClass.place),
+            ),
+            _DetailRow(
+              label: 'Teacher',
+              value: appointment.scheduledClass.lecturer,
+            ),
+            _DetailRow(label: 'Groups', value: groups),
+            _DetailRow(label: 'Duration', value: durationText),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Close'),
+        ),
+      ],
+    ),
+  );
+}
+
+class _DetailRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _DetailRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 80,
+            child: Text(
+              '$label:',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ),
+          Expanded(child: Text(value)),
+        ],
+      ),
     );
   }
 }
