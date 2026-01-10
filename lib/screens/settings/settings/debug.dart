@@ -152,6 +152,7 @@ class _DebugActionCards extends StatelessWidget {
     if (confirmed == true && context.mounted) {
       talker.debug('Clearing database');
       await database.transaction(() async {
+        await database.customStatement('PRAGMA foreign_keys = OFF;');
         for (final table in database.allTables) {
           await database.delete(table).go();
         }

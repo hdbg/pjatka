@@ -20,7 +20,7 @@ class ScheduleDao {
 
     final result = await earliest.getSingleOrNull();
 
-    return result?.startTime;
+    return result?.lastChecked;
   }
 
   static Stream<List<ScheduledClass>> watchClasses(
@@ -45,7 +45,6 @@ class ScheduleDao {
     final rows = query.watch();
 
     return rows.map((rows) {
-      talker.debug('Mapping ${rows.length} database rows to ScheduledClass');
       final classMap =
           <String, (UniversityClassData, Set<String>, Set<String>)>{};
 

@@ -284,10 +284,8 @@ class PjatkParser {
       return [];
     }
 
-    // Parse each class detail
-    talker.info('Fetching details for ${classIdStylePairs.length} classes...');
 
-     final sm = LocalSemaphore(8);
+     final sm = LocalSemaphore(16);
 
     final jobList = classIdStylePairs.map((packed) async {
       await sm.acquire();
@@ -319,13 +317,7 @@ class PjatkParser {
   Future<List<ScheduledClass>> parseDay(DateTime date) async {
     try {
       final raw = await _parseDayRaw(date);
-      talker.debug(
-        'Deducting and converting ${raw.length} raw classes to structured format',
-      );
       final deducted = deductMulti(raw);
-      talker.info(
-        '✓ Parsing complete: ${deducted.length} unique classes after deduction',
-      );
       return deducted;
     } catch (e, stackTrace) {
       talker.error('Failed to parse schedule', e, stackTrace);

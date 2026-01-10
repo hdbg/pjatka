@@ -29,11 +29,12 @@ Future<void> globalLoader(Ref ref) async {
 
   final today = _stripTime(DateTime.now());
 
+
   final parseOneDay = (date) async {
     final earliestUpdate = await ScheduleDao.getEarliestUpdateForDate(date);
     if (earliestUpdate != null) {
       final hoursSinceUpdate = today.difference(earliestUpdate).inHours;
-      if (hoursSinceUpdate.abs() > settings.cacheTTLHours) {
+      if (hoursSinceUpdate.abs() < settings.cacheTTLHours) {
         talker.debug(
           'Skipping schedule load for ${date}; last update was $hoursSinceUpdate hours ago',
         );
@@ -42,6 +43,10 @@ Future<void> globalLoader(Ref ref) async {
     }
 
     final parsedDays = await parser.parseDay(date);
+
+    if (parsedDays.isEmpty) {
+      return;
+    }
 
     try {
       await ScheduleDao.syncClasses(date, parsedDays);
@@ -53,6 +58,8 @@ Future<void> globalLoader(Ref ref) async {
       );
     }
   };
+
+  await parseOneDay(today);
 
   // first we load from today onwards to optimize for user experience
   for (var i = 0; i <= settings.maxDateDaysOffset; i++) {

@@ -42,7 +42,9 @@ class Teacher extends Table {
       text().references(UniversityClass, #id, onDelete: KeyAction.cascade)();
 
   @override
-  List<Set<Column>> get uniqueKeys => [{name, classId}];
+  List<Set<Column>> get uniqueKeys => [
+    {name, classId},
+  ];
 }
 
 class Group extends Table {
@@ -52,7 +54,9 @@ class Group extends Table {
       text().references(UniversityClass, #id, onDelete: KeyAction.cascade)();
 
   @override
-  List<Set<Column>> get uniqueKeys => [{name, classId}];
+  List<Set<Column>> get uniqueKeys => [
+    {name, classId},
+  ];
 }
 
 @DriftDatabase(tables: [UniversityClass, Teacher, Group])
@@ -74,6 +78,22 @@ class AppDatabase extends _$AppDatabase {
       ),
     );
   }
+}
+
+@override
+MigrationStrategy get migration {
+  return MigrationStrategy(
+    onCreate: (Migrator m) async {
+      await m.createAll();
+    },
+    onUpgrade: (Migrator m, int from, int to) async {
+      // Handle database upgrades if needed in the future
+    },
+    beforeOpen: (details) async {
+      await database.customStatement('PRAGMA journal_mode=WAL');
+      await database.customStatement('PRAGMA foreign_keys = ON');
+    },
+  );
 }
 
 final database = AppDatabase();

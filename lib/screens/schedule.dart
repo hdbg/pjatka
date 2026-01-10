@@ -51,13 +51,13 @@ class ScheduleDataSource extends CalendarDataSource {
       onSite: (room) => room,
     );
 
-    final subject = '${classItem.name} (${classItem.code})';
+    final subject ='${classItem.code} - ${location}';
 
     return Appointment(
       startTime: startTime,
       endTime: endTime,
       subject: subject,
-      notes: 'Lecturer: ${classItem.lecturer}',
+      notes: 'Teacher: ${classItem.lecturer}',
       location: location,
       color: color,
       id: classItem.classId,
