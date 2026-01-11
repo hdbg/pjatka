@@ -25,7 +25,6 @@ jobs:
         with:
           cache: true
           channel: stable
-          flutter-version-file: pubspec.yaml
           
       - name: Get dependencies
         run: flutter pub get
