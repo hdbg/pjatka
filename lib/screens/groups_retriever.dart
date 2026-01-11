@@ -55,7 +55,10 @@ Set<String> _filterGroups(Set<String> groups) {
           return semester == highestSemester;
         }
       })
-      .map((e) => e.join(' '))
+      .map((e) {
+        e.removeWhere((element) => element == repetitionSuffix);
+        return e.join(' ').trim();
+      })
       .toSet();
 }
 
@@ -119,12 +122,12 @@ Future<void> showGroupsRetriever(BuildContext context) {
   final completer = Completer<void>();
 
   Navigator.of(context).push(
-    MaterialPageRoute(builder: (context) => Scaffold(
-      
-      appBar: AppBar(
-        title: const Text('Retrieve Groups'),
+    MaterialPageRoute(
+      builder: (context) => Scaffold(
+        appBar: AppBar(title: const Text('Retrieve Groups')),
+        body: GroupsRetriever(onDone: completer),
       ),
-      body: GroupsRetriever(onDone: completer))),
+    ),
   );
 
   return completer.future
@@ -132,7 +135,7 @@ Future<void> showGroupsRetriever(BuildContext context) {
         Navigator.of(context).pop();
       })
       .catchError((error) {
-        talker.handle(  error, null, 'Error retrieving groups');
+        talker.handle(error, null, 'Error retrieving groups');
         Navigator.of(context).pop();
         throw error;
       });
