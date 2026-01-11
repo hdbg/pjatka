@@ -8,14 +8,31 @@ class OnboardingPages {
     required VoidCallback onManualSetup,
     required VoidCallback onAutomaticSetup,
   }) {
-    return [
+    final pages = [
       PageViewModel(
         title: 'Welcome to PJATK App',
         body: 'Your personal schedule assistant for PJATK classes',
         image: Center(child: Image.asset('assets/icon.png', height: 40.h)),
         decoration: _getPageDecoration(),
       ),
+    ];
 
+    if (kIsWeb) {
+      pages.add(
+        PageViewModel(
+          title: 'Note on Web Version',
+          body:
+              'Web version is proxied through developer owned proxy because of CORS restrictions.\n '
+              'As such, automatic group retrieval is disabled, because it requires login with your PJATK credentials. ',
+          image: Center(
+            child: Icon(Icons.warning, size: 15.h, color: Colors.yellow),
+          ),
+          decoration: _getPageDecoration(),
+        ),
+      );
+    }
+
+    pages.addAll([
       PageViewModel(
         title: 'View Your Schedule',
         body:
@@ -39,7 +56,9 @@ class OnboardingPages {
         ),
         decoration: _getPageDecoration(),
       ),
-    ];
+    ]);
+
+    return pages;
   }
 
   static PageDecoration _getPageDecoration() {
