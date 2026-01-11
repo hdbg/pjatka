@@ -70,10 +70,7 @@ class GroupsRetriever extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final webview = InAppWebView(
       onLoadStop: (controller, url) {
-        talker.debug('Page loaded: $url');
-
-        if (url.toString().trim() !=
-            ApiConfig.groupRetrieverTargetEndpoint.trim()) {
+        if (!url.toString().contains(ApiConfig.groupRetrieverTargetEndpoint.trim())) {
           return;
         }
 
