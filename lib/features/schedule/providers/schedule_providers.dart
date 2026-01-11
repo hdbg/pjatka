@@ -17,18 +17,19 @@ PjatkParser parser(Ref ref) {
   return PjatkParser();
 }
 
-final userClassesProvider = StreamProvider<List<ScheduledClass>>((ref) {
-  final settings = ref.watch(settingsProvider);
+final classesProvider = StreamProvider.autoDispose
+    .family<List<ScheduledClass>, WatchFilters>((ref, filters) {
+      final settings = ref.watch(settingsProvider);
 
-  return ScheduleDao.watchClasses(settings);
-});
+      return ScheduleDao.watchClasses(settings, filters: filters);
+    });
+
 @Riverpod(keepAlive: true)
 Future<void> globalLoader(Ref ref) async {
   final parser = ref.read(parserProvider);
   final settings = await ref.watch(settingsProvider);
 
   final today = _stripTime(DateTime.now());
-
 
   final parseOneDay = (date) async {
     final earliestUpdate = await ScheduleDao.getEarliestUpdateForDate(date);

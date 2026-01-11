@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pjatka/features/onboarding/onboarding_screen.dart';
 import 'package:pjatka/features/settings/provider.dart';
 import 'package:pjatka/home.dart';
+import 'package:pjatka/screens/general_schedule.dart';
 import 'package:pjatka/screens/settings/screen.dart';
 import 'package:pjatka/utils.dart';
 import 'package:talker_dio_logger/talker_dio_logger_interceptor.dart';
@@ -59,7 +60,11 @@ class MyApp extends ConsumerWidget {
                     //   toolbarHeight: 7.h,
                     // ),
                     body: HomeRouter(
-                      destinations: [scheduleDestination, settingsDestination],
+                      destinations: [
+                        scheduleDestination,
+                        generalScheduleDestination,
+                        settingsDestination,
+                      ],
                     ),
                   )
                 : const OnboardingScreen(),

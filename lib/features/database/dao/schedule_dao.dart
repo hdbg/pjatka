@@ -16,6 +16,31 @@ class _AppointmentData {
   });
 }
 
+class WatchFilters {
+  final bool filterByUserGroups;
+  final bool excludeIgnored;
+
+  const WatchFilters({
+    this.filterByUserGroups = true,
+    this.excludeIgnored = true,
+  });
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is WatchFilters &&
+            (identical(other.filterByUserGroups, filterByUserGroups) ||
+                other.filterByUserGroups == filterByUserGroups) &&
+            (identical(other.excludeIgnored, excludeIgnored) ||
+                other.excludeIgnored == excludeIgnored));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, filterByUserGroups, excludeIgnored);
+}
+
 class ScheduleDao {
   static Future<DateTime?> getEarliestUpdateForDate(DateTime date) async {
     final earliest = await db.select(db.classAppointment)
@@ -37,8 +62,7 @@ class ScheduleDao {
 
   static Stream<List<ScheduledClass>> watchClasses(
     SettingsState settings, {
-    bool filterByGroups = true,
-    bool excludeIgnored = true,
+    WatchFilters filters = const WatchFilters(),
   }) {
     // Main query - join only subject and appointment, plus groups for filtering
     final query = db.select(db.subject).join([
@@ -53,11 +77,11 @@ class ScheduleDao {
       innerJoin(db.group, db.classGroup.groupId.equalsExp(db.group.id)),
     ]);
 
-    if (filterByGroups) {
+    if (filters.filterByUserGroups) {
       query.where(db.group.name.isIn(settings.groups));
     }
 
-    if (excludeIgnored) {
+    if (filters.excludeIgnored) {
       query.where(db.subject.ignored.equals(false));
     }
 
@@ -225,14 +249,13 @@ class ScheduleDao {
     required String code,
     required ClassKind kind,
   }) async {
-   await db.update(db.subject)
-              ..where(
-                (tbl) =>
-                    tbl.code.equals(code) &
-                    tbl.name.equals(name) &
-                    tbl.kind.equalsValue(kind),
-              )
-              ..write(SubjectCompanion(ignored: Value(true)));
-
+    await db.update(db.subject)
+      ..where(
+        (tbl) =>
+            tbl.code.equals(code) &
+            tbl.name.equals(name) &
+            tbl.kind.equalsValue(kind),
+      )
+      ..write(SubjectCompanion(ignored: Value(true)));
   }
 }
