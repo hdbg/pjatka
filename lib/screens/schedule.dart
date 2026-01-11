@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pjatka/features/database/dao/schedule_dao.dart';
 import 'package:pjatka/features/schedule/models.dart';
 import 'package:pjatka/features/settings/provider.dart';
 import 'package:pjatka/home.dart';
@@ -157,56 +158,6 @@ class ScheduleScreen extends ConsumerWidget {
   }
 }
 
-void _showClassDetailsDialog(
-  BuildContext context,
-  _CustomAppointment appointment,
-) {
-  final groups = appointment.scheduledClass.groups.join(', ');
-
-  // Calculate duration
-  final duration = appointment.endTime.difference(appointment.startTime);
-  final hours = duration.inHours;
-  final minutes = duration.inMinutes.remainder(60);
-  final durationText = hours > 0 ? '${hours}h ${minutes}min' : '${minutes}min';
-
-
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text(appointment.scheduledClass.name),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _DetailRow(label: 'Code', value: appointment.scheduledClass.code),
-            _DetailRow(
-              label: 'Type',
-              value: appointment.scheduledClass.kind.name,
-            ),
-            _DetailRow(
-              label: 'Location',
-              value: _getPlaceDescription(appointment.scheduledClass.place),
-            ),
-            _DetailRow(
-              label: 'Teacher',
-              value: appointment.scheduledClass.lecturer,
-            ),
-            _DetailRow(label: 'Groups', value: groups),
-            _DetailRow(label: 'Duration', value: durationText),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Close'),
-        ),
-      ],
-    ),
-  );
-}
-
 class _DetailRow extends StatelessWidget {
   final String label;
   final String value;
@@ -235,6 +186,75 @@ class _DetailRow extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ClassDetailsPopup extends StatelessWidget {
+  final _CustomAppointment appointment;
+  const _ClassDetailsPopup({required this.appointment});
+
+  @override
+  Widget build(BuildContext context) {
+    final groups = appointment.scheduledClass.groups.join(', ');
+
+    // Calculate duration
+    final duration = appointment.endTime.difference(appointment.startTime);
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    final durationText = hours > 0
+        ? '${hours}h ${minutes}min'
+        : '${minutes}min';
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _DetailRow(label: 'Code', value: appointment.scheduledClass.code),
+        _DetailRow(label: 'Type', value: appointment.scheduledClass.kind.name),
+        _DetailRow(
+          label: 'Location',
+          value: _getPlaceDescription(appointment.scheduledClass.place),
+        ),
+        _DetailRow(
+          label: 'Teacher',
+          value: appointment.scheduledClass.lecturer,
+        ),
+        _DetailRow(label: 'Groups', value: groups),
+        _DetailRow(label: 'Duration', value: durationText),
+      ],
+    );
+  }
+}
+
+void _showClassDetailsDialog(
+  BuildContext context,
+  _CustomAppointment appointment,
+) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(appointment.scheduledClass.name),
+      content: SingleChildScrollView(
+        child: _ClassDetailsPopup(appointment: appointment),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Close'),
+        ),
+        TextButton(
+          child: const Text('Ignore Class'),
+          onPressed: () async {
+            await ScheduleDao.ignoreSubject(
+              name: appointment.scheduledClass.name,
+              code: appointment.scheduledClass.code,
+              kind: appointment.scheduledClass.kind,
+            );
+            Navigator.of(context).pop();
+          },
+        ),
+      ],
+    ),
+  );
 }
 
 final scheduleDestination = Destination(

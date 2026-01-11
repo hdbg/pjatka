@@ -38,6 +38,7 @@ class ScheduleDao {
   static Stream<List<ScheduledClass>> watchClasses(
     SettingsState settings, {
     bool filterByGroups = true,
+    bool excludeIgnored = true,
   }) {
     // Main query - join only subject and appointment, plus groups for filtering
     final query = db.select(db.subject).join([
@@ -54,6 +55,10 @@ class ScheduleDao {
 
     if (filterByGroups) {
       query.where(db.group.name.isIn(settings.groups));
+    }
+
+    if (excludeIgnored) {
+      query.where(db.subject.ignored.equals(false));
     }
 
     final rows = query.watch();
@@ -213,5 +218,21 @@ class ScheduleDao {
             );
       });
     }
+  }
+
+  static Future<void> ignoreSubject({
+    required String name,
+    required String code,
+    required ClassKind kind,
+  }) async {
+   await db.update(db.subject)
+              ..where(
+                (tbl) =>
+                    tbl.code.equals(code) &
+                    tbl.name.equals(name) &
+                    tbl.kind.equalsValue(kind),
+              )
+              ..write(SubjectCompanion(ignored: Value(true)));
+
   }
 }

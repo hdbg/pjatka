@@ -11,6 +11,8 @@ class Subject extends Table {
   TextColumn get code => text().withLength(min: 2, max: 32)();
   TextColumn get kind => textEnum<ClassKind>()();
 
+  BoolColumn get ignored => boolean().withDefault(const Constant(false))();
+
   @override
   List<Set<Column>> get uniqueKeys => [
     {name, code, kind},

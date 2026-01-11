@@ -3,7 +3,7 @@ import 'package:pjatka/features/schedule/models.dart';
 import 'package:pjatka/features/settings/provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../parsing/parsing.dart';
-import '../data/schedule_dao.dart';
+import '../../database/dao/schedule_dao.dart';
 import '../../../utils.dart';
 
 part 'schedule_providers.g.dart';

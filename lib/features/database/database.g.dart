@@ -448,8 +448,23 @@ class $SubjectTable extends Subject with TableInfo<$SubjectTable, SubjectData> {
         type: DriftSqlType.string,
         requiredDuringInsert: true,
       ).withConverter<ClassKind>($SubjectTable.$converterkind);
+  static const VerificationMeta _ignoredMeta = const VerificationMeta(
+    'ignored',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, name, code, kind];
+  late final GeneratedColumn<bool> ignored = GeneratedColumn<bool>(
+    'ignored',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("ignored" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name, code, kind, ignored];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -480,6 +495,12 @@ class $SubjectTable extends Subject with TableInfo<$SubjectTable, SubjectData> {
       );
     } else if (isInserting) {
       context.missing(_codeMeta);
+    }
+    if (data.containsKey('ignored')) {
+      context.handle(
+        _ignoredMeta,
+        ignored.isAcceptableOrUnknown(data['ignored']!, _ignoredMeta),
+      );
     }
     return context;
   }
@@ -512,6 +533,10 @@ class $SubjectTable extends Subject with TableInfo<$SubjectTable, SubjectData> {
           data['${effectivePrefix}kind'],
         )!,
       ),
+      ignored: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}ignored'],
+      )!,
     );
   }
 
@@ -529,11 +554,13 @@ class SubjectData extends DataClass implements Insertable<SubjectData> {
   final String name;
   final String code;
   final ClassKind kind;
+  final bool ignored;
   const SubjectData({
     required this.id,
     required this.name,
     required this.code,
     required this.kind,
+    required this.ignored,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -544,6 +571,7 @@ class SubjectData extends DataClass implements Insertable<SubjectData> {
     {
       map['kind'] = Variable<String>($SubjectTable.$converterkind.toSql(kind));
     }
+    map['ignored'] = Variable<bool>(ignored);
     return map;
   }
 
@@ -553,6 +581,7 @@ class SubjectData extends DataClass implements Insertable<SubjectData> {
       name: Value(name),
       code: Value(code),
       kind: Value(kind),
+      ignored: Value(ignored),
     );
   }
 
@@ -568,6 +597,7 @@ class SubjectData extends DataClass implements Insertable<SubjectData> {
       kind: $SubjectTable.$converterkind.fromJson(
         serializer.fromJson<String>(json['kind']),
       ),
+      ignored: serializer.fromJson<bool>(json['ignored']),
     );
   }
   @override
@@ -580,6 +610,7 @@ class SubjectData extends DataClass implements Insertable<SubjectData> {
       'kind': serializer.toJson<String>(
         $SubjectTable.$converterkind.toJson(kind),
       ),
+      'ignored': serializer.toJson<bool>(ignored),
     };
   }
 
@@ -588,11 +619,13 @@ class SubjectData extends DataClass implements Insertable<SubjectData> {
     String? name,
     String? code,
     ClassKind? kind,
+    bool? ignored,
   }) => SubjectData(
     id: id ?? this.id,
     name: name ?? this.name,
     code: code ?? this.code,
     kind: kind ?? this.kind,
+    ignored: ignored ?? this.ignored,
   );
   SubjectData copyWithCompanion(SubjectCompanion data) {
     return SubjectData(
@@ -600,6 +633,7 @@ class SubjectData extends DataClass implements Insertable<SubjectData> {
       name: data.name.present ? data.name.value : this.name,
       code: data.code.present ? data.code.value : this.code,
       kind: data.kind.present ? data.kind.value : this.kind,
+      ignored: data.ignored.present ? data.ignored.value : this.ignored,
     );
   }
 
@@ -609,13 +643,14 @@ class SubjectData extends DataClass implements Insertable<SubjectData> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('code: $code, ')
-          ..write('kind: $kind')
+          ..write('kind: $kind, ')
+          ..write('ignored: $ignored')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, code, kind);
+  int get hashCode => Object.hash(id, name, code, kind, ignored);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -623,7 +658,8 @@ class SubjectData extends DataClass implements Insertable<SubjectData> {
           other.id == this.id &&
           other.name == this.name &&
           other.code == this.code &&
-          other.kind == this.kind);
+          other.kind == this.kind &&
+          other.ignored == this.ignored);
 }
 
 class SubjectCompanion extends UpdateCompanion<SubjectData> {
@@ -631,17 +667,20 @@ class SubjectCompanion extends UpdateCompanion<SubjectData> {
   final Value<String> name;
   final Value<String> code;
   final Value<ClassKind> kind;
+  final Value<bool> ignored;
   const SubjectCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.code = const Value.absent(),
     this.kind = const Value.absent(),
+    this.ignored = const Value.absent(),
   });
   SubjectCompanion.insert({
     this.id = const Value.absent(),
     required String name,
     required String code,
     required ClassKind kind,
+    this.ignored = const Value.absent(),
   }) : name = Value(name),
        code = Value(code),
        kind = Value(kind);
@@ -650,12 +689,14 @@ class SubjectCompanion extends UpdateCompanion<SubjectData> {
     Expression<String>? name,
     Expression<String>? code,
     Expression<String>? kind,
+    Expression<bool>? ignored,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (code != null) 'code': code,
       if (kind != null) 'kind': kind,
+      if (ignored != null) 'ignored': ignored,
     });
   }
 
@@ -664,12 +705,14 @@ class SubjectCompanion extends UpdateCompanion<SubjectData> {
     Value<String>? name,
     Value<String>? code,
     Value<ClassKind>? kind,
+    Value<bool>? ignored,
   }) {
     return SubjectCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       code: code ?? this.code,
       kind: kind ?? this.kind,
+      ignored: ignored ?? this.ignored,
     );
   }
 
@@ -690,6 +733,9 @@ class SubjectCompanion extends UpdateCompanion<SubjectData> {
         $SubjectTable.$converterkind.toSql(kind.value),
       );
     }
+    if (ignored.present) {
+      map['ignored'] = Variable<bool>(ignored.value);
+    }
     return map;
   }
 
@@ -699,7 +745,8 @@ class SubjectCompanion extends UpdateCompanion<SubjectData> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('code: $code, ')
-          ..write('kind: $kind')
+          ..write('kind: $kind, ')
+          ..write('ignored: $ignored')
           ..write(')'))
         .toString();
   }
@@ -2139,6 +2186,7 @@ typedef $$SubjectTableCreateCompanionBuilder =
       required String name,
       required String code,
       required ClassKind kind,
+      Value<bool> ignored,
     });
 typedef $$SubjectTableUpdateCompanionBuilder =
     SubjectCompanion Function({
@@ -2146,6 +2194,7 @@ typedef $$SubjectTableUpdateCompanionBuilder =
       Value<String> name,
       Value<String> code,
       Value<ClassKind> kind,
+      Value<bool> ignored,
     });
 
 final class $$SubjectTableReferences
@@ -2206,6 +2255,11 @@ class $$SubjectTableFilterComposer
         builder: (column) => ColumnWithTypeConverterFilters(column),
       );
 
+  ColumnFilters<bool> get ignored => $composableBuilder(
+    column: $table.ignored,
+    builder: (column) => ColumnFilters(column),
+  );
+
   Expression<bool> classAppointmentRefs(
     Expression<bool> Function($$ClassAppointmentTableFilterComposer f) f,
   ) {
@@ -2260,6 +2314,11 @@ class $$SubjectTableOrderingComposer
     column: $table.kind,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get ignored => $composableBuilder(
+    column: $table.ignored,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SubjectTableAnnotationComposer
@@ -2282,6 +2341,9 @@ class $$SubjectTableAnnotationComposer
 
   GeneratedColumnWithTypeConverter<ClassKind, String> get kind =>
       $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<bool> get ignored =>
+      $composableBuilder(column: $table.ignored, builder: (column) => column);
 
   Expression<T> classAppointmentRefs<T extends Object>(
     Expression<T> Function($$ClassAppointmentTableAnnotationComposer a) f,
@@ -2341,19 +2403,27 @@ class $$SubjectTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<String> code = const Value.absent(),
                 Value<ClassKind> kind = const Value.absent(),
-              }) =>
-                  SubjectCompanion(id: id, name: name, code: code, kind: kind),
+                Value<bool> ignored = const Value.absent(),
+              }) => SubjectCompanion(
+                id: id,
+                name: name,
+                code: code,
+                kind: kind,
+                ignored: ignored,
+              ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
                 required String name,
                 required String code,
                 required ClassKind kind,
+                Value<bool> ignored = const Value.absent(),
               }) => SubjectCompanion.insert(
                 id: id,
                 name: name,
                 code: code,
                 kind: kind,
+                ignored: ignored,
               ),
           withReferenceMapper: (p0) => p0
               .map(
