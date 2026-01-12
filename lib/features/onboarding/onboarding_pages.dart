@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:sizer/sizer.dart';
@@ -99,12 +98,10 @@ class _GroupSetupWidget extends StatelessWidget {
         _SetupOptionCard(
           icon: Icons.login,
           title: 'Automatic Setup',
-          subtitle: kIsWeb
-              ? 'Not available on web platform'
-              : 'Login with PJATK credentials to automatically retrieve your groups',
+          subtitle:
+              'Login with PJATK credentials to automatically retrieve your groups',
           color: Colors.green,
-          recommended: !kIsWeb,
-          enabled: !kIsWeb,
+          recommended: true,
           onTap: onAutomaticSetup,
         ),
 
@@ -138,7 +135,6 @@ class _SetupOptionCard extends StatelessWidget {
   final String subtitle;
   final Color color;
   final bool recommended;
-  final bool enabled;
   final VoidCallback onTap;
 
   const _SetupOptionCard({
@@ -147,78 +143,63 @@ class _SetupOptionCard extends StatelessWidget {
     required this.subtitle,
     required this.color,
     required this.recommended,
-    this.enabled = true,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final effectiveColor = enabled ? color : Colors.grey;
 
     return Card(
-      elevation: enabled ? 2 : 1,
+      elevation: 2,
       child: InkWell(
-        onTap: enabled ? onTap : null,
+        onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        child: Opacity(
-          opacity: enabled ? 1.0 : 0.6,
-          child: Padding(
-            padding: EdgeInsets.all(1.5.h),
-            child: Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(1.h),
-                  decoration: BoxDecoration(
-                    color: effectiveColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(icon, size: 3.h, color: effectiveColor),
+        child: Padding(
+          padding: EdgeInsets.all(1.5.h),
+          child: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(1.h),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                SizedBox(width: 4.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            title,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: enabled ? null : Colors.grey,
-                            ),
+                child: Icon(icon, size: 3.h, color: color),
+              ),
+              SizedBox(width: 4.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          title,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
                           ),
-                          if (recommended) ...[
-                            SizedBox(width: 2.w),
-                            Chip(
-                              label: const Text('Recommended'),
-                              labelStyle: const TextStyle(fontSize: 10),
-                              backgroundColor: Colors.green.withValues(
-                                alpha: 0.2,
-                              ),
-                              side: BorderSide.none,
-                            ),
-                          ],
-                        ],
-                      ),
-                      SizedBox(height: 0.5.h),
-                      Text(
-                        subtitle,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: enabled ? null : Colors.grey,
                         ),
-                      ),
-                    ],
-                  ),
+                        if (recommended) ...[
+                          SizedBox(width: 2.w),
+                          Chip(
+                            label: const Text('Recommended'),
+                            labelStyle: const TextStyle(fontSize: 10),
+                            backgroundColor: Colors.green.withValues(
+                              alpha: 0.2,
+                            ),
+                            side: BorderSide.none,
+                          ),
+                        ],
+                      ],
+                    ),
+                    SizedBox(height: 0.5.h),
+                    Text(subtitle, style: theme.textTheme.bodySmall),
+                  ],
                 ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 1.5.h,
-                  color: enabled ? null : Colors.grey,
-                ),
-              ],
-            ),
+              ),
+              Icon(Icons.arrow_forward_ios, size: 1.5.h),
+            ],
           ),
         ),
       ),
