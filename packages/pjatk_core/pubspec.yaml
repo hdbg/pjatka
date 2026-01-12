@@ -1,0 +1,31 @@
+name: pjatk_core
+description: Shared things between PJATK app and server
+version: 1.0.0
+resolution: workspace
+publish_to: none
+
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  json_annotation: ^4.9.0
+  riverpod_annotation: ^4.0.0
+  drift: ^2.30.0
+  talker: ^5.1.9
+  dio: ^5.9.0
+  html: ^0.15.6
+  intl: ^0.20.2
+  semaphore: ^0.2.1
+  freezed_annotation: ^3.1.0
+  timezone: ^0.10.1
+
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.6
+  build_runner: ^2.10.4
+  freezed: ^3.0.0
+  json_serializable: ^6.8.0
+  riverpod_generator: ^4.0.0+1
+  drift_dev: ^2.30.0

@@ -1,0 +1,21 @@
+name: server
+description: Cache server for PJATK app
+version: 1.0.0
+resolution: workspace
+publish_to: none
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  path: ^1.9.0
+  relic: ^0.14.0
+  pjatk_core:
+    path: ../pjatk_core
+  sqlite3: ^2.9.4
+  drift: ^2.30.1
+  timezone: ^0.10.1
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.6
