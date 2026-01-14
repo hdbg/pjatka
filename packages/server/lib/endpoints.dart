@@ -57,7 +57,10 @@ Middleware addCors() {
       final result = await innerHandler(ctx);
 
       if (result case Response()) {
-        result.headers.addAll(corsHeaders);
+        return result.copyWith(headers: Headers.fromMap({
+          ...result.headers,
+          ...corsHeaders,
+        }));
       }
 
       return result;
