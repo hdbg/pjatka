@@ -40,11 +40,27 @@ Future<Response> classesHandler(final Request req) async {
 
   final resp = jsonEncode(classes.map((c) => c.toJson()).toList());
 
-  return Response.ok(
-    body: Body.fromString(resp),
-    headers: Headers.fromMap({
-      Headers.accessControlAllowOriginHeader: ['*'],
-      Headers.contentTypeHeader: ['application/json'],
-    }),
-  );
+  return Response.ok(body: Body.fromString(resp));
+}
+
+final corsHeaders = Headers.fromMap({
+  Headers.accessControlAllowOriginHeader: ['*'],
+  Headers.accessControlAllowMethodsHeader: ['GET', 'POST', 'OPTIONS'],
+  Headers.accessControlAllowHeadersHeader: ['Content-Type'],
+  Headers.accessControlMaxAgeHeader: ['86400'],
+  Headers.contentTypeHeader: ['application/json'],
+});
+
+Middleware addCors() {
+  return (final Handler innerHandler) {
+    return (final Request ctx) async {
+      final result = await innerHandler(ctx);
+
+      if (result case Response()) {
+        result.headers.addAll(corsHeaders);
+      }
+
+      return result;
+    };
+  };
 }

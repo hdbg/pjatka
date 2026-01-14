@@ -15,9 +15,10 @@ Future<void> main(List<String> arguments) async {
   final _ = backgroundWorker();
 
   final app = RelicApp()
+    ..use('/', addCors())
+    ..use('/', logRequests())
     ..get('/classes', classesHandler)
     ..get('/healthz', (request) => Response.ok(body: Body.fromString('OK\n')))
-    ..use('/', logRequests())
     ..fallback = respondWith(
       (_) => Response.notFound(
         body: Body.fromString("Sorry, that doesn't compute.\n"),
