@@ -40,5 +40,11 @@ Future<Response> classesHandler(final Request req) async {
 
   final resp = jsonEncode(classes.map((c) => c.toJson()).toList());
 
-  return Response.ok(body: Body.fromString(resp));
+  return Response.ok(
+    body: Body.fromString(resp),
+    headers: Headers.fromMap({
+      Headers.accessControlAllowOriginHeader: ['*'],
+      Headers.contentTypeHeader: ['application/json'],
+    }),
+  );
 }
