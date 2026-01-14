@@ -16,6 +16,7 @@ Future<void> main(List<String> arguments) async {
 
   final app = RelicApp()
     ..get('/classes', classesHandler)
+    ..get('/healthz', (request) => Response.ok(body: Body.fromString('OK\n')))
     ..use('/', logRequests())
     ..fallback = respondWith(
       (_) => Response.notFound(
