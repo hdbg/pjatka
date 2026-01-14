@@ -1,0 +1,24 @@
+---
+name: Deploy server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Cloning repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to dokku
+        uses: dokku/github-action@master
+        with:
+          git_remote_url: ${{ secrets.DOKKU_HOST }}
+          ssh_private_key: ${{ secrets.DOKKU_KEY }}
+          branch: main
+          
