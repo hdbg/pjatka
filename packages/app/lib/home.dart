@@ -1,4 +1,4 @@
-import 'package:canonical_adaptive_scaffold/canonical_adaptive_scaffold.dart';
+import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:pjatka/utils.dart';
