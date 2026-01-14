@@ -6,3 +6,6 @@ workspace:
   - packages/pjatk_core
   - packages/app
   - packages/server
+  
+dev_dependencies:
+  build_runner: ^2.10.5
