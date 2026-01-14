@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_adaptive_scaffold/src/switchable_rail.dart';
+import 'package:flutter_adaptive_scaffold/src/rail/drag_rail.dart';
 
 import 'adaptive_layout.dart';
 import 'breakpoints.dart';
@@ -370,7 +370,7 @@ class AdaptiveScaffold extends StatefulWidget {
     //   collapsedWidth = 192;
     // }
     return Builder(builder: (BuildContext context) {
-      return SwitchableRail(
+      return DragRail(
         labelType: labelType,
         leadingCollapsed: leadingCollapsed,
         leadingExtended: leadingExpanded,

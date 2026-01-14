@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
+import 'package:flutter_adaptive_scaffold/src/rail/navrail.dart';
 
-class SwitchableRail extends StatefulWidget {
+class DragRail extends StatefulWidget {
   final List<NavigationRailDestination> destinations;
   final double collapsedWidth;
   final double expandedWidth;
@@ -24,7 +25,7 @@ class SwitchableRail extends StatefulWidget {
   /// Threshold (0.0 to 1.0) at which the rail snaps to expanded/collapsed state.
   final double snapThreshold;
 
-  const SwitchableRail({
+  const DragRail({
     super.key,
     required this.destinations,
     this.collapsedWidth = 72,
@@ -48,10 +49,10 @@ class SwitchableRail extends StatefulWidget {
   });
 
   @override
-  State<SwitchableRail> createState() => _SwitchableRailState();
+  State<DragRail> createState() => _DragRailState();
 }
 
-class _SwitchableRailState extends State<SwitchableRail>
+class _DragRailState extends State<DragRail>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _widthAnimation;
@@ -75,7 +76,7 @@ class _SwitchableRailState extends State<SwitchableRail>
     _isExtended = widget.extended;
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration:  kThemeAnimationDuration,
       value: widget.extended ? 1.0 : 0.0,
     );
     _animationController.addListener(() {
@@ -84,11 +85,12 @@ class _SwitchableRailState extends State<SwitchableRail>
     _widthAnimation = CurvedAnimation(
       parent: _animationController,
       curve: Curves.easeInOut,
+      reverseCurve: Curves.easeOut,
     );
   }
 
   @override
-  void didUpdateWidget(SwitchableRail oldWidget) {
+  void didUpdateWidget(DragRail oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.extended != widget.extended && !_isDragging) {
       _setExtended(widget.extended, notify: false);
@@ -133,11 +135,7 @@ class _SwitchableRailState extends State<SwitchableRail>
       // Calculate progress change based on drag delta
       final delta = details.delta.dx / _widthRange;
       _dragProgress = (_dragProgress + delta).clamp(0.0, 1.0);
-
-      
     });
-
-    
   }
 
   void _onHorizontalDragEnd(DragEndDetails details) {
@@ -172,8 +170,33 @@ class _SwitchableRailState extends State<SwitchableRail>
   Widget build(BuildContext context) {
     // During drag, base extended state purely on drag progress
     // Otherwise, use the actual extended state
-    final showExtendedLabels =
-        _isDragging ? _dragProgress >= widget.snapThreshold : _isExtended;
+    final showExtendedLabels = _isDragging
+        ? _dragProgress >= widget.snapThreshold
+        : _isExtended;
+
+    final navrail = IntrinsicHeight(
+      child: ControllableNavRail(
+        minWidth: widget.collapsedWidth,
+        minExtendedWidth: widget.expandedWidth,
+        labelType: widget.labelType,
+        leading: showExtendedLabels
+            ? widget.leadingExtended
+            : widget.leadingCollapsed,
+        trailing: widget.trailing,
+        onDestinationSelected: widget.onDestinationSelected,
+        groupAlignment: widget.groupAlignment,
+        backgroundColor: widget.backgroundColor,
+        extended: showExtendedLabels,
+        extendedController: _animationController,
+        selectedIndex: widget.selectedIndex,
+        selectedIconTheme: widget.selectedIconTheme,
+        unselectedIconTheme: widget.unselectedIconTheme,
+        selectedLabelTextStyle: widget.selectedLabelTextStyle,
+        unselectedLabelTextStyle: widget.unSelectedLabelTextStyle,
+        destinations: widget.destinations,
+        scrollable: false,
+      ),
+    );
 
     return Padding(
       padding: widget.padding,
@@ -188,29 +211,8 @@ class _SwitchableRailState extends State<SwitchableRail>
           child: LayoutBuilder(
             builder: (BuildContext context, BoxConstraints constraints) {
               return ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
-                ),
-                child: IntrinsicHeight(
-                  child: NavigationRail(
-                    labelType: widget.labelType,
-                    leading: showExtendedLabels
-                        ? widget.leadingExtended
-                        : widget.leadingCollapsed,
-                    trailing: widget.trailing,
-                    onDestinationSelected: widget.onDestinationSelected,
-                    groupAlignment: widget.groupAlignment,
-                    backgroundColor: widget.backgroundColor,
-                    extended: showExtendedLabels,
-                    selectedIndex: widget.selectedIndex,
-                    selectedIconTheme: widget.selectedIconTheme,
-                    unselectedIconTheme: widget.unselectedIconTheme,
-                    selectedLabelTextStyle: widget.selectedLabelTextStyle,
-                    unselectedLabelTextStyle: widget.unSelectedLabelTextStyle,
-                    destinations: widget.destinations,
-                    scrollable: false,
-                  ),
-                ),
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: navrail,
               );
             },
           ),
