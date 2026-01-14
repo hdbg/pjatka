@@ -9,6 +9,40 @@ part of 'schedule_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(bestAvailableParser)
+final bestAvailableParserProvider = BestAvailableParserProvider._();
+
+final class BestAvailableParserProvider
+    extends $FunctionalProvider<AsyncValue<Parser>, Parser, FutureOr<Parser>>
+    with $FutureModifier<Parser>, $FutureProvider<Parser> {
+  BestAvailableParserProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'bestAvailableParserProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$bestAvailableParserHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<Parser> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<Parser> create(Ref ref) {
+    return bestAvailableParser(ref);
+  }
+}
+
+String _$bestAvailableParserHash() =>
+    r'ee5d615e9869c02449b112e9874ad0e356cc5064';
+
 @ProviderFor(classesReconciler)
 final classesReconcilerProvider = ClassesReconcilerProvider._();
 
@@ -40,4 +74,4 @@ final class ClassesReconcilerProvider
   }
 }
 
-String _$classesReconcilerHash() => r'01fcb81379e0f137e7cdfb7c12514e5bc694c446';
+String _$classesReconcilerHash() => r'161961b1da1ad0fc5ba23342ced0b2cd460588c9';

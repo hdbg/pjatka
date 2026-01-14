@@ -12,7 +12,7 @@ void main() {
     late PjatkParser parser;
 
     setUp(() {
-      parser = PjatkParser("https://planzajec.pjwstk.edu.pl/PlanOgolny.aspx");
+      parser = PjatkParser();
     });
 
     test(

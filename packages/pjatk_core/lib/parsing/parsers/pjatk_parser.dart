@@ -4,36 +4,37 @@ import 'package:html/dom.dart';
 import 'package:intl/intl.dart';
 import 'package:pjatk_core/database/models.dart';
 import 'package:pjatk_core/pjatk_core.dart';
+import 'package:pjatk_core/reconciler.dart';
 import 'package:semaphore/semaphore.dart';
 
 import 'asp_emulator.dart';
 import 'class_deductor.dart';
 
+const scheduleEndpoint = "https://planzajec.pjwstk.edu.pl/PlanOgolny3.aspx";
+
+// CSS Selectors
+const _reservationIdSelector = '#ctl06_TytulRezerwacjiLabel';
+const _nameSelector = '#ctl06_NazwaPrzedmiotyLabel';
+const _codeSelector = '#ctl06_KodPrzedmiotuLabel';
+const _lectureKindSelector = '#ctl06_TypZajecLabel';
+const _groupsSelector = '#ctl06_GrupyLabel';
+const _lecturerSelector = '#ctl06_DydaktycyLabel';
+const _roomSelector = '#ctl06_SalaLabel';
+const _dateSelector = '#ctl06_DataZajecLabel';
+const _fromTimeSelector = '#ctl06_GodzRozpLabel';
+const _toTimeSelector = '#ctl06_GodzZakonLabel';
+
+const _onlineColorSubstr = 'background-color:#3AEB34;';
+const _classTableSelector = '#ZajeciaTable > tbody';
+const _classItemSelector = 'td[id\$=";z"]'; // ends with ;z
+
 /// PJATK schedule parser
-class PjatkParser {
-  PjatkParser(String endpoint) {
-    talker.debug('Initializing parser with endpoint: $endpoint');
-    _emulator = AspEmulator(endpoint);
+class PjatkParser implements Parser {
+  PjatkParser() {
+    _emulator = AspEmulator(scheduleEndpoint);
   }
 
   late final AspEmulator _emulator;
-
-  // CSS Selectors
-  static const _reservationIdSelector = '#ctl06_TytulRezerwacjiLabel';
-  static const _nameSelector = '#ctl06_NazwaPrzedmiotyLabel';
-  static const _codeSelector = '#ctl06_KodPrzedmiotuLabel';
-  static const _lectureKindSelector = '#ctl06_TypZajecLabel';
-  static const _groupsSelector = '#ctl06_GrupyLabel';
-  static const _lecturerSelector = '#ctl06_DydaktycyLabel';
-  static const _roomSelector = '#ctl06_SalaLabel';
-  static const _dateSelector = '#ctl06_DataZajecLabel';
-  static const _fromTimeSelector = '#ctl06_GodzRozpLabel';
-  static const _toTimeSelector = '#ctl06_GodzZakonLabel';
-
-  static const _onlineColorSubstr = 'background-color:#3AEB34;';
-
-  static const _classTableSelector = '#ZajeciaTable > tbody';
-  static const _classItemSelector = 'td[id\$=";z"]'; // ends with ;z
 
   /// Check if the HTML is a reservation (not a class)
   bool _isReservation(DocumentFragment document) {
@@ -261,7 +262,7 @@ class PjatkParser {
       );
       response = await _emulator.request(dateReq);
       talker.debug('Date update completed');
-    } 
+    }
 
     // Collect class IDs
     final responseText = response.body;
@@ -279,8 +280,7 @@ class PjatkParser {
       return [];
     }
 
-
-     final sm = LocalSemaphore(16);
+    final sm = LocalSemaphore(16);
 
     final jobList = classIdStylePairs.map((packed) async {
       await sm.acquire();
@@ -297,8 +297,7 @@ class PjatkParser {
       } catch (e, stackTrace) {
         talker.error('Failed to parse class $classId', e, stackTrace);
         rethrow;
-      }
-      finally {
+      } finally {
         sm.release();
       }
     });
@@ -309,6 +308,7 @@ class PjatkParser {
     return classes;
   }
 
+  @override
   Future<List<ScheduledClass>> parseDay(DateTime date) async {
     try {
       final raw = await _parseDayRaw(date);
