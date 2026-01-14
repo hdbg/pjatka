@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:pjatk_core/pjatk_core.dart';
+import 'package:talker/talker.dart';
 
 import '../exceptions/parse_exceptions.dart';
 
@@ -38,12 +39,13 @@ abstract class AspResponse with _$AspResponse {
 
 /// ASP.NET emulator that maintains ViewState between requests
 class AspEmulator {
-  AspEmulator(this.urlBase) {
+  AspEmulator(this.urlBase, {required this.talker}) {
     dio.options.connectTimeout = const Duration(seconds: 30);
     dio.options.receiveTimeout = const Duration(seconds: 30);
   }
 
   final String urlBase;
+  final Talker talker;
   final AspState _state = {};
   final Dio dio = Dio();
 

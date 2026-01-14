@@ -59,7 +59,7 @@ Future<Parser> bestAvailableParser(Ref ref) async {
     return serverReconciler;
   } else {
     talker.info('Using local parser for parsing');
-    return PjatkParser();
+    return PjatkParser(talker: talker);
   }
 }
 

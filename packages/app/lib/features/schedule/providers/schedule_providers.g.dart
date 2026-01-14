@@ -41,7 +41,7 @@ final class BestAvailableParserProvider
 }
 
 String _$bestAvailableParserHash() =>
-    r'ee5d615e9869c02449b112e9874ad0e356cc5064';
+    r'8995b3b82a92157170e5ae87c0707ea8c3895b32';
 
 @ProviderFor(classesReconciler)
 final classesReconcilerProvider = ClassesReconcilerProvider._();

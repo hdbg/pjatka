@@ -1,6 +1,9 @@
 import 'package:pjatk_core/parsing/parsers/pjatk_parser.dart';
+import 'package:talker/talker.dart';
 import 'package:test/test.dart';
 import 'package:timezone/data/latest.dart' as tz;
+
+final talker = Talker();
 
 void main() {
   setUpAll(() {
@@ -12,7 +15,7 @@ void main() {
     late PjatkParser parser;
 
     setUp(() {
-      parser = PjatkParser();
+      parser = PjatkParser(talker: talker);
     });
 
     test(

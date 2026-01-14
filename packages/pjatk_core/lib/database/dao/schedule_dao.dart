@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:talker/talker.dart';
 import '../models.dart';
 import '../../pjatk_core.dart';
 
@@ -45,8 +46,9 @@ class WatchFilters {
 
 class ScheduleDao {
   final ScheduleDatabase db;
+  final Talker talker;
 
-  ScheduleDao(this.db);
+  ScheduleDao(this.db, {required this.talker});
 
   Future<DateTime?> getEarliestUpdateForDate(DateTime date) async {
     final earliest = db.select(db.dayInfo)

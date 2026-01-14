@@ -48,4 +48,4 @@ final class ScheduleDaoProvider
   }
 }
 
-String _$scheduleDaoHash() => r'2969e63d7a60118243e167945e113df1fb20abba';
+String _$scheduleDaoHash() => r'23ca3694ea4e5a627b4f03976ebf726cb8820fd3';

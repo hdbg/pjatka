@@ -6,12 +6,12 @@ import 'package:server/server.dart';
 const reconcilePeriod = Duration(minutes: 30);
 
 Future<void> backgroundWorker() async {
-  final dao = ScheduleDao(scheduleDb);
+  final dao = ScheduleDao(scheduleDb, talker: talker);
   final reconciler = ScheduleReconciler(
     dao: dao,
     config: ReconcilerConfig(),
     talker: talker,
-    parser: PjatkParser(),
+    parser: PjatkParser(talker: talker),
   );
 
   while (true) {

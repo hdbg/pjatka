@@ -14,7 +14,7 @@ Response helloHandler(final Request req) {
 }
 
 Future<Response> classesHandler(final Request req) async {
-  final dao = ScheduleDao(scheduleDb);
+  final dao = ScheduleDao(scheduleDb, talker: talker);
 
   final dateStr = req.queryParameters.raw["date"];
 

@@ -6,6 +6,7 @@ import 'package:pjatk_core/database/models.dart';
 import 'package:pjatk_core/pjatk_core.dart';
 import 'package:pjatk_core/reconciler.dart';
 import 'package:semaphore/semaphore.dart';
+import 'package:talker/talker.dart';
 
 import 'asp_emulator.dart';
 import 'class_deductor.dart';
@@ -30,8 +31,9 @@ const _classItemSelector = 'td[id\$=";z"]'; // ends with ;z
 
 /// PJATK schedule parser
 class PjatkParser implements Parser {
-  PjatkParser() {
-    _emulator = AspEmulator(scheduleEndpoint);
+  final Talker talker;
+  PjatkParser({required this.talker}) {
+    _emulator = AspEmulator(scheduleEndpoint, talker: talker);
   }
 
   late final AspEmulator _emulator;
