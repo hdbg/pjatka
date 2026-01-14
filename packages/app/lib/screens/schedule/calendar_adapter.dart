@@ -30,7 +30,7 @@ class AppointmentAdapter extends Appointment {
         color: _getColorForKind(scheduledClass.kind),
       );
 
-    String get place => _getPlaceDescription(scheduledClass.place);
+  String get place => _getPlaceDescription(scheduledClass.place);
 }
 
 class ScheduleDataSource extends CalendarDataSource {
@@ -47,6 +47,8 @@ class ScheduleDataSource extends CalendarDataSource {
       (previous, next) {
         next.then((newClasses) {
           if (newClasses.isEmpty) {
+            appointments = [];
+            notifyListeners(CalendarDataSourceAction.reset, appointments!);
             return;
           }
           final newAppointments = <Appointment>[];

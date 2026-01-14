@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
+import 'package:pjatk_core/database/database.dart';
 import 'package:talker/talker.dart';
 import '../models.dart';
-import '../../pjatk_core.dart';
 
 class _AppointmentData {
   final SubjectData subject;
@@ -37,11 +37,14 @@ class WatchFilters {
             (identical(other.filterGroups, filterGroups) ||
                 other.filterGroups == filterGroups) &&
             (identical(other.excludeIgnored, excludeIgnored) ||
-                other.excludeIgnored == excludeIgnored));
+                other.excludeIgnored == excludeIgnored) &&
+            (identical(other.from, from) || other.from == from) &&
+            (identical(other.to, to) || other.to == to));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, filterGroups, excludeIgnored);
+  int get hashCode =>
+      Object.hash(runtimeType, filterGroups, excludeIgnored, from, to);
 }
 
 class ScheduleDao {
@@ -130,19 +133,29 @@ class ScheduleDao {
         appointmentMap[appointment.id]!.groups.add(group.name);
       }
 
+      if (appointmentMap.isEmpty) {
+        return <ScheduledClass>[];
+      }
+
+      final teacherMap = <int, List<String>>{};
+      final appointmentIds = appointmentMap.keys.toList();
+      final teachersQuery = db.select(db.classTeacher).join([
+        innerJoin(
+          db.teacher,
+          db.classTeacher.teacherId.equalsExp(db.teacher.id),
+        ),
+      ])..where(db.classTeacher.appointmentId.isIn(appointmentIds));
+
+      final teacherRows = await teachersQuery.get();
+      for (final row in teacherRows) {
+        final assignment = row.readTable(db.classTeacher);
+        final teacherName = row.readTable(db.teacher).name;
+        (teacherMap[assignment.appointmentId] ??= []).add(teacherName);
+      }
+
       final classes = <ScheduledClass>[];
       for (final data in appointmentMap.values) {
-        final teachersQuery = db.select(db.teacher).join([
-          innerJoin(
-            db.classTeacher,
-            db.classTeacher.teacherId.equalsExp(db.teacher.id),
-          ),
-        ])..where(db.classTeacher.appointmentId.equals(data.appointment.id));
-
-        final teacherRows = await teachersQuery.get();
-        final teachers = teacherRows
-            .map((row) => row.readTable(db.teacher).name)
-            .toList();
+        final teachers = teacherMap[data.appointment.id] ?? const <String>[];
         final teacherStr = teachers.isNotEmpty ? teachers.first : '';
 
         classes.add(

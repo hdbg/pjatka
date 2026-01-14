@@ -59,9 +59,10 @@ final class PrefStorage extends Storage<String, Map<String, dynamic>> {
     Map<String, dynamic> value,
     StorageOptions options,
   ) async {
-    final expirationDate = options.cacheTime.duration == null
-        ? DateTime.now().add(options.cacheTime.duration!)
-        : null;
+    final duration = options.cacheTime.duration;
+    final expirationDate = duration == null
+        ? null
+        : DateTime.now().add(duration);
 
     final wrapper = Wrapper(value: value, deletionDate: expirationDate);
 

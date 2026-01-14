@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:pjatk_core/pjatk_core.dart';
 import 'package:talker/talker.dart';
 
 import '../exceptions/parse_exceptions.dart';

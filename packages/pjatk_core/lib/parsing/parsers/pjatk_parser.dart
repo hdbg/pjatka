@@ -3,13 +3,13 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart';
 import 'package:intl/intl.dart';
 import 'package:pjatk_core/database/models.dart';
-import 'package:pjatk_core/pjatk_core.dart';
 import 'package:pjatk_core/reconciler.dart';
 import 'package:semaphore/semaphore.dart';
 import 'package:talker/talker.dart';
 
 import 'asp_emulator.dart';
 import 'class_deductor.dart';
+import '../exceptions/parse_exceptions.dart';
 
 const scheduleEndpoint = "https://planzajec.pjwstk.edu.pl/PlanOgolny3.aspx";
 

@@ -25,16 +25,17 @@ class ScheduleReconciler {
 
   ScheduleReconciler({
     required this.dao,
-
     required this.config,
-    required this.talker, required this.parser,
+    required this.talker,
+    required this.parser,
   });
 
   Future<void> _parseOneDay(DateTime date) async {
     final earliestUpdate = await dao.getEarliestUpdateForDate(date);
     if (earliestUpdate != null) {
-      final hoursSinceUpdate = date.difference(earliestUpdate).inHours;
-      if (hoursSinceUpdate.abs() < config.cacheTTLHours) {
+      final hoursSinceUpdate =
+          DateTime.now().difference(earliestUpdate).inHours.abs();
+      if (hoursSinceUpdate < config.cacheTTLHours) {
         talker.debug(
           'Skipping schedule load for $date; last update was $hoursSinceUpdate hours ago',
         );
@@ -65,7 +66,7 @@ class ScheduleReconciler {
     await _parseOneDay(today);
 
     // first we load from today onwards to optimize for user experience
-    for (var i = 0; i <= config.maxDayOffset; i++) {
+    for (var i = 1; i <= config.maxDayOffset; i++) {
       final date = today.add(Duration(days: i));
 
       await _parseOneDay(date);

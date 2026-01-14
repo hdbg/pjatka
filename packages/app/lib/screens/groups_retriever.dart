@@ -30,6 +30,9 @@ Set<String> _filterGroups(Set<String> groups) {
   var highestRepSemester = null as int?;
 
   for (final parts in splitted) {
+    if (parts.length < 2) {
+      continue;
+    }
     final semesterPart = parts[1].replaceAll(semesterPrefix, '');
     final semester = int.tryParse(semesterPart);
     if (semester == null) continue;
@@ -47,6 +50,9 @@ Set<String> _filterGroups(Set<String> groups) {
 
   return splitted
       .where((group) {
+        if (group.length < 2) {
+          return false;
+        }
         final semesterPart = group[1].replaceAll(semesterPrefix, '');
         final semester = int.tryParse(semesterPart);
         if (group.last == repetitionSuffix) {
