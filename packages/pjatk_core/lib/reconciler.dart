@@ -44,11 +44,7 @@ class ScheduleReconciler {
     }
 
     final parsedDays = await parser.parseDay(date);
-
-    if (parsedDays.isEmpty) {
-      return;
-    }
-
+    
     try {
       await dao.syncClasses(date, parsedDays);
     } catch (e, stackTrace) {
