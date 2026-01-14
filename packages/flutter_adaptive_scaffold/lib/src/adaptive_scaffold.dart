@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_adaptive_scaffold/src/switchable_rail.dart';
 
 import 'adaptive_layout.dart';
 import 'breakpoints.dart';
@@ -347,13 +348,15 @@ class AdaptiveScaffold extends StatefulWidget {
   /// [NavigationRailLabelType.none].
   static Builder standardNavigationRail({
     required List<NavigationRailDestination> destinations,
-    double width = 72,
+    double collapsedWidth = 72,
+    double expandedWidth = 192,
     int? selectedIndex,
     bool extended = false,
     Color? backgroundColor,
     EdgeInsetsGeometry padding =
         const EdgeInsets.all(kNavigationRailDefaultPadding),
-    Widget? leading,
+    Widget? leadingExpanded,
+    Widget? leadingCollapsed,
     Widget? trailing,
     void Function(int)? onDestinationSelected,
     double? groupAlignment,
@@ -363,42 +366,27 @@ class AdaptiveScaffold extends StatefulWidget {
     TextStyle? unSelectedLabelTextStyle,
     NavigationRailLabelType? labelType = NavigationRailLabelType.none,
   }) {
-    if (extended && width == 72) {
-      width = 192;
-    }
+    // if (extended && collapsedWidth == 72) {
+    //   collapsedWidth = 192;
+    // }
     return Builder(builder: (BuildContext context) {
-      return Padding(
-        padding: padding,
-        child: SizedBox(
-          width: width,
-          height: MediaQuery.sizeOf(context).height,
-          child: LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-              return SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: IntrinsicHeight(
-                    child: NavigationRail(
-                      labelType: labelType,
-                      leading: leading,
-                      trailing: trailing,
-                      onDestinationSelected: onDestinationSelected,
-                      groupAlignment: groupAlignment,
-                      backgroundColor: backgroundColor,
-                      extended: extended,
-                      selectedIndex: selectedIndex,
-                      selectedIconTheme: selectedIconTheme,
-                      unselectedIconTheme: unselectedIconTheme,
-                      selectedLabelTextStyle: selectedLabelTextStyle,
-                      unselectedLabelTextStyle: unSelectedLabelTextStyle,
-                      destinations: destinations,
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
+      return SwitchableRail(
+        labelType: labelType,
+        leadingCollapsed: leadingCollapsed,
+        leadingExtended: leadingExpanded,
+        trailing: trailing,
+        onDestinationSelected: onDestinationSelected,
+        groupAlignment: groupAlignment,
+        backgroundColor: backgroundColor,
+        extended: extended,
+        selectedIndex: selectedIndex,
+        selectedIconTheme: selectedIconTheme,
+        unselectedIconTheme: unselectedIconTheme,
+        selectedLabelTextStyle: selectedLabelTextStyle,
+        unSelectedLabelTextStyle: unSelectedLabelTextStyle,
+        collapsedWidth: collapsedWidth,
+        expandedWidth: expandedWidth,
+        destinations: destinations,
       );
     });
   }
@@ -614,8 +602,10 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
             widget.mediumBreakpoint: SlotLayout.from(
               key: const Key('primaryNavigation'),
               builder: (_) => AdaptiveScaffold.standardNavigationRail(
-                width: widget.navigationRailWidth,
-                leading: widget.leadingUnextendedNavRail,
+                collapsedWidth: widget.navigationRailWidth,
+                expandedWidth: widget.extendedNavigationRailWidth,
+                leadingCollapsed: widget.leadingUnextendedNavRail,
+                leadingExpanded: widget.leadingExtendedNavRail,
                 trailing: widget.trailingNavRail,
                 padding: widget.navigationRailPadding,
                 selectedIndex: widget.selectedIndex,
@@ -633,9 +623,11 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
             widget.mediumLargeBreakpoint: SlotLayout.from(
               key: const Key('primaryNavigation1'),
               builder: (_) => AdaptiveScaffold.standardNavigationRail(
-                width: widget.extendedNavigationRailWidth,
+                collapsedWidth: widget.extendedNavigationRailWidth,
                 extended: true,
-                leading: widget.leadingExtendedNavRail,
+                expandedWidth: widget.extendedNavigationRailWidth,
+                leadingCollapsed: widget.leadingUnextendedNavRail,
+                leadingExpanded: widget.leadingExtendedNavRail,
                 trailing: widget.trailingNavRail,
                 padding: widget.navigationRailPadding,
                 selectedIndex: widget.selectedIndex,
@@ -653,9 +645,11 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
             widget.largeBreakpoint: SlotLayout.from(
               key: const Key('primaryNavigation2'),
               builder: (_) => AdaptiveScaffold.standardNavigationRail(
-                width: widget.extendedNavigationRailWidth,
+                collapsedWidth: widget.extendedNavigationRailWidth,
                 extended: true,
-                leading: widget.leadingExtendedNavRail,
+                expandedWidth: widget.extendedNavigationRailWidth,
+                leadingCollapsed: widget.leadingUnextendedNavRail,
+                leadingExpanded: widget.leadingExtendedNavRail,
                 trailing: widget.trailingNavRail,
                 padding: widget.navigationRailPadding,
                 selectedIndex: widget.selectedIndex,
@@ -674,9 +668,11 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
             widget.extraLargeBreakpoint: SlotLayout.from(
               key: const Key('primaryNavigation3'),
               builder: (_) => AdaptiveScaffold.standardNavigationRail(
-                width: widget.extendedNavigationRailWidth,
+                collapsedWidth: widget.extendedNavigationRailWidth,
                 extended: true,
-                leading: widget.leadingExtendedNavRail,
+                expandedWidth: widget.extendedNavigationRailWidth,
+                leadingCollapsed: widget.leadingUnextendedNavRail,
+                leadingExpanded: widget.leadingExtendedNavRail,
                 trailing: widget.trailingNavRail,
                 padding: widget.navigationRailPadding,
                 selectedIndex: widget.selectedIndex,
