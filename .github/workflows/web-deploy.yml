@@ -31,7 +31,7 @@ jobs:
         
       - name: Create CORS headers file
         run: |
-          cat > build/web/_headers << 'EOF'
+          cat > packages/app/build/web/_headers << 'EOF'
           /*
             Cross-Origin-Opener-Policy: same-origin
             Cross-Origin-Embedder-Policy: require-corp
