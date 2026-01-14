@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:relic/io_adapter.dart';
 import 'package:relic/relic.dart';
 import 'package:server/endpoints.dart';
@@ -6,6 +8,8 @@ import 'package:timezone/data/latest.dart' as tz;
 
 Future<void> main(List<String> arguments) async {
   tz.initializeTimeZones();
+
+  final port = int.tryParse(Platform.environment['PORT'] ?? '') ?? 8080;
 
   // Start the background reconciliation worker
   final _ = backgroundWorker();
@@ -19,5 +23,5 @@ Future<void> main(List<String> arguments) async {
       ),
     );
 
-  await app.serve();
+  await app.serve(port: port);
 }
