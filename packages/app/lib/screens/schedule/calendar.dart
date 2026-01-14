@@ -65,8 +65,12 @@ class Calendar extends ConsumerWidget {
           timeSlotViewSettings: const TimeSlotViewSettings(
             startHour: 8,
             endHour: 21,
-            timeInterval: Duration(minutes: 30),
+            timeInterval: Duration(minutes: 15),
             timeFormat: 'HH:mm',
+          ),
+          monthViewSettings: const MonthViewSettings(
+            appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
+            showAgenda: true,
           ),
           minDate: DateTime.now().subtract(
             Duration(days: settings.minDateDaysOffset),
@@ -84,6 +88,7 @@ class Calendar extends ConsumerWidget {
             color: Colors.white,
             fontWeight: FontWeight.w500,
           ),
+          appointmentTimeTextFormat: 'HH:mm',
           onTap: (calendarTapDetails) {
             if (calendarTapDetails.targetElement ==
                     CalendarElement.appointment &&
