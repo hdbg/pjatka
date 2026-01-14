@@ -24,5 +24,5 @@ Future<void> main(List<String> arguments) async {
       ),
     );
 
-  await app.serve(port: port);
+  await app.serve(address: InternetAddress.anyIPv4, port: port);
 }
