@@ -12,7 +12,7 @@ class OnboardingPages {
       PageViewModel(
         title: 'Welcome to PJATK App',
         body: 'Your personal schedule assistant for PJATK classes',
-        image: Center(child: Image.asset('../../assets/icon.png', height: 40.h)),
+        image: Center(child: Image.asset('./assets/icon.png', height: 40.h, )),
         decoration: _getPageDecoration(),
       ),
     ];

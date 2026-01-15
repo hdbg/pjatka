@@ -1,8 +1,7 @@
-![Logo](./assets/icon.png)
-
+![Logo](./packages/app/assets/icon.png)
 
 # pjatka
-[![Android Release](https://github.com/hdbg/pjatka/actions/workflows/android-release.yml/badge.svg?branch=main)](https://github.com/hdbg/pjatka/actions/workflows/android-release.yml)
+[![Android Beta](https://github.com/hdbg/pjatka/actions/workflows/android-pre-release.yml/badge.svg?branch=main)](https://github.com/hdbg/pjatka/actions/workflows/android-pre-release.yml)
 [![Web](https://github.com/hdbg/pjatka/actions/workflows/web-deploy.yml/badge.svg)](https://github.com/hdbg/pjatka/actions/workflows/web-deploy.yml)
 
 Student companion app optimized for better UX.
