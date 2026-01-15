@@ -346,7 +346,7 @@ class AdaptiveScaffold extends StatefulWidget {
   ///
   /// If [labelType] is null, then the default value is
   /// [NavigationRailLabelType.none].
-  static Builder standardNavigationRail({
+  static Builder dragNavigationRail({
     required List<NavigationRailDestination> destinations,
     double collapsedWidth = 72,
     double expandedWidth = 192,
@@ -601,7 +601,7 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
           config: <Breakpoint, SlotLayoutConfig>{
             widget.mediumBreakpoint: SlotLayout.from(
               key: const Key('primaryNavigation'),
-              builder: (_) => AdaptiveScaffold.standardNavigationRail(
+              builder: (_) => AdaptiveScaffold.dragNavigationRail(
                 collapsedWidth: widget.navigationRailWidth,
                 expandedWidth: widget.extendedNavigationRailWidth,
                 leadingCollapsed: widget.leadingUnextendedNavRail,
@@ -622,8 +622,8 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
             ),
             widget.mediumLargeBreakpoint: SlotLayout.from(
               key: const Key('primaryNavigation1'),
-              builder: (_) => AdaptiveScaffold.standardNavigationRail(
-                collapsedWidth: widget.extendedNavigationRailWidth,
+              builder: (_) => AdaptiveScaffold.dragNavigationRail(
+                collapsedWidth: widget.navigationRailWidth,
                 extended: true,
                 expandedWidth: widget.extendedNavigationRailWidth,
                 leadingCollapsed: widget.leadingUnextendedNavRail,
@@ -644,8 +644,8 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
             ),
             widget.largeBreakpoint: SlotLayout.from(
               key: const Key('primaryNavigation2'),
-              builder: (_) => AdaptiveScaffold.standardNavigationRail(
-                collapsedWidth: widget.extendedNavigationRailWidth,
+              builder: (_) => AdaptiveScaffold.dragNavigationRail(
+                collapsedWidth: widget.navigationRailWidth,
                 extended: true,
                 expandedWidth: widget.extendedNavigationRailWidth,
                 leadingCollapsed: widget.leadingUnextendedNavRail,
@@ -667,8 +667,8 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
             ),
             widget.extraLargeBreakpoint: SlotLayout.from(
               key: const Key('primaryNavigation3'),
-              builder: (_) => AdaptiveScaffold.standardNavigationRail(
-                collapsedWidth: widget.extendedNavigationRailWidth,
+              builder: (_) => AdaptiveScaffold.dragNavigationRail(
+                collapsedWidth: widget.navigationRailWidth,
                 extended: true,
                 expandedWidth: widget.extendedNavigationRailWidth,
                 leadingCollapsed: widget.leadingUnextendedNavRail,

@@ -687,7 +687,7 @@ void main() {
           home: Scaffold(
             body: Builder(
               builder: (BuildContext context) {
-                return AdaptiveScaffold.standardNavigationRail(
+                return AdaptiveScaffold.dragNavigationRail(
                   destinations: destinations,
                   groupAlignment: groupAlignment,
                 );
