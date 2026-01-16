@@ -223,7 +223,7 @@ class _GroupsRetrieverWeb extends HookConsumerWidget {
 
     return Center(
       child: SizedBox(
-        width: 40.w,
+        width: 80.w,
         height: 50.h,
         child: Card(
           child: Padding(
@@ -262,7 +262,7 @@ class _GroupsRetrieverWeb extends HookConsumerWidget {
                       ),
                     ),
                   ),
-    Expanded(
+                  Expanded(
                     flex: 4,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -315,17 +315,15 @@ class _GroupsRetrieverWeb extends HookConsumerWidget {
                         ? const SizedBox.shrink()
                         : Text(
                             error.value!,
-                            style: TextStyle(
-                              color: theme.colorScheme.error,
-                            ),
+                            style: TextStyle(color: theme.colorScheme.error),
                           ),
                   ),
                   Expanded(
                     flex: 2,
                     child: Center(
                       child: SizedBox(
-                        width: 15.w,
-                        height: 7.h,
+                        width: 60.w,
+                        height: 20.h,
                         child: FilledButton(
                           style: FilledButton.styleFrom(
                             textStyle: theme.textTheme.titleMedium?.copyWith(
