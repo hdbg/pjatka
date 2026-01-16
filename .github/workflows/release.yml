@@ -1,0 +1,171 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: "release"
+  cancel-in-progress: true
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    outputs:
+      changelog: ${{ steps.changelog.outputs.changelog }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version from pubspec.yaml
+        id: version
+        working-directory: packages/app
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Get last release tag
+        id: last_tag
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "tag=$LAST_TAG" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          if [ -n "${{ steps.last_tag.outputs.tag }}" ]; then
+            RANGE="${{ steps.last_tag.outputs.tag }}..HEAD"
+          else
+            RANGE="HEAD"
+          fi
+
+          FEATURES=$(git log $RANGE --pretty=format:"%s" | grep -E "^feat(\(.+\))?:" | sed 's/^feat(\([^)]*\)): /- **\1:** /' | sed 's/^feat: /- /' || true)
+          FIXES=$(git log $RANGE --pretty=format:"%s" | grep -E "^fix(\(.+\))?:" | sed 's/^fix(\([^)]*\)): /- **\1:** /' | sed 's/^fix: /- /' || true)
+          MISC=$(git log $RANGE --pretty=format:"%s" | grep -vE "^(feat|fix)(\(.+\))?:" | grep -vE "^(chore|ci|docs|style|refactor|perf|test)(\(.+\))?:" | sed 's/^/- /' || true)
+
+          {
+            echo 'changelog<<EOF'
+            if [ -n "$FEATURES" ]; then
+              echo "## Features"
+              echo "$FEATURES"
+              echo ""
+            fi
+            if [ -n "$FIXES" ]; then
+              echo "## Fixes"
+              echo "$FIXES"
+              echo ""
+            fi
+            if [ -n "$MISC" ]; then
+              echo "## Misc"
+              echo "$MISC"
+              echo ""
+            fi
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+
+  build-android:
+    runs-on: ubuntu-latest
+    needs: changelog
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Cache build directory
+        uses: actions/cache@v4
+        with:
+          path: |
+            build
+            .dart_tool
+          key: ${{ runner.os }}-build-${{ hashFiles('**/*.dart', 'pubspec.*') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+
+      - name: Build APK
+        run: cd packages/app && flutter build apk --release --dart-define=API_URL=${{ secrets.API_URL }}
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: packages/app/build/app/outputs/flutter-apk/app-release.apk
+
+  build-web:
+    runs-on: ubuntu-latest
+    needs: changelog
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          cache: true
+          channel: stable
+
+      - name: Build Flutter web
+        run: cd packages/app/ && flutter build web --release --dart-define=API_URL=${{ secrets.API_URL }} --wasm
+
+      - name: Create CORS headers file
+        run: |
+          cat > packages/app/build/web/_headers << 'EOF'
+          /*
+            Cross-Origin-Opener-Policy: same-origin
+            Cross-Origin-Embedder-Policy: require-corp
+          EOF
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy packages/app/build/web --project-name=pjatka --branch=${{ github.ref_name }}
+
+  create-release:
+    runs-on: ubuntu-latest
+    needs: [changelog, build-android, build-web]
+    permissions:
+      contents: write
+    steps:
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: android-apk
+
+      - name: Create pre-release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.changelog.outputs.version }}-pre-${{ github.sha }}
+          name: Pre-release v${{ needs.changelog.outputs.version }}
+          prerelease: true
+          body: |
+            **Version:** ${{ needs.changelog.outputs.version }}
+            **Commit:** ${{ github.sha }}
+
+            ${{ needs.changelog.outputs.changelog }}
+
+            ---
+            Download the APK below to install on Android.
+            Web version deployed to Cloudflare Pages.
+          files: |
+            app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
