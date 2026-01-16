@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pjatk_core/database/dao/schedule_dao.dart';
 import 'package:pjatk_core/database/models.dart';
+import 'package:pjatka/features/schedule/providers/schedule_providers.dart';
 import 'package:pjatka/utils.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
@@ -16,7 +18,6 @@ Color _getColorForKind(ClassKind kind) {
   };
 }
 
-// Exploit the fact that it can be casted to Appointment later, so calendar is compatible
 class AppointmentAdapter extends Appointment {
   final ScheduledClass scheduledClass;
 
@@ -35,42 +36,57 @@ class AppointmentAdapter extends Appointment {
 
 class ScheduleDataSource extends CalendarDataSource {
   final ProviderContainer container;
-  final StreamProvider<List<ScheduledClass>> provider;
+  final WatchFilters baseFilters;
 
-  late final ProviderSubscription<Future<List<ScheduledClass>>> subscription;
+  ProviderSubscription<AsyncValue<List<ScheduledClass>>>? _subscription;
+  WatchFilters _currentFilters;
 
-  ScheduleDataSource({required this.container, required this.provider}) {
+  ScheduleDataSource({
+    required this.container,
+    required this.baseFilters,
+  }) : _currentFilters = baseFilters {
     appointments = [];
+    _subscribe();
+  }
 
-    subscription = container.listen(
-      provider.future,
+  void _subscribe() {
+    _subscription?.close();
+    _subscription = container.listen(
+      classesProvider(_currentFilters),
       (previous, next) {
-        next.then((newClasses) {
-          if (newClasses.isEmpty) {
-            appointments = [];
-            notifyListeners(CalendarDataSourceAction.reset, appointments!);
-            return;
-          }
-          final newAppointments = <Appointment>[];
+        final newClasses = next.value;
+        if (newClasses == null) return;
 
-          for (final classItem in newClasses) {
-            newAppointments.add(AppointmentAdapter(classItem));
-          }
+        final newAppointments =
+            newClasses.map((c) => AppointmentAdapter(c)).toList();
 
-          talker.debug(
-            'Loaded ${newAppointments.length} appointments for schedule',
-          );
-          appointments = newAppointments;
-          notifyListeners(CalendarDataSourceAction.reset, appointments!);
-        });
+        talker.debug(
+          'Loaded ${newAppointments.length} appointments for ${_currentFilters.from?.toIso8601String()} - ${_currentFilters.to?.toIso8601String()}',
+        );
+        appointments = newAppointments;
+        notifyListeners(CalendarDataSourceAction.reset, appointments!);
       },
       fireImmediately: true,
     );
   }
 
+  void updateVisibleDates(List<DateTime> visibleDates) {
+    if (visibleDates.isEmpty) return;
+
+    final from = visibleDates.reduce((a, b) => a.isBefore(b) ? a : b);
+    final to = visibleDates.reduce((a, b) => a.isAfter(b) ? a : b);
+    final toEndOfDay = DateTime(to.year, to.month, to.day, 23, 59, 59);
+
+    final newFilters = baseFilters.copyWith(from: from, to: toEndOfDay);
+    if (newFilters == _currentFilters) return;
+
+    _currentFilters = newFilters;
+    _subscribe();
+  }
+
   @override
   void dispose() {
+    _subscription?.close();
     super.dispose();
-    subscription.close();
   }
 }

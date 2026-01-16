@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pjatk_core/database/dao/schedule_dao.dart';
-import 'package:pjatka/features/schedule/providers/schedule_providers.dart';
 import 'package:pjatka/features/settings/provider.dart';
 import 'package:pjatka/home.dart';
 import 'package:pjatka/screens/schedule/calendar.dart';
@@ -15,9 +14,7 @@ final scheduleDestination = Destination(
       builder: (context, ref, _) {
         final settings = ref.watch(settingsProvider);
         return Calendar(
-          provider: classesProvider(
-            WatchFilters(filterGroups: settings.groups.toList()),
-          ),
+          filters: WatchFilters(filterGroups: settings.groups.toList()),
         );
       },
     ),

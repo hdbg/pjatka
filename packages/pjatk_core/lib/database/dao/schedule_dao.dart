@@ -18,7 +18,6 @@ class _AppointmentData {
 class WatchFilters {
   final List<String>? filterGroups;
   final bool excludeIgnored;
-
   final DateTime? from;
   final DateTime? to;
 
@@ -28,6 +27,20 @@ class WatchFilters {
     this.from,
     this.to,
   });
+
+  WatchFilters copyWith({
+    List<String>? filterGroups,
+    bool? excludeIgnored,
+    DateTime? from,
+    DateTime? to,
+  }) {
+    return WatchFilters(
+      filterGroups: filterGroups ?? this.filterGroups,
+      excludeIgnored: excludeIgnored ?? this.excludeIgnored,
+      from: from ?? this.from,
+      to: to ?? this.to,
+    );
+  }
 
   @override
   bool operator ==(Object other) {
@@ -96,19 +109,11 @@ class ScheduleDao {
     }
 
     if (filters.from != null) {
-      query.where(
-        db.classAppointment.startTime.year.equals(filters.from!.year) &
-            db.classAppointment.startTime.month.equals(filters.from!.month) &
-            db.classAppointment.startTime.day.equals(filters.from!.day),
-      );
+      query.where(db.classAppointment.startTime.isBiggerOrEqualValue(filters.from!));
     }
 
     if (filters.to != null) {
-      query.where(
-        db.classAppointment.endTime.year.equals(filters.to!.year) &
-            db.classAppointment.endTime.month.equals(filters.to!.month) &
-            db.classAppointment.endTime.day.equals(filters.to!.day),
-      );
+      query.where(db.classAppointment.startTime.isSmallerOrEqualValue(filters.to!));
     }
 
     final rows = query.watch();

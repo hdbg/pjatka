@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pjatk_core/database/models.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:pjatk_core/database/dao/schedule_dao.dart';
 import 'package:pjatka/features/database/providers.dart';
 import 'package:pjatka/features/schedule/providers/schedule_providers.dart';
 import 'package:pjatka/screens/schedule/calendar_adapter.dart';
@@ -30,14 +31,13 @@ class TopLoader extends ConsumerWidget {
   }
 }
 
-/// Main schedule screen displaying classes
-class Calendar extends ConsumerWidget {
-  final StreamProvider<List<ScheduledClass>> provider;
+class Calendar extends HookConsumerWidget {
+  final WatchFilters filters;
   final List<CalendarView> allowedViews;
 
   const Calendar({
     super.key,
-    required this.provider,
+    required this.filters,
     this.allowedViews = const [
       CalendarView.day,
       CalendarView.week,
@@ -52,14 +52,20 @@ class Calendar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
 
+    final dataSource = useMemoized(
+      () => ScheduleDataSource(
+        container: ProviderScope.containerOf(context),
+        baseFilters: filters,
+      ),
+      [filters],
+    );
+    useEffect(() => dataSource.dispose, [dataSource]);
+
     return Stack(
       children: [
         SfCalendar(
           view: allowedViews.first,
-          dataSource: ScheduleDataSource(
-            container: ref.container,
-            provider: provider,
-          ),
+          dataSource: dataSource,
           allowedViews: allowedViews,
           firstDayOfWeek: 1,
           timeSlotViewSettings: const TimeSlotViewSettings(
@@ -89,6 +95,9 @@ class Calendar extends ConsumerWidget {
             fontWeight: FontWeight.w500,
           ),
           appointmentTimeTextFormat: 'HH:mm',
+          onViewChanged: (details) {
+            dataSource.updateVisibleDates(details.visibleDates);
+          },
           onTap: (calendarTapDetails) {
             if (calendarTapDetails.targetElement ==
                     CalendarElement.appointment &&
