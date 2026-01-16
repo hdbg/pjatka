@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart';
 import 'package:intl/intl.dart';
+import 'package:pjatk_core/api_config.dart';
 import 'package:pjatk_core/database/models.dart';
 import 'package:pjatk_core/reconciler.dart';
 import 'package:semaphore/semaphore.dart';
@@ -10,8 +11,6 @@ import 'package:talker/talker.dart';
 import 'asp_emulator.dart';
 import 'class_deductor.dart';
 import '../exceptions/parse_exceptions.dart';
-
-const scheduleEndpoint = "https://planzajec.pjwstk.edu.pl/PlanOgolny3.aspx";
 
 // CSS Selectors
 const _reservationIdSelector = '#ctl06_TytulRezerwacjiLabel';
@@ -33,7 +32,7 @@ const _classItemSelector = 'td[id\$=";z"]'; // ends with ;z
 class PjatkParser implements Parser {
   final Talker talker;
   PjatkParser({required this.talker}) {
-    _emulator = AspEmulator(scheduleEndpoint, talker: talker);
+    _emulator = AspEmulator(ApiConfig.pjatkScheduleFullUrl, talker: talker);
   }
 
   late final AspEmulator _emulator;

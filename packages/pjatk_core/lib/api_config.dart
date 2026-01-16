@@ -1,4 +1,6 @@
 abstract class ApiConfig {
-  static const pjatkScheduleHost = 'planzajec.pjwstk.edu.pl';
-  static const pjatkScheduleBase = 'https://$pjatkScheduleHost';
+  static const pjatkScheduleBase = 'https://planzajec.pjwstk.edu.pl';
+  static const pjatkScheduleEndpoint = 'PlanOgolny3.aspx';
+  static const pjatkScheduleFullUrl =
+      '$pjatkScheduleBase/$pjatkScheduleEndpoint';
 }

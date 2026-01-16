@@ -40,7 +40,7 @@ jobs:
             ${{ runner.os }}-build-
             
       - name: Build APK
-        run: cd packages/app && flutter build apk --release
+        run: cd packages/app && flutter build apk --release --dart-define=API_URL=${{ secrets.API_URL}}
 
       - name: Get version from pubspec.yaml
         id: version

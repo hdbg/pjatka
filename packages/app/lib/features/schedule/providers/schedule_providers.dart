@@ -4,6 +4,7 @@ import 'package:pjatk_core/database/database.dart';
 import 'package:pjatk_core/database/models.dart';
 import 'package:pjatk_core/parsing/parsing.dart';
 import 'package:pjatk_core/reconciler.dart';
+import 'package:pjatka/features/config/api_config.dart';
 import 'package:pjatka/features/database/database.dart';
 import 'package:pjatka/features/database/providers.dart';
 import 'package:pjatka/utils.dart';
@@ -20,11 +21,10 @@ final classesProvider = StreamProvider.autoDispose
     });
 
 class _ServerReconciler implements Parser {
-  static const url = 'https://pjatka.dev.mrkt.games:39083';
 
   Future<bool> isServerAvailable() async {
     try {
-      final response = await dio.get('$url/healthz');
+      final response = await dio.get('${ApiConfig.apiUrl}/healthz');
       return response.statusCode == 200;
     } catch (err, st) {
       talker.handle(err, st, 'Cache server is not available');
@@ -38,7 +38,7 @@ class _ServerReconciler implements Parser {
         "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
 
     final resp = await dio.get(
-      '$url/classes',
+      '${ApiConfig.apiUrl}/classes',
       queryParameters: {'date': dateParam},
     );
 

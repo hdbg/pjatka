@@ -27,7 +27,7 @@ jobs:
           channel: stable
           
       - name: Build Flutter web
-        run: cd packages/app/ && flutter build web --release
+        run: cd packages/app/ && flutter build web --release --dart-define=API_URL=${{ secrets.API_URL}} --wasm
         
       - name: Create CORS headers file
         run: |
