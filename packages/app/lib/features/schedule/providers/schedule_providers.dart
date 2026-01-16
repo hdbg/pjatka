@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pjatk_core/database/dao/schedule_dao.dart';
+import 'package:pjatk_core/database/database.dart';
 import 'package:pjatk_core/database/models.dart';
 import 'package:pjatk_core/parsing/parsing.dart';
 import 'package:pjatk_core/reconciler.dart';
+import 'package:pjatka/features/database/database.dart';
 import 'package:pjatka/features/database/providers.dart';
 import 'package:pjatka/utils.dart';
 import 'package:pjatka/features/settings/provider.dart';
@@ -66,19 +68,22 @@ Future<Parser> bestAvailableParser(Ref ref) async {
 @Riverpod(keepAlive: true)
 Future<void> classesReconciler(Ref ref) async {
   final settings = await ref.watch(settingsProvider);
-  final dao = ref.watch(scheduleDaoProvider);
   final parser = await ref.watch(bestAvailableParserProvider.future);
 
-  final reconciler = ScheduleReconciler(
-    dao: dao,
-    config: ReconcilerConfig(
-      maxDayOffset: settings.maxDateDaysOffset,
-      minDateDaysOffset: settings.minDateDaysOffset,
-      cacheTTLHours: settings.cacheTTLHours,
-    ),
-    parser: parser,
-    talker: talker,
+  await scheduleDb.computeWithDatabase(
+    computation: (db) async {
+      final reconciler = ScheduleReconciler(
+        dao: ScheduleDao(db, talker: talker),
+        config: ReconcilerConfig(
+          maxDayOffset: settings.maxDateDaysOffset,
+          minDateDaysOffset: settings.minDateDaysOffset,
+          cacheTTLHours: settings.cacheTTLHours,
+        ),
+        parser: parser,
+        talker: talker,
+      );
+      await reconciler.reconcileOnce();
+    },
+    connect: (connection) => ScheduleDatabase(connection),
   );
-
-  await reconciler.reconcileOnce();
 }
