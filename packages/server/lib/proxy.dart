@@ -83,6 +83,12 @@ Future<Response> proxyHandler(final Request req) async {
             responseHeaders[name] = [resolvedUri.toString()];
           }
         }
+      } else if (lowerName == 'set-cookie') {
+        final rewrittenCookies = values.map((cookie) {
+          // otherwise cross-origin cookies will be blocked by browsers
+          return cookie.replaceAll('SameSite=Lax', 'SameSite=None; Secure');
+        }).toList();
+        responseHeaders[name] = rewrittenCookies;
       } else {
         responseHeaders[name] = values;
       }

@@ -48,7 +48,7 @@ Middleware enforceHttps() {
         return Response(
           301,
           headers: Headers.fromMap({
-            'location': [httpsUrl.toString()],
+            Headers.locationHeader: [httpsUrl.toString()],
           }),
         );
       }
@@ -59,7 +59,7 @@ Middleware enforceHttps() {
         return result.copyWith(
           headers: Headers.fromMap({
             ...result.headers,
-            'strict-transport-security': ['max-age=31536000; includeSubDomains'],
+            Headers.strictTransportSecurityHeader: ['max-age=31536000; includeSubDomains'],
           }),
         );
       }
@@ -69,8 +69,8 @@ Middleware enforceHttps() {
   };
 }
 
-Headers _corsHeaders(String? origin) => Headers.fromMap({
-  Headers.accessControlAllowOriginHeader: [origin ?? '*'],
+Headers _corsHeaders(String? origin, String? referer) => Headers.fromMap({
+  Headers.accessControlAllowOriginHeader: [origin ?? referer ?? '*'],
   Headers.accessControlAllowMethodsHeader: ['GET', 'POST', 'OPTIONS'],
   Headers.accessControlAllowHeadersHeader: [
     'Content-Type',
@@ -82,13 +82,13 @@ Headers _corsHeaders(String? origin) => Headers.fromMap({
   Headers.accessControlMaxAgeHeader: ['86400'],
 });
 
-final corsHeaders = _corsHeaders(null);
 
 Middleware addCors() {
   return (final Handler innerHandler) {
     return (final Request ctx) async {
-      final origin = ctx.headers['origin']?.firstOrNull;
-      final headers = _corsHeaders(origin);
+      final origin = ctx.headers[Headers.originHeader]?.firstOrNull;
+      final referer = ctx.headers[Headers.refererHeader]?.firstOrNull;
+      final headers = _corsHeaders(origin, referer);
 
       if (ctx.method == Method.options) {
         return Response(204, headers: headers);

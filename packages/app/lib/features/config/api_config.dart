@@ -14,7 +14,7 @@ class ApiConfig {
 
   static const pjatkLoginEndpoint = '/Logowanie.aspx';
   static const pjatkPersonalScheduleEndpoint = '/TwojPlan.aspx';
-  static const pjatkLogoutEndpoint = 'Wylogowanie.aspx';
+  static const pjatkLogoutEndpoint = '/Wylogowanie.aspx';
 
   static String get fullLoginUrl => '$baseUrl$pjatkLoginEndpoint';
   static String get fullPersonalScheduleUrl =>
