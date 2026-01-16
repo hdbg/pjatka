@@ -41,6 +41,7 @@ class AspEmulator {
   AspEmulator(this.urlBase, {required this.talker}) {
     dio.options.connectTimeout = const Duration(seconds: 30);
     dio.options.receiveTimeout = const Duration(seconds: 30);
+    dio.options.extra['withCredentials'] = true;
   }
 
   final String urlBase;

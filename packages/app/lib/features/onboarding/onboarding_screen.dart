@@ -32,7 +32,7 @@ class OnboardingSetup extends _$OnboardingSetup {
             SnackBar(
               content: const Text('No groups found. Please try manual setup.'),
               action: SnackBarAction(
-                label: 'Manual',
+                label: 'Ok',
                 onPressed: () => handleManualSetup(context),
               ),
             ),

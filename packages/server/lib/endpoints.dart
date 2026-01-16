@@ -4,15 +4,6 @@ import 'package:pjatk_core/database/dao/schedule_dao.dart';
 import 'package:relic/relic.dart';
 import 'package:server/server.dart';
 
-Response helloHandler(final Request req) {
-  final name = req.rawPathParameters[#name];
-  final age = int.parse(req.rawPathParameters[#age]!);
-
-  return Response.ok(
-    body: Body.fromString('Hello, $name! To think you are $age years old.\n'),
-  );
-}
-
 Future<Response> classesHandler(final Request req) async {
   final dao = ScheduleDao(scheduleDb, talker: talker);
 
@@ -43,23 +34,37 @@ Future<Response> classesHandler(final Request req) async {
   return Response.ok(body: Body.fromString(resp));
 }
 
-final corsHeaders = Headers.fromMap({
-  Headers.accessControlAllowOriginHeader: ['*'],
+Headers _corsHeaders(String? origin) => Headers.fromMap({
+  Headers.accessControlAllowOriginHeader: [origin ?? '*'],
   Headers.accessControlAllowMethodsHeader: ['GET', 'POST', 'OPTIONS'],
-  Headers.accessControlAllowHeadersHeader: ['Content-Type'],
+  Headers.accessControlAllowHeadersHeader: [
+    'Content-Type',
+    'X-Requested-With',
+    'X-MicrosoftAjax',
+    'Cookie',
+  ],
+  Headers.accessControlAllowCredentialsHeader: ['true'],
   Headers.accessControlMaxAgeHeader: ['86400'],
-  Headers.contentTypeHeader: ['application/json'],
 });
+
+final corsHeaders = _corsHeaders(null);
 
 Middleware addCors() {
   return (final Handler innerHandler) {
     return (final Request ctx) async {
+      final origin = ctx.headers['origin']?.firstOrNull;
+      final headers = _corsHeaders(origin);
+
+      if (ctx.method == Method.options) {
+        return Response(204, headers: headers);
+      }
+
       final result = await innerHandler(ctx);
 
       if (result case Response()) {
         return result.copyWith(headers: Headers.fromMap({
           ...result.headers,
-          ...corsHeaders,
+          ...headers,
         }));
       }
 

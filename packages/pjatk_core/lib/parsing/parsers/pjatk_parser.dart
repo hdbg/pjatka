@@ -61,13 +61,11 @@ class PjatkParser implements Parser {
     final document = html_parser.parseFragment(fragment);
 
     if (_isReservation(document)) {
-      talker.debug('Skipping reservation for ID: $classId');
       return null;
     }
 
     final name = _extractText(document, _nameSelector);
     if (name == null || name.isEmpty) {
-      talker.error('Failed to parse class name for ID: $classId');
       throw const ParseException.parsingFailed(
         message: 'Could not parse class name',
       );
@@ -75,7 +73,6 @@ class PjatkParser implements Parser {
 
     final code = _extractText(document, _codeSelector);
     if (code == null || code.isEmpty) {
-      talker.error('Failed to parse class code for ID: $classId');
       throw const ParseException.parsingFailed(
         message: 'Could not parse class code',
       );

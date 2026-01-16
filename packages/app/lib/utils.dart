@@ -9,6 +9,7 @@ final talker = Talker(
     useHistory: true,
     maxHistoryItems: 100,
     useConsoleLogs: true,
+    
   ),
 );
 

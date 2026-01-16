@@ -10,6 +10,7 @@ environment:
 dependencies:
   path: ^1.9.0
   relic: ^0.14.0
+  dio: ^5.9.0
   pjatk_core:
     path: ../pjatk_core
   sqlite3: ^2.9.4
