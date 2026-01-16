@@ -61,19 +61,33 @@ class Calendar extends HookConsumerWidget {
     );
     useEffect(() => dataSource.dispose, [dataSource]);
 
+    final _minSlotHeight = 3.h;
+    final _maxSlotHeight = 20.h;
+    final _defaultHeight = 3.h;
+
+    final slotHeight = useState(_defaultHeight);
+    final baseSlotHeight = useRef(_defaultHeight);
+
     return Stack(
       children: [
-        SfCalendar(
-          view: allowedViews.first,
-          dataSource: dataSource,
-          allowedViews: allowedViews,
-          firstDayOfWeek: 1,
-          timeSlotViewSettings: const TimeSlotViewSettings(
-            startHour: 8,
-            endHour: 21,
-            timeInterval: Duration(minutes: 15),
-            timeFormat: 'HH:mm',
-          ),
+        GestureDetector(
+          onScaleStart: (_) => baseSlotHeight.value = slotHeight.value,
+          onScaleUpdate: (details) {
+            slotHeight.value = (baseSlotHeight.value * details.scale)
+                .clamp(_minSlotHeight, _maxSlotHeight);
+          },
+          child: SfCalendar(
+            view: allowedViews.first,
+            dataSource: dataSource,
+            allowedViews: allowedViews,
+            firstDayOfWeek: 1,
+            timeSlotViewSettings: TimeSlotViewSettings(
+              startHour: 8,
+              endHour: 21,
+              timeInterval: const Duration(minutes: 15),
+              timeFormat: 'HH:mm',
+              timeIntervalHeight: slotHeight.value,
+            ),
           monthViewSettings: const MonthViewSettings(
             appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
             showAgenda: true,
@@ -108,6 +122,7 @@ class Calendar extends HookConsumerWidget {
               _showClassDetailsDialog(context, appointment);
             }
           },
+        ),
         ),
         const Positioned(top: 0, left: 0, right: 0, child: TopLoader()),
       ],
