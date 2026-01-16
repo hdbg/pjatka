@@ -99,14 +99,14 @@ class HomeRouter extends HookWidget {
       selectedIndex: selectedIndex.value,
       onSelectedIndexChange: (index) => selectedIndex.value = index,
       transitionDuration: transitionDuration,
-      leadingUnextendedNavRail: Image(image: AssetImage('../../assets/icon.png'), height: 5.w),
+      leadingUnextendedNavRail: Image(image: AssetImage('./assets/icon.png'), height: 5.w),
       useDrawer: true,
       // actual render
       leadingExtendedNavRail: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Flexible(flex: 1, child: Image(image: AssetImage('../../assets/icon.png'))),
+          Flexible(flex: 1, child: Image(image: AssetImage('./assets/icon.png'))),
           Flexible(
             flex: 2,
             child: FittedBox(
