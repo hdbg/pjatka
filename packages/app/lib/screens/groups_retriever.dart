@@ -94,7 +94,9 @@ class _GroupsRetrieverNative extends ConsumerWidget {
       onLoadStop: (controller, url) async {
         talker.debug('Page loaded: $url');
 
-        if (!url.toString().trim().contains(ApiConfig.pjatkPersonalScheduleEndpoint)) {
+        if (!url.toString().trim().contains(
+          ApiConfig.pjatkPersonalScheduleEndpoint,
+        )) {
           return;
         }
 
@@ -189,6 +191,13 @@ class _GroupsRetrieverWeb extends HookConsumerWidget {
         final planResponse = await emulator.request(
           const AspRequest(
             endpoint: ApiConfig.pjatkPersonalScheduleEndpoint,
+            kind: RequestKind.initial(),
+          ),
+        );
+
+        await emulator.request(
+          const AspRequest(
+            endpoint: ApiConfig.pjatkLogoutEndpoint,
             kind: RequestKind.initial(),
           ),
         );
