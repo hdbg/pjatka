@@ -23,9 +23,12 @@ Future<Response> classesHandler(final Request req) async {
     );
   }
 
+  final startOfDay = DateTime(date.year, date.month, date.day);
+  final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
+
   final classes = await dao
       .watchClasses(
-        filters: WatchFilters(from: date, to: date),
+        filters: WatchFilters(from: startOfDay, to: endOfDay),
       )
       .first;
 
