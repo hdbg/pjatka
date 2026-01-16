@@ -9,8 +9,8 @@ import 'package:pjatka/features/config/api_config.dart';
 import 'package:pjatka/features/settings/provider.dart';
 import 'package:pjatka/utils.dart';
 import 'package:pjatk_core/parsing/parsers/asp_emulator.dart';
-import 'package:html/parser.dart' as html_parser;
 import 'package:sizer/sizer.dart';
+import 'package:html/parser.dart' as html_parser;
 
 Set<String> _parseGroupsFromHtml(String html) {
   final document = html_parser.parse(html);
@@ -224,74 +224,124 @@ class _GroupsRetrieverWeb extends HookConsumerWidget {
     return Center(
       child: SizedBox(
         width: 40.w,
-        height: 40.h,
+        height: 50.h,
         child: Card(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 2.h),
             child: Form(
               key: formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Card(
-                    color: Colors.orange.shade100,
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Row(
+                  Expanded(
+                    flex: 2,
+                    child: Card(
+                      elevation: 0,
+                      color: Colors.transparent,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.warning, color: Colors.orange.shade800),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'Your credentials will not be stored and are used only to retrieve your groups.',
-                              style: TextStyle(color: Colors.orange.shade900),
+                          Text(
+                            "Authorize through 'Plan Zajec'",
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          SizedBox(height: 0.6.h),
+                          Text(
+                            'Sign in to fetch your study groups.',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.7,
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  TextFormField(
-                    controller: usernameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Username',
-                      hintText: 's12345',
-                      border: OutlineInputBorder(),
+    Expanded(
+                    flex: 4,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextFormField(
+                          controller: usernameController,
+                          decoration: InputDecoration(
+                            labelText: 'Student ID (s-number)',
+                            hintText: 's12345',
+                            border: const OutlineInputBorder(),
+                            filled: true,
+                            fillColor: theme.colorScheme.surface.withValues(
+                              alpha: 0.6,
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 2.w,
+                              vertical: 1.6.h,
+                            ),
+                          ),
+                          validator: (v) =>
+                              v == null || v.isEmpty ? 'Required' : null,
+                          enabled: !isLoading.value,
+                        ),
+                        SizedBox(height: 2.h),
+                        TextFormField(
+                          controller: passwordController,
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            border: const OutlineInputBorder(),
+                            filled: true,
+                            fillColor: theme.colorScheme.surface.withValues(
+                              alpha: 0.6,
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 2.w,
+                              vertical: 1.6.h,
+                            ),
+                          ),
+                          obscureText: true,
+                          validator: (v) =>
+                              v == null || v.isEmpty ? 'Required' : null,
+                          enabled: !isLoading.value,
+                        ),
+                      ],
                     ),
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Required' : null,
-                    enabled: !isLoading.value,
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: passwordController,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      border: OutlineInputBorder(),
-                    ),
-                    obscureText: true,
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Required' : null,
-                    enabled: !isLoading.value,
+                  Expanded(
+                    flex: 1,
+                    child: error.value == null
+                        ? const SizedBox.shrink()
+                        : Text(
+                            error.value!,
+                            style: TextStyle(
+                              color: theme.colorScheme.error,
+                            ),
+                          ),
                   ),
-                  const Spacer(),
-                  if (error.value != null) ...[
-                    Text(
-                      error.value!,
-                      style: TextStyle(color: theme.colorScheme.error),
+                  Expanded(
+                    flex: 2,
+                    child: Center(
+                      child: SizedBox(
+                        width: 15.w,
+                        height: 7.h,
+                        child: FilledButton(
+                          style: FilledButton.styleFrom(
+                            textStyle: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          onPressed: isLoading.value ? null : submit,
+                          child: isLoading.value
+                              ? const CircularProgressIndicator(strokeWidth: 2)
+                              : const Text('Continue'),
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 16),
-                  ],
-                  FilledButton(
-                    onPressed: isLoading.value ? null : submit,
-                    child: isLoading.value
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Continue'),
                   ),
                 ],
               ),
