@@ -37,6 +37,38 @@ Future<Response> classesHandler(final Request req) async {
   return Response.ok(body: Body.fromString(resp));
 }
 
+Middleware enforceHttps() {
+  return (final Handler innerHandler) {
+    return (final Request ctx) async {
+      final proto = ctx.headers['x-forwarded-proto']?.firstOrNull;
+      final isHttps = proto == 'https' || ctx.url.scheme == 'https';
+
+      if (!isHttps) {
+        final httpsUrl = ctx.url.replace(scheme: 'https');
+        return Response(
+          301,
+          headers: Headers.fromMap({
+            'location': [httpsUrl.toString()],
+          }),
+        );
+      }
+
+      final result = await innerHandler(ctx);
+
+      if (result case Response()) {
+        return result.copyWith(
+          headers: Headers.fromMap({
+            ...result.headers,
+            'strict-transport-security': ['max-age=31536000; includeSubDomains'],
+          }),
+        );
+      }
+
+      return result;
+    };
+  };
+}
+
 Headers _corsHeaders(String? origin) => Headers.fromMap({
   Headers.accessControlAllowOriginHeader: [origin ?? '*'],
   Headers.accessControlAllowMethodsHeader: ['GET', 'POST', 'OPTIONS'],

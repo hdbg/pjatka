@@ -13,6 +13,7 @@ import 'package:timezone/data/latest.dart' as tz;
 Future<void> main(List<String> arguments) async {
   final port = int.tryParse(Platform.environment['PORT'] ?? '') ?? 8080;
   final dbPath = Platform.environment['DB_PATH'] ?? 'schedule_db.sqlite';
+  final isDebug = Platform.environment['DEBUG']?.toLowerCase() == 'true';
 
   scheduleDb = ScheduleDatabase(
     NativeDatabase.createInBackground(File(dbPath)),
@@ -23,7 +24,13 @@ Future<void> main(List<String> arguments) async {
   // Start the background reconciliation worker
   final _ = backgroundWorker();
 
-  final app = RelicApp()
+  final app = RelicApp();
+
+  if (!isDebug) {
+    app.use('/', enforceHttps());
+  }
+
+  app
     ..use('/', addCors())
     ..use('/', logRequests())
     ..options('/**', (_) => Response(204))
