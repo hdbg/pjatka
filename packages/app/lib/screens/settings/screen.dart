@@ -10,7 +10,11 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'screen.g.dart';
 
-final List<Setting> allSettings = [groupSetting, parserRangeSetting, debugSetting];
+final List<Setting> allSettings = [
+  groupSetting,
+  parserRangeSetting,
+  debugSetting,
+];
 
 class Setting {
   final String title;
@@ -44,6 +48,7 @@ class Selected extends _$Selected {
   }
 }
 
+/// The list of settings to choose from.
 class _SettingsList extends ConsumerWidget {
   const _SettingsList();
 
@@ -60,8 +65,8 @@ class _SettingsList extends ConsumerWidget {
               .map(
                 (setting) => SettingsTile(
                   leading: Icon(setting.icon),
-                  title: Text(setting.title),
-                  description: Text(setting.description),
+                  title: Text(setting.title, softWrap: false, overflow: TextOverflow.ellipsis),
+                  description: Text(setting.description, softWrap: false, overflow: TextOverflow.ellipsis),
                   onPressed: (context) {
                     ref.read(selectedProvider.notifier).select(setting);
                   },
@@ -76,6 +81,7 @@ class _SettingsList extends ConsumerWidget {
 
 final _navigatorKey = GlobalKey<NavigatorState>();
 
+/// The settings screen for small devices, using a Navigator to open setting content on top of current page
 class SettingsScreenSmall extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -117,6 +123,7 @@ class SettingsScreenSmall extends HookConsumerWidget {
   }
 }
 
+/// The pane that displays the selected setting's content.
 class SettingsPane extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -220,14 +227,14 @@ final settingsDestination = Destination(
   icon: const Icon(Icons.settings),
   selectedIcon: const Icon(Icons.settings_outlined),
   main: AdaptiveBuilders(
-    // buildSmall: (context) => SettingsScreenSmall(),
-    build: (context) => SettingsScreenSmall(),
+    buildSmall: (context) => SettingsScreenSmall(),
+    build: (context) => const _SettingsList(),
     buildMediumLarge: (context) => const _SettingsList(),
     buildLarge: (context) => const _SettingsList(),
     buildExtraLarge: (context) => const _SettingsList(),
   ),
   secondary: AdaptiveBuilders(
-    // build: (context) => SettingsPane(),
+    build: (context) => SettingsPane(),
     buildMediumLarge: (context) => SettingsPane(),
     buildLarge: (context) => SettingsPane(),
     buildExtraLarge: (context) => SettingsPane(),
