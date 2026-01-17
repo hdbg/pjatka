@@ -3,7 +3,6 @@ import 'package:pjatk_core/database/models.dart';
 import 'package:pjatk_core/parsing/exceptions/parse_exceptions.dart';
 import 'package:timezone/timezone.dart' as tz;
 
-
 class PjatkClass {
   PjatkClass({
     required this.id,
@@ -32,22 +31,51 @@ class PjatkClass {
   final bool isOnline;
 }
 
+enum PjatkRawKind {
+  lecture(['Wykład', 'Lektorat']),
+  seminar(['Ćwiczenia', 'Internet - ćwiczenia']),
+  exam(['Egzamin']),
+  diplomaThesis(['Projekt dyplomowy']);
+
+  final List<String> displayNames;
+
+  const PjatkRawKind(this.displayNames);
+
+  static PjatkRawKind? fromDisplayName(String name) {
+    for (final kind in PjatkRawKind.values) {
+      if (kind.displayNames.contains(name)) {
+        return kind;
+      }
+    }
+    return null;
+  }
+
+  ClassKind toClassKind() {
+    return switch (this) {
+      PjatkRawKind.lecture => ClassKind.lecture,
+      PjatkRawKind.seminar => ClassKind.seminar,
+      PjatkRawKind.diplomaThesis => ClassKind.diplomaThesis,
+      // TODO: Handle this case.
+      PjatkRawKind.exam => throw UnimplementedError(),
+    };
+  }
+}
+
 /// Deduct class kind from Polish class type name
-ClassKind deductKind(PjatkClass pjatkClass) {
-  return switch (pjatkClass.kind) {
-    'Wykład' || 'Lektorat' => ClassKind.lecture,
-    'Ćwiczenia' || 'Internet - ćwiczenia' => ClassKind.seminar,
-    'Projekt dyplomowy' => ClassKind.diplomaThesis,
-    _ => throw ParseException.parsingFailed(
-      message: "Can't deduct PJATK class kind '${pjatkClass.kind}'",
-    ),
-  };
+ClassKind deductKind(String kind) {
+  final rawKind = PjatkRawKind.fromDisplayName(kind);
+  if (rawKind != null) {
+    return rawKind.toClassKind();
+  }
+  throw ParseException.parsingFailed(
+    message: "Can't deduct PJATK class kind '$kind'",
+  );
 }
 
 /// Deduct groups from comma-separated string
-List<String> deductGroups(PjatkClass pjatkClass) {
-  final rawGroups = pjatkClass.groups.split(',');
-  return rawGroups.map((g) =>g.trim()).toList();
+List<String> deductGroups(String groups) {
+  final rawGroups = groups.split(',');
+  return rawGroups.map((g) => g.trim()).toList();
 }
 
 /// Deduct time range with timezone conversion (Warsaw → UTC)
@@ -103,12 +131,12 @@ ScheduledClass deductAll(PjatkClass item) {
     classId: item.id.replaceAll(';z', ''),
     name: item.name,
     code: item.code,
-    kind: deductKind(item),
+    kind: deductKind(item.kind),
     lecturer: item.lecturer,
     start: start,
     end: end,
     place: deductPlace(item),
-    groups: deductGroups(item),
+    groups: deductGroups(item.groups),
   );
 }
 

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pjatka/features/database/database.dart';
 import 'package:pjatka/features/settings/provider.dart';
-import 'package:pjatka/screens/groups_retriever.dart';
+import 'package:pjatka/screens/groups_retriever/groups_retriever.dart';
 import 'package:pjatka/screens/settings/screen.dart';
 import 'package:pjatka/utils.dart';
 import 'package:talker_flutter/talker_flutter.dart';

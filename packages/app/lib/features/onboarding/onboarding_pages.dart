@@ -7,6 +7,7 @@ class OnboardingPages {
   static List<PageViewModel> getPages({
     required VoidCallback onManualSetup,
     required VoidCallback onAutomaticSetup,
+    required VoidCallback onIcalSetup,
   }) {
     final pages = [
       PageViewModel(
@@ -53,6 +54,7 @@ class OnboardingPages {
         bodyWidget: _GroupSetupWidget(
           onManualSetup: onManualSetup,
           onAutomaticSetup: onAutomaticSetup,
+          onIcalSetup: onIcalSetup,
         ),
         decoration: _getPageDecoration(),
       ),
@@ -75,10 +77,12 @@ class OnboardingPages {
 class _GroupSetupWidget extends StatelessWidget {
   final VoidCallback onManualSetup;
   final VoidCallback onAutomaticSetup;
+  final VoidCallback onIcalSetup;
 
   const _GroupSetupWidget({
     required this.onManualSetup,
     required this.onAutomaticSetup,
+    required this.onIcalSetup,
   });
 
   @override
@@ -95,16 +99,31 @@ class _GroupSetupWidget extends StatelessWidget {
         ),
         SizedBox(height: 3.h),
 
-        // Automatic option (recommended)
+        // iCal option (recommended)
+        _SetupOptionCard(
+          icon: Icons.upload_file,
+          title: 'Import from iCal',
+          subtitle:
+              'Upload an iCal schedule file to detect your study groups',
+          color: Colors.blue,
+          recommended: true,
+          onTap: onIcalSetup,
+        ),
+
+        SizedBox(height: 1.5.h),
+
+        // Automatic option
         _SetupOptionCard(
           icon: Icons.login,
           title: 'Automatic Setup',
           subtitle:
               'Login with PJATK credentials to automatically retrieve your groups',
           color: Colors.green,
-          recommended: true,
+          recommended: false,
           onTap: onAutomaticSetup,
         ),
+
+        
 
         SizedBox(height: 1.5.h),
 
@@ -117,6 +136,8 @@ class _GroupSetupWidget extends StatelessWidget {
           recommended: false,
           onTap: onManualSetup,
         ),
+
+
 
         SizedBox(height: 2.h),
         Text(

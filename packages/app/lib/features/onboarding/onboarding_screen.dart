@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:pjatka/features/onboarding/onboarding_pages.dart';
 import 'package:pjatka/features/settings/provider.dart';
-import 'package:pjatka/screens/groups_retriever.dart';
+import 'package:pjatka/screens/groups_retriever/groups_retriever.dart';
+import 'package:pjatka/screens/groups_retriever/ical_inductor/ical_inductor.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'onboarding_screen.g.dart';
@@ -17,6 +18,14 @@ class OnboardingSetup extends _$OnboardingSetup {
 
   void handleManualSetup(BuildContext context) async {
     state = AsyncData(true);
+  }
+
+  Future<void> handleIcalSetup(BuildContext context) async {
+    state = AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      await showIcalInductor(context);
+      return true;
+    });
   }
 
   Future<void> handleAutomaticSetup(BuildContext context) async {
@@ -67,6 +76,9 @@ class OnboardingScreen extends ConsumerWidget {
           onAutomaticSetup: () => ref
               .read(onboardingSetupProvider.notifier)
               .handleAutomaticSetup(context),
+          onIcalSetup: () => ref
+              .read(onboardingSetupProvider.notifier)
+              .handleIcalSetup(context),
         ),
         onDone: () =>
             ref.read(onboardingProvider.notifier).completeOnboarding(),

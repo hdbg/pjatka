@@ -13,131 +13,34 @@ void main() {
   group('ClassDeductor', () {
     group('deductKind', () {
       test('parses "Wykład" as lecture', () {
-        final pjatkClass = PjatkClass(
-          id: 'test',
-          name: 'Test Class',
-          code: 'TEST',
-          kind: 'Wykład',
-          groups: 'WI1',
-          lecturer: 'Test Lecturer',
-          room: '101',
-          from: '10:00:00',
-          to: '11:30:00',
-          date: '01.01.2024',
-          isOnline: false,
-        );
-
-        expect(deductKind(pjatkClass), ClassKind.lecture);
+        expect(deductKind('Wykład'), ClassKind.lecture);
       });
 
       test('parses "Lektorat" as lecture', () {
-        final pjatkClass = PjatkClass(
-          id: 'test',
-          name: 'Test Class',
-          code: 'TEST',
-          kind: 'Lektorat',
-          groups: 'WI1',
-          lecturer: 'Test Lecturer',
-          room: '101',
-          from: '10:00:00',
-          to: '11:30:00',
-          date: '01.01.2024',
-          isOnline: false,
-        );
-
-        expect(deductKind(pjatkClass), ClassKind.lecture);
+        expect(deductKind('Lektorat'), ClassKind.lecture);
       });
 
       test('parses "Ćwiczenia" as seminar', () {
-        final pjatkClass = PjatkClass(
-          id: 'test',
-          name: 'Test Class',
-          code: 'TEST',
-          kind: 'Ćwiczenia',
-          groups: 'WI1',
-          lecturer: 'Test Lecturer',
-          room: '101',
-          from: '10:00:00',
-          to: '11:30:00',
-          date: '01.01.2024',
-          isOnline: false,
-        );
-
-        expect(deductKind(pjatkClass), ClassKind.seminar);
+ 
+        expect(deductKind('Ćwiczenia'), ClassKind.seminar);
       });
 
       test('parses "Internet - ćwiczenia" as seminar', () {
-        final pjatkClass = PjatkClass(
-          id: 'test',
-          name: 'Test Class',
-          code: 'TEST',
-          kind: 'Internet - ćwiczenia',
-          groups: 'WI1',
-          lecturer: 'Test Lecturer',
-          room: '101',
-          from: '10:00:00',
-          to: '11:30:00',
-          date: '01.01.2024',
-          isOnline: false,
-        );
-
-        expect(deductKind(pjatkClass), ClassKind.seminar);
+        expect(deductKind('Internet - ćwiczenia'), ClassKind.seminar);
       });
 
       test('parses "Projekt dyplomowy" as diplomaThesis', () {
-        final pjatkClass = PjatkClass(
-          id: 'test',
-          name: 'Test Class',
-          code: 'TEST',
-          kind: 'Projekt dyplomowy',
-          groups: 'WI1',
-          lecturer: 'Test Lecturer',
-          room: '101',
-          from: '10:00:00',
-          to: '11:30:00',
-          date: '01.01.2024',
-          isOnline: false,
-        );
-
-        expect(deductKind(pjatkClass), ClassKind.diplomaThesis);
+        expect(deductKind('Projekt dyplomowy'), ClassKind.diplomaThesis);
       });
 
       test('throws for unknown kind', () {
-        final pjatkClass = PjatkClass(
-          id: 'test',
-          name: 'Test Class',
-          code: 'TEST',
-          kind: 'Unknown Type',
-          groups: 'WI1',
-          lecturer: 'Test Lecturer',
-          room: '101',
-          from: '10:00:00',
-          to: '11:30:00',
-          date: '01.01.2024',
-          isOnline: false,
-        );
-
-        expect(() => deductKind(pjatkClass), throwsException);
+        expect(() => deductKind('Unknown Type'), throwsException);
       });
     });
 
     group('deductGroups', () {
       test('splits comma-separated groups', () {
-        final pjatkClass = PjatkClass(
-          id: 'test',
-          name: 'Test Class',
-          code: 'TEST',
-          kind: 'Wykład',
-          groups: 'WI1, WI2, WI3',
-          lecturer: 'Test Lecturer',
-          room: '101',
-          from: '10:00:00',
-          to: '11:30:00',
-          date: '01.01.2024',
-          isOnline: false,
-        );
-
-        final groups = deductGroups(pjatkClass);
+        final groups = deductGroups('WI1, WI2, WI3');
 
         expect(groups.length, 3);
         expect(groups[0], 'WI1');
@@ -146,42 +49,14 @@ void main() {
       });
 
       test('trims whitespace from group codes', () {
-        final pjatkClass = PjatkClass(
-          id: 'test',
-          name: 'Test Class',
-          code: 'TEST',
-          kind: 'Wykład',
-          groups: '  WI1  ,  WI2  ',
-          lecturer: 'Test Lecturer',
-          room: '101',
-          from: '10:00:00',
-          to: '11:30:00',
-          date: '01.01.2024',
-          isOnline: false,
-        );
-
-        final groups = deductGroups(pjatkClass);
+        final groups = deductGroups('  WI1  ,  WI2  ');
 
         expect(groups[0], 'WI1');
         expect(groups[1], 'WI2');
       });
 
       test('handles single group', () {
-        final pjatkClass = PjatkClass(
-          id: 'test',
-          name: 'Test Class',
-          code: 'TEST',
-          kind: 'Wykład',
-          groups: 'WI1',
-          lecturer: 'Test Lecturer',
-          room: '101',
-          from: '10:00:00',
-          to: '11:30:00',
-          date: '01.01.2024',
-          isOnline: false,
-        );
-
-        final groups = deductGroups(pjatkClass);
+        final groups = deductGroups( 'WI1');
 
         expect(groups.length, 1);
         expect(groups[0], 'WI1');
