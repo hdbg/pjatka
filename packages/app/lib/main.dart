@@ -40,7 +40,7 @@ class MyApp extends ConsumerWidget {
     return Sizer(
       builder: (context, orientation, deviceType) {
         return MaterialApp(
-          title: 'PJATK',
+          title: 'PJATKa',
 
           darkTheme: ThemeData(
             colorScheme: ColorScheme.fromSeed(

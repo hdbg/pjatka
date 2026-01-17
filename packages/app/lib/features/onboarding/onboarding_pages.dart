@@ -10,7 +10,7 @@ class OnboardingPages {
   }) {
     final pages = [
       PageViewModel(
-        title: 'Welcome to PJATK App',
+        title: 'Welcome to PJATKa App (unofficial)',
         body: 'Your personal schedule assistant for PJATK classes',
         image: Center(child: Image.asset('./assets/icon.png', height: 40.h, )),
         decoration: _getPageDecoration(),

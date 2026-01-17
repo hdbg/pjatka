@@ -112,7 +112,7 @@ class HomeRouter extends HookWidget {
             child: FittedBox(
               fit: BoxFit.fitWidth,
               child: Text(
-                ' PJATK ',
+                ' pjatka ',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
