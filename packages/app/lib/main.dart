@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pjatka/features/onboarding/onboarding_screen.dart';
+import 'package:pjatka/features/schedule/providers/schedule_providers.dart';
 import 'package:pjatka/features/settings/provider.dart';
 import 'package:pjatka/home.dart';
 import 'package:pjatka/screens/general_schedule.dart';
@@ -39,9 +40,11 @@ class MyApp extends ConsumerWidget {
 
     return Sizer(
       builder: (context, orientation, deviceType) {
+        // Start loading classes early
+        ref.read(classesReconcilerProvider);
+
         return MaterialApp(
           title: 'PJATKa',
-
           darkTheme: ThemeData(
             colorScheme: ColorScheme.fromSeed(
               seedColor: Colors.lightBlue,
