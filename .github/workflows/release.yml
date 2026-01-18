@@ -97,7 +97,7 @@ jobs:
             ${{ runner.os }}-build-
 
       - name: Build APK
-        run: cd packages/app && flutter build apk --release --dart-define=API_URL=${{ env.API_URL }}
+        run: cd packages/app && flutter build apk --release --dart-define=API_URL=${{ vars.API_URL }}
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -122,7 +122,7 @@ jobs:
           channel: stable
 
       - name: Build Flutter web
-        run: cd packages/app/ && flutter build web --release --dart-define=API_URL=${{ env.API_URL }} --wasm
+        run: cd packages/app/ && flutter build web --release --dart-define=API_URL=${{ vars.API_URL }} --wasm
 
       - name: Create CORS headers file
         run: |
