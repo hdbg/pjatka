@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:pjatk_core/database/models.dart';
 import 'package:pjatk_core/parsing/parsers/class_deductor.dart';
 import 'package:pjatka/features/database/database.dart';
-import 'package:pjatka/screens/groups_retriever/ical_inductor/form.dart';
-import 'package:pjatka/screens/groups_retriever/ical_inductor/ical_parser.dart';
+import 'package:pjatka/screens/groups_retriever/ics_resolver/form.dart';
+import 'package:pjatka/screens/groups_retriever/ics_resolver/ical_parser.dart';
 import 'package:pjatka/utils.dart';
 import 'package:sizer/sizer.dart';
 
@@ -100,13 +100,21 @@ Future<Set<String>> queryGroupsFromCandidate(_CandidateClass candidate) async {
         ..where(
           scheduleDb.subject.code.equals(candidate.code.trim()) &
               scheduleDb.subject.kind.equalsValue(candidate.kind) &
-
-              scheduleDb.classAppointment.startTime.year.equals(candidate.from.year) &
-              scheduleDb.classAppointment.startTime.month.equals(candidate.from.month) &
-              scheduleDb.classAppointment.startTime.day.equals(candidate.from.day) &
-              scheduleDb.classAppointment.startTime.hour.equals(candidate.from.hour) &
-              scheduleDb.classAppointment.startTime.minute.equals(candidate.from.minute) &
-
+              scheduleDb.classAppointment.startTime.year.equals(
+                candidate.from.year,
+              ) &
+              scheduleDb.classAppointment.startTime.month.equals(
+                candidate.from.month,
+              ) &
+              scheduleDb.classAppointment.startTime.day.equals(
+                candidate.from.day,
+              ) &
+              scheduleDb.classAppointment.startTime.hour.equals(
+                candidate.from.hour,
+              ) &
+              scheduleDb.classAppointment.startTime.minute.equals(
+                candidate.from.minute,
+              ) &
               scheduleDb.classAppointment.location.equals(
                 candidate.room?.trim() ?? '',
               ),
@@ -148,7 +156,6 @@ Future<List<Set<String>>> _parseIcalAndQueryGroups(String icalData) async {
 
 @visibleForTesting
 Set<String> resolveGroupsFromSets(List<Set<String>> candidateGroupSets) {
-
   talker.debug('Resolving groups from candidate sets: $candidateGroupSets');
 
   final groups = <String>{};
@@ -196,16 +203,21 @@ Future<Set<String>> resolveGroups(String icalData) async {
   return resolveGroupsFromSets(candidateGroupSets);
 }
 
-Future<void> showIcalInductor(BuildContext context) {
-  return Navigator.of(context).push(
+Future<Set<String>> showIcalResolver(BuildContext context) {
+  final completer = Completer<Set<String>>();
+  Navigator.of(context).push(
     MaterialPageRoute(
       builder: (context) => Scaffold(
         appBar: AppBar(title: const Text('Import from iCal')),
         body: Padding(
           padding: EdgeInsets.all(2.w),
-          child:  ICalInductorForm(completer: Completer(),),
+          child: ICalResolverForm(completer: completer),
         ),
       ),
     ),
   );
+
+  completer.future.then((value) => Navigator.of(context).pop());
+
+  return completer.future;
 }

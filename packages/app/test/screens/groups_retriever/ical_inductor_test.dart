@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pjatka/screens/groups_retriever/ical_inductor/ical_inductor.dart';
+import 'package:pjatka/screens/groups_retriever/ics_resolver/ical_resolver.dart';
 
 void main() {
   group('resolveGroupsFromSets', () {

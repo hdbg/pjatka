@@ -121,6 +121,7 @@ class _GroupSetupWidget extends StatelessWidget {
           color: Colors.green,
           recommended: false,
           onTap: onAutomaticSetup,
+          disabled: kIsWeb,
         ),
 
         
@@ -158,6 +159,7 @@ class _SetupOptionCard extends StatelessWidget {
   final Color color;
   final bool recommended;
   final VoidCallback onTap;
+  final bool disabled;
 
   const _SetupOptionCard({
     required this.icon,
@@ -166,62 +168,67 @@ class _SetupOptionCard extends StatelessWidget {
     required this.color,
     required this.recommended,
     required this.onTap,
+    this.disabled = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final effectiveColor = disabled ? Colors.grey : color;
 
-    return Card(
-      elevation: 2,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: EdgeInsets.all(1.5.h),
-          child: Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(1.h),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
+    return Opacity(
+      opacity: disabled ? 0.5 : 1.0,
+      child: Card(
+        elevation: disabled ? 0 : 2,
+        child: InkWell(
+          onTap: disabled ? null : onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: EdgeInsets.all(1.5.h),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(1.h),
+                  decoration: BoxDecoration(
+                    color: effectiveColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, size: 3.h, color: effectiveColor),
                 ),
-                child: Icon(icon, size: 3.h, color: color),
-              ),
-              SizedBox(width: 4.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          title,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        if (recommended) ...[
-                          SizedBox(width: 2.w),
-                          Chip(
-                            label: const Text('Recommended'),
-                            labelStyle: const TextStyle(fontSize: 10),
-                            backgroundColor: Colors.green.withValues(
-                              alpha: 0.2,
+                SizedBox(width: 4.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            title,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
                             ),
-                            side: BorderSide.none,
                           ),
+                          if (recommended && !disabled) ...[
+                            SizedBox(width: 2.w),
+                            Chip(
+                              label: const Text('Recommended'),
+                              labelStyle: const TextStyle(fontSize: 10),
+                              backgroundColor: Colors.green.withValues(
+                                alpha: 0.2,
+                              ),
+                              side: BorderSide.none,
+                            ),
+                          ],
                         ],
-                      ],
-                    ),
-                    SizedBox(height: 0.5.h),
-                    Text(subtitle, style: theme.textTheme.bodySmall),
-                  ],
+                      ),
+                      SizedBox(height: 0.5.h),
+                      Text(subtitle, style: theme.textTheme.bodySmall),
+                    ],
+                  ),
                 ),
-              ),
-              Icon(Icons.arrow_forward_ios, size: 1.5.h),
-            ],
+                Icon(Icons.arrow_forward_ios, size: 1.5.h),
+              ],
+            ),
           ),
         ),
       ),
