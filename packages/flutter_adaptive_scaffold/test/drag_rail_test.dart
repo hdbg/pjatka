@@ -313,7 +313,7 @@ void main() {
     );
 
     testWidgets(
-      'overlay rail starts at top of parent when padding is present',
+      'overlay rail starts at top-left of parent when padding is present',
       (WidgetTester tester) async {
         const double padding = 16.0;
 
@@ -324,15 +324,55 @@ void main() {
         await tester.pumpAndSettle();
 
         // The overlay CompositedTransformFollower should be offset by
-        // negative padding.top so it starts at the top of the DragRail parent.
+        // negative padding so it starts at the top-left of the DragRail parent.
         final follower = find.byType(CompositedTransformFollower);
         expect(follower, findsOneWidget);
 
         final followerTopLeft = tester.getTopLeft(follower);
-        // The DragRail is in a Row inside Scaffold body, so starts at y=0.
-        // With padding=16, the CompositedTransformTarget is at y=16.
-        // The follower should offset by -16 to align with y=0.
+        // The DragRail is in a Row inside Scaffold body, so starts at (0,0).
+        // With padding=16, the CompositedTransformTarget is at (16,16).
+        // The follower should offset by (-16,-16) to align with (0,0).
+        expect(followerTopLeft.dx, equals(0.0));
         expect(followerTopLeft.dy, equals(0.0));
+      },
+    );
+
+    testWidgets(
+      'tapping collapsed rail expands it with animation',
+      (WidgetTester tester) async {
+        bool? lastExtendedValue;
+
+        await tester.pumpWidget(_buildTestApp(
+          extended: false,
+          onExtendedChanged: (bool value) {
+            lastExtendedValue = value;
+          },
+        ));
+        await tester.pumpAndSettle();
+
+        // Tap the collapsed rail
+        final dragRail = find.byType(DragRail);
+        await tester.tap(dragRail);
+        await tester.pump();
+
+        // The callback should have been called with true
+        expect(lastExtendedValue, isTrue);
+
+        // Scrim should appear during animation
+        final scrimFinder = find.byWidgetPredicate((Widget widget) {
+          if (widget is ColoredBox) {
+            final color = widget.color;
+            return color.r == 0 &&
+                color.g == 0 &&
+                color.b == 0 &&
+                color.a > 0;
+          }
+          return false;
+        });
+
+        // After settling, scrim should be at full opacity
+        await tester.pumpAndSettle();
+        expect(scrimFinder, findsOneWidget);
       },
     );
   });

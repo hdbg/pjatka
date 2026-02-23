@@ -263,11 +263,11 @@ class _DragRailState extends State<DragRail>
                   ),
                 ),
                 // Expanded rail positioned at the same location as the collapsed rail,
-                // offset upward by padding.top so the overlay covers the full height
+                // offset by negative padding so the overlay covers the full area
                 CompositedTransformFollower(
                   link: _layerLink,
                   showWhenUnlinked: false,
-                  offset: Offset(0, -resolvedPadding.top),
+                  offset: Offset(-resolvedPadding.left, -resolvedPadding.top),
                   child: SizedBox(
                     width: _currentWidth,
                     height: screenHeight,
@@ -297,6 +297,7 @@ class _DragRailState extends State<DragRail>
             width: widget.collapsedWidth,
             height: screenHeight,
             child: GestureDetector(
+              onTap: () => _setExtended(true),
               onHorizontalDragStart: _onHorizontalDragStart,
               onHorizontalDragUpdate: _onHorizontalDragUpdate,
               onHorizontalDragEnd: _onHorizontalDragEnd,
