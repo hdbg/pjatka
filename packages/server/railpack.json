@@ -25,7 +25,7 @@
           "customName": "Compile server binary"
         }
       ],
-      "deployOutputs": ["bin/server"]
+      "deployOutputs": [{ "include": ["bin/server"] }]
     }
   },
   "deploy": {

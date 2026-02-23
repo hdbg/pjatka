@@ -24,7 +24,7 @@
           "customName": "Build Flutter web"
         }
       ],
-      "deployOutputs": ["build/web"]
+      "deployOutputs": [{ "include": ["build/web"] }]
     }
   },
   "deploy": {
