@@ -1,0 +1,33 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "caches": {
+    "pub": {
+      "directory": "/root/.pub-cache",
+      "type": "shared"
+    }
+  },
+  "steps": {
+    "build": {
+      "inputs": [
+        {
+          "image": "ghcr.io/cirruslabs/flutter:3.32.2",
+          "include": ["/sdks/flutter"]
+        },
+        { "local": true, "include": ["."] }
+      ],
+      "caches": ["pub"],
+      "commands": [
+        "PATH:/sdks/flutter/bin:/sdks/flutter/bin/cache/dart-sdk/bin",
+        { "cmd": "flutter pub get", "customName": "Install dependencies" },
+        {
+          "cmd": "flutter build web --release",
+          "customName": "Build Flutter web"
+        }
+      ],
+      "deployOutputs": ["build/web"]
+    }
+  },
+  "deploy": {
+    "startCommand": "caddy file-server --root /app/build/web --listen :${PORT:-3000}"
+  }
+}

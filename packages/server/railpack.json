@@ -1,0 +1,35 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "buildAptPackages": ["libsqlite3-dev"],
+  "caches": {
+    "pub": {
+      "directory": "/root/.pub-cache",
+      "type": "shared"
+    }
+  },
+  "steps": {
+    "build": {
+      "inputs": [
+        {
+          "image": "dart:3.10",
+          "include": ["/usr/lib/dart"]
+        },
+        { "local": true, "include": ["."] }
+      ],
+      "caches": ["pub"],
+      "commands": [
+        "PATH:/usr/lib/dart/bin",
+        { "cmd": "dart pub get", "customName": "Install dependencies" },
+        {
+          "cmd": "dart compile exe bin/server.dart -o bin/server",
+          "customName": "Compile server binary"
+        }
+      ],
+      "deployOutputs": ["bin/server"]
+    }
+  },
+  "deploy": {
+    "aptPackages": ["libsqlite3-0"],
+    "startCommand": "./bin/server"
+  }
+}
