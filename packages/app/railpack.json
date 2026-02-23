@@ -9,10 +9,7 @@
   "steps": {
     "build": {
       "inputs": [
-        {
-          "image": "ghcr.io/cirruslabs/flutter:3.32.2",
-          "include": ["/sdks/flutter"]
-        },
+        { "image": "ghcr.io/cirruslabs/flutter:3.32.2" },
         { "local": true, "include": ["."] }
       ],
       "caches": ["pub"],

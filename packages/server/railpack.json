@@ -1,6 +1,5 @@
 {
   "$schema": "https://schema.railpack.com",
-  "buildAptPackages": ["libsqlite3-dev"],
   "caches": {
     "pub": {
       "directory": "/root/.pub-cache",
@@ -10,15 +9,13 @@
   "steps": {
     "build": {
       "inputs": [
-        {
-          "image": "dart:3.10",
-          "include": ["/usr/lib/dart"]
-        },
+        { "image": "dart:3.10" },
         { "local": true, "include": ["."] }
       ],
       "caches": ["pub"],
       "commands": [
         "PATH:/usr/lib/dart/bin",
+        { "cmd": "apt-get update && apt-get install -y libsqlite3-dev", "customName": "Install SQLite dev libs" },
         { "cmd": "dart pub get", "customName": "Install dependencies" },
         {
           "cmd": "dart compile exe bin/server.dart -o bin/server",
