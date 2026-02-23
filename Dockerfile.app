@@ -1,16 +1,26 @@
-FROM ghcr.io/cirruslabs/flutter:3.41.2 AS builder
+FROM jdxcode/mise:latest AS builder
 
-WORKDIR /app
-
+RUN useradd -m flutter
 RUN git config --global --add safe.directory '*'
 
-COPY pubspec.yaml pubspec.lock ./
-COPY packages ./packages
+WORKDIR /app
+COPY mise.toml mise.lock ./
+RUN chown -R flutter:flutter /app
+
+USER flutter
+ENV MISE_YES=1
+ENV MISE_DATA_DIR=/home/flutter/.local/share/mise
+ENV MISE_CACHE_DIR=/home/flutter/.cache/mise
+RUN mise trust
+RUN mise install flutter
+
+COPY --chown=flutter:flutter pubspec.yaml pubspec.lock ./
+COPY --chown=flutter:flutter packages ./packages
 
 WORKDIR /app/packages/app
-RUN flutter pub get
+RUN mise exec flutter -- flutter pub get
 ARG API_URL
-RUN flutter build web --release --dart-define=API_URL=${API_URL}
+RUN mise exec flutter -- flutter build web --release --dart-define=API_URL=${API_URL}
 
 FROM caddy:2-alpine
 COPY --from=builder /app/packages/app/build/web /srv
