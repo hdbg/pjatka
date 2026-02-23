@@ -37,7 +37,6 @@ dependencies:
     path : ../flutter_adaptive_scaffold
   shared_preferences: ^2.5.4
   riverpod: ^3.1.0
-  settings_ui: ^2.0.2
   hooks_riverpod: ^3.1.0
   talker_flutter: ^5.1.9
   drift_db_viewer: ^2.1.0

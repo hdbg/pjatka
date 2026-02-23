@@ -5,7 +5,6 @@ import 'package:pjatka/screens/settings/settings/debug.dart';
 import 'package:pjatka/screens/settings/settings/groups_manager.dart';
 import 'package:pjatka/screens/settings/settings/parser_range.dart';
 import 'package:pjatka/utils.dart';
-import 'package:settings_ui/settings_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'screen.g.dart';
@@ -48,31 +47,121 @@ class Selected extends _$Selected {
   }
 }
 
+/// A single custom settings tile.
+class _SettingsTile extends StatelessWidget {
+  const _SettingsTile({
+    required this.setting,
+    required this.onTap,
+  });
+
+  final Setting setting;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: colorScheme.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(setting.icon, size: 24, color: colorScheme.primary),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    setting.title,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: colorScheme.onSurface,
+                        ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    setting.description,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: colorScheme.onSurface.withValues(alpha: 0.4),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// The list of settings to choose from.
 class _SettingsList extends ConsumerWidget {
   const _SettingsList();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return SettingsList(
-      darkTheme: SettingsThemeData(
-        settingsListBackground: Theme.of(context).colorScheme.surface,
-      ),
-      sections: [
-        SettingsSection(
-          title: const Text('Settings'),
-          tiles: allSettings
-              .map(
-                (setting) => SettingsTile(
-                  leading: Icon(setting.icon),
-                  title: Text(setting.title, softWrap: false, overflow: TextOverflow.ellipsis),
-                  description: Text(setting.description, softWrap: false, overflow: TextOverflow.ellipsis),
-                  onPressed: (context) {
-                    ref.read(selectedProvider.notifier).select(setting);
-                  },
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Text(
+            'Settings',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
                 ),
-              )
-              .toList(),
+          ),
+        ),
+        Card(
+          elevation: 0,
+          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: colorScheme.outline.withValues(alpha: 0.15),
+            ),
+          ),
+          child: Column(
+            children: [
+              for (int i = 0; i < allSettings.length; i++) ...[
+                _SettingsTile(
+                  setting: allSettings[i],
+                  onTap: () =>
+                      ref.read(selectedProvider.notifier).select(allSettings[i]),
+                ),
+                if (i < allSettings.length - 1)
+                  Divider(
+                    height: 1,
+                    indent: 16,
+                    endIndent: 16,
+                    color: colorScheme.outline.withValues(alpha: 0.15),
+                  ),
+              ],
+            ],
+          ),
         ),
       ],
     );
