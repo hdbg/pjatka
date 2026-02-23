@@ -22,6 +22,9 @@ class DragRail extends StatefulWidget {
   final TextStyle? unSelectedLabelTextStyle;
   final NavigationRailLabelType? labelType;
 
+  /// Maximum opacity of the scrim overlay when the rail is fully expanded.
+  final double scrimMaxOpacity;
+
   /// Threshold (0.0 to 1.0) at which the rail snaps to expanded/collapsed state.
   final double snapThreshold;
 
@@ -45,6 +48,7 @@ class DragRail extends StatefulWidget {
     this.selectedLabelTextStyle,
     this.unSelectedLabelTextStyle,
     this.labelType = NavigationRailLabelType.none,
+    this.scrimMaxOpacity = 0.5,
     this.snapThreshold = 0.8,
   });
 
@@ -56,6 +60,8 @@ class _DragRailState extends State<DragRail>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _widthAnimation;
+  final OverlayPortalController _overlayController = OverlayPortalController();
+  final LayerLink _layerLink = LayerLink();
 
   bool _isExtended = false;
   bool _isDragging = false;
@@ -63,11 +69,13 @@ class _DragRailState extends State<DragRail>
 
   double get _widthRange => widget.expandedWidth - widget.collapsedWidth;
 
+  double get _expandProgress {
+    if (_isDragging) return _dragProgress;
+    return _widthAnimation.value;
+  }
+
   double get _currentWidth {
-    if (_isDragging) {
-      return widget.collapsedWidth + (_widthRange * _dragProgress);
-    }
-    return widget.collapsedWidth + (_widthRange * _widthAnimation.value);
+    return widget.collapsedWidth + (_widthRange * _expandProgress);
   }
 
   @override
@@ -76,17 +84,21 @@ class _DragRailState extends State<DragRail>
     _isExtended = widget.extended;
     _animationController = AnimationController(
       vsync: this,
-      duration:  kThemeAnimationDuration,
+      duration: kThemeAnimationDuration,
       value: widget.extended ? 1.0 : 0.0,
     );
-    _animationController.addListener(() {
-      setState(() {});
-    });
+    _animationController.addListener(_onAnimationTick);
+    _animationController.addStatusListener(_onAnimationStatus);
     _widthAnimation = CurvedAnimation(
       parent: _animationController,
       curve: Curves.easeInOut,
       reverseCurve: Curves.easeOut,
     );
+    if (widget.extended) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _showOverlay();
+      });
+    }
   }
 
   @override
@@ -103,6 +115,28 @@ class _DragRailState extends State<DragRail>
     super.dispose();
   }
 
+  void _onAnimationTick() {
+    setState(() {});
+  }
+
+  void _onAnimationStatus(AnimationStatus status) {
+    if (status == AnimationStatus.dismissed && !_isDragging) {
+      _hideOverlay();
+    }
+  }
+
+  void _showOverlay() {
+    if (!_overlayController.isShowing) {
+      _overlayController.show();
+    }
+  }
+
+  void _hideOverlay() {
+    if (_overlayController.isShowing) {
+      _overlayController.hide();
+    }
+  }
+
   void _setExtended(bool extended, {bool notify = true}) {
     if (_isExtended == extended) return;
 
@@ -111,6 +145,7 @@ class _DragRailState extends State<DragRail>
     });
 
     if (extended) {
+      _showOverlay();
       _animationController.forward();
     } else {
       _animationController.reverse();
@@ -126,13 +161,13 @@ class _DragRailState extends State<DragRail>
       _isDragging = true;
       _dragProgress = _isExtended ? 1.0 : 0.0;
     });
+    _showOverlay();
   }
 
   void _onHorizontalDragUpdate(DragUpdateDetails details) {
     if (!_isDragging) return;
 
     setState(() {
-      // Calculate progress change based on drag delta
       final delta = details.delta.dx / _widthRange;
       _dragProgress = (_dragProgress + delta).clamp(0.0, 1.0);
     });
@@ -143,14 +178,12 @@ class _DragRailState extends State<DragRail>
 
     final shouldExpand = _dragProgress >= widget.snapThreshold;
 
-    // Set animation controller to current drag position before animating
     _animationController.value = _dragProgress;
 
     setState(() {
       _isDragging = false;
     });
 
-    // Always animate to target state (even if state doesn't change)
     if (shouldExpand) {
       _animationController.forward();
       if (!_isExtended) {
@@ -166,23 +199,21 @@ class _DragRailState extends State<DragRail>
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // During drag, base extended state purely on drag progress
-    // Otherwise, use the actual extended state
-    final showExtendedLabels = _isDragging
-        ? _dragProgress >= widget.snapThreshold
-        : _isExtended;
-
-    final navrail = IntrinsicHeight(
+  Widget _buildNavRail({
+    required bool showExtendedLabels,
+    bool showLeadingTrailing = true,
+  }) {
+    return IntrinsicHeight(
       child: ControllableNavRail(
         minWidth: widget.collapsedWidth,
         minExtendedWidth: widget.expandedWidth,
         labelType: widget.labelType,
-        leading: showExtendedLabels
-            ? widget.leadingExtended
-            : widget.leadingCollapsed,
-        trailing: widget.trailing,
+        leading: showLeadingTrailing
+            ? (showExtendedLabels
+                ? widget.leadingExtended
+                : widget.leadingCollapsed)
+            : null,
+        trailing: showLeadingTrailing ? widget.trailing : null,
         onDestinationSelected: widget.onDestinationSelected,
         groupAlignment: widget.groupAlignment,
         backgroundColor: widget.backgroundColor,
@@ -197,24 +228,89 @@ class _DragRailState extends State<DragRail>
         scrollable: false,
       ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final showExtendedLabels = _isDragging
+        ? _dragProgress >= widget.snapThreshold
+        : _isExtended;
+
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final overlayActive = _overlayController.isShowing;
 
     return Padding(
       padding: widget.padding,
-      child: SizedBox(
-        width: _currentWidth,
-        height: MediaQuery.sizeOf(context).height,
-        child: GestureDetector(
-          onHorizontalDragStart: _onHorizontalDragStart,
-          onHorizontalDragUpdate: _onHorizontalDragUpdate,
-          onHorizontalDragEnd: _onHorizontalDragEnd,
-          behavior: HitTestBehavior.opaque,
-          child: LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-              return ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: navrail,
-              );
-            },
+      child: CompositedTransformTarget(
+        link: _layerLink,
+        child: OverlayPortal(
+          controller: _overlayController,
+          overlayChildBuilder: (BuildContext context) {
+            final progress = _expandProgress;
+            return Stack(
+              children: [
+                // Scrim: dims main content, tapping collapses the rail
+                Positioned.fill(
+                  child: GestureDetector(
+                    onTap: () => _setExtended(false),
+                    child: ColoredBox(
+                      color: Colors.black.withValues(
+                        alpha: widget.scrimMaxOpacity * progress,
+                      ),
+                    ),
+                  ),
+                ),
+                // Expanded rail positioned at the same location as the collapsed rail
+                CompositedTransformFollower(
+                  link: _layerLink,
+                  showWhenUnlinked: false,
+                  child: SizedBox(
+                    width: _currentWidth,
+                    height: screenHeight,
+                    child: GestureDetector(
+                      onHorizontalDragStart: _onHorizontalDragStart,
+                      onHorizontalDragUpdate: _onHorizontalDragUpdate,
+                      onHorizontalDragEnd: _onHorizontalDragEnd,
+                      behavior: HitTestBehavior.opaque,
+                      child: LayoutBuilder(
+                        builder: (BuildContext context,
+                            BoxConstraints constraints) {
+                          return ConstrainedBox(
+                            constraints: BoxConstraints(
+                                minHeight: constraints.maxHeight),
+                            child: _buildNavRail(
+                                showExtendedLabels: showExtendedLabels),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+          child: SizedBox(
+            width: widget.collapsedWidth,
+            height: screenHeight,
+            child: GestureDetector(
+              onHorizontalDragStart: _onHorizontalDragStart,
+              onHorizontalDragUpdate: _onHorizontalDragUpdate,
+              onHorizontalDragEnd: _onHorizontalDragEnd,
+              behavior: HitTestBehavior.opaque,
+              child: LayoutBuilder(
+                builder:
+                    (BuildContext context, BoxConstraints constraints) {
+                  return ConstrainedBox(
+                    constraints:
+                        BoxConstraints(minHeight: constraints.maxHeight),
+                    child: _buildNavRail(
+                      showExtendedLabels: false,
+                      showLeadingTrailing: !overlayActive,
+                    ),
+                  );
+                },
+              ),
+            ),
           ),
         ),
       ),

@@ -70,10 +70,10 @@ void main() {
     expect(primaryNav, findsNothing);
     expect(primaryNav1, findsOneWidget);
 
-    expect(tester.getTopLeft(mediumLargeBody), const Offset(208, 0));
+    expect(tester.getTopLeft(mediumLargeBody), const Offset(88, 0));
     expect(tester.getTopLeft(mediumLargeSBody), const Offset(500, 0));
     expect(tester.getTopLeft(primaryNav1), Offset.zero);
-    expect(tester.getBottomRight(primaryNav1), const Offset(208, 2000));
+    expect(tester.getBottomRight(primaryNav1), const Offset(88, 2000));
 
     await tester.binding.setSurfaceSize(SimulatedLayout.large.size);
     await tester.pumpWidget(SimulatedLayout.large.scaffold(tester));
@@ -86,10 +86,10 @@ void main() {
     expect(primaryNav1, findsNothing);
     expect(primaryNav2, findsOneWidget);
 
-    expect(tester.getTopLeft(largeBody), const Offset(208, 0));
+    expect(tester.getTopLeft(largeBody), const Offset(88, 0));
     expect(tester.getTopLeft(largeSBody), const Offset(600, 0));
     expect(tester.getTopLeft(primaryNav2), Offset.zero);
-    expect(tester.getBottomRight(primaryNav2), const Offset(208, 2000));
+    expect(tester.getBottomRight(primaryNav2), const Offset(88, 2000));
 
     await tester.binding.setSurfaceSize(SimulatedLayout.extraLarge.size);
     await tester.pumpWidget(SimulatedLayout.extraLarge.scaffold(tester));
@@ -102,10 +102,10 @@ void main() {
     expect(primaryNav2, findsNothing);
     expect(primaryNav3, findsOneWidget);
 
-    expect(tester.getTopLeft(extraLargeBody), const Offset(208, 0));
+    expect(tester.getTopLeft(extraLargeBody), const Offset(88, 0));
     expect(tester.getTopLeft(extraLargeSBody), const Offset(800, 0));
     expect(tester.getTopLeft(primaryNav3), Offset.zero);
-    expect(tester.getBottomRight(primaryNav3), const Offset(208, 2000));
+    expect(tester.getBottomRight(primaryNav3), const Offset(88, 2000));
   });
 
   testWidgets('adaptive scaffold animations work correctly',
