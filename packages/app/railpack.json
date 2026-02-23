@@ -4,23 +4,36 @@
     "pub": {
       "directory": "/root/.pub-cache",
       "type": "shared"
+    },
+    "mise": {
+      "directory": "/root/.local/share/mise",
+      "type": "shared"
     }
   },
   "steps": {
+    "setup": {
+      "inputs": [
+        { "image": "ubuntu:24.04" },
+        { "local": true, "include": ["."] }
+      ],
+      "commands": [
+        { "cmd": "apt-get update && apt-get install -y curl git unzip xz-utils clang cmake ninja-build pkg-config libgtk-3-dev", "customName": "Install system dependencies" },
+        { "cmd": "curl https://mise.run | sh", "customName": "Install mise" },
+        { "path": "/root/.local/bin" },
+        { "cmd": "mise use -g flutter@3.38", "customName": "Install Flutter 3.38 via mise" },
+        { "path": "/root/.local/share/mise/shims" }
+      ],
+      "caches": ["mise"]
+    },
     "build": {
       "inputs": [
-        { "image": "ghcr.io/cirruslabs/flutter:3.32.2" },
+        { "step": "setup" },
         { "local": true, "include": ["."] }
       ],
       "caches": ["pub"],
       "commands": [
-        { "path": "/sdks/flutter/bin" },
-        { "path": "/sdks/flutter/bin/cache/dart-sdk/bin" },
         { "cmd": "flutter pub get", "customName": "Install dependencies" },
-        {
-          "cmd": "flutter build web --release",
-          "customName": "Build Flutter web"
-        }
+        { "cmd": "flutter build web --release", "customName": "Build Flutter web" }
       ],
       "deployOutputs": [{ "include": ["build/web"] }]
     }

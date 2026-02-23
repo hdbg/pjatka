@@ -4,18 +4,34 @@
     "pub": {
       "directory": "/root/.pub-cache",
       "type": "shared"
+    },
+    "mise": {
+      "directory": "/root/.local/share/mise",
+      "type": "shared"
     }
   },
   "steps": {
+    "setup": {
+      "inputs": [
+        { "image": "ubuntu:24.04" },
+        { "local": true, "include": ["."] }
+      ],
+      "commands": [
+        { "cmd": "apt-get update && apt-get install -y curl git libsqlite3-dev", "customName": "Install system dependencies" },
+        { "cmd": "curl https://mise.run | sh", "customName": "Install mise" },
+        { "path": "/root/.local/bin" },
+        { "cmd": "mise use -g dart@3.10", "customName": "Install Dart 3.10 via mise" },
+        { "path": "/root/.local/share/mise/shims" }
+      ],
+      "caches": ["mise"]
+    },
     "build": {
       "inputs": [
-        { "image": "dart:3.10" },
+        { "step": "setup" },
         { "local": true, "include": ["."] }
       ],
       "caches": ["pub"],
       "commands": [
-        { "path": "/usr/lib/dart/bin" },
-        { "cmd": "apt-get update && apt-get install -y libsqlite3-dev", "customName": "Install SQLite dev libs" },
         { "cmd": "dart pub get", "customName": "Install dependencies" },
         {
           "cmd": "dart compile exe bin/server.dart -o bin/server",
