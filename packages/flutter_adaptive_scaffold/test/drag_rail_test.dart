@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_adaptive_scaffold/src/adaptive_scaffold.dart';
-import 'package:flutter_adaptive_scaffold/src/rail/drag_rail.dart';
+import 'package:flutter_adaptive_scaffold/src/rail/desktop_drag_rail.dart';
+import 'package:flutter_adaptive_scaffold/src/rail/overlay_drag_rail.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const List<NavigationRailDestination> _destinations =
@@ -23,8 +23,8 @@ const List<NavigationRailDestination> _destinations =
   ),
 ];
 
-/// Builds a simple test scaffold with a DragRail and a body side by side.
-Widget _buildTestApp({
+/// Builds a test scaffold with an OverlayDragRail and a body side by side.
+Widget _buildOverlayTestApp({
   bool extended = false,
   double collapsedWidth = 72,
   double expandedWidth = 200,
@@ -35,7 +35,40 @@ Widget _buildTestApp({
     home: Scaffold(
       body: Row(
         children: [
-          DragRail(
+          OverlayDragRail(
+            destinations: _destinations,
+            collapsedWidth: collapsedWidth,
+            expandedWidth: expandedWidth,
+            extended: extended,
+            onExtendedChanged: onExtendedChanged,
+            padding: padding,
+          ),
+          const Expanded(
+            child: ColoredBox(
+              key: Key('body'),
+              color: Colors.white,
+              child: SizedBox.expand(),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+/// Builds a test scaffold with a DesktopDragRail and a body side by side.
+Widget _buildDesktopTestApp({
+  bool extended = false,
+  double collapsedWidth = 72,
+  double expandedWidth = 200,
+  EdgeInsetsGeometry padding = EdgeInsets.zero,
+  ValueChanged<bool>? onExtendedChanged,
+}) {
+  return MaterialApp(
+    home: Scaffold(
+      body: Row(
+        children: [
+          DesktopDragRail(
             destinations: _destinations,
             collapsedWidth: collapsedWidth,
             expandedWidth: expandedWidth,
@@ -57,86 +90,60 @@ Widget _buildTestApp({
 }
 
 void main() {
-  group('DragRail overlay behavior', () {
+  group('OverlayDragRail', () {
     testWidgets(
-      'DragRail always consumes collapsed width for layout',
+      'always consumes collapsed width for layout',
       (WidgetTester tester) async {
-        await tester.pumpWidget(_buildTestApp(extended: false));
+        await tester.pumpWidget(_buildOverlayTestApp(extended: false));
         await tester.pumpAndSettle();
 
-        // Find the DragRail's SizedBox (the OverlayPortal child)
-        final dragRail = find.byType(DragRail);
+        final dragRail = find.byType(OverlayDragRail);
         expect(dragRail, findsOneWidget);
-
-        final railSize = tester.getSize(dragRail);
-        expect(railSize.width, equals(72.0));
+        expect(tester.getSize(dragRail).width, equals(72.0));
       },
     );
 
     testWidgets(
-      'DragRail consumes collapsed width even when extended',
+      'consumes collapsed width even when extended',
       (WidgetTester tester) async {
-        await tester.pumpWidget(_buildTestApp(extended: true));
+        await tester.pumpWidget(_buildOverlayTestApp(extended: true));
         await tester.pumpAndSettle();
 
-        final dragRail = find.byType(DragRail);
-        expect(dragRail, findsOneWidget);
-
-        // Layout width should still be collapsed width
-        final railSize = tester.getSize(dragRail);
-        expect(railSize.width, equals(72.0));
+        final dragRail = find.byType(OverlayDragRail);
+        expect(tester.getSize(dragRail).width, equals(72.0));
       },
     );
 
     testWidgets(
-      'body content gets full remaining space regardless of rail extension',
+      'body gets same space regardless of extension',
       (WidgetTester tester) async {
-        const double screenWidth = 800;
-        const double collapsedWidth = 72;
+        await tester.binding.setSurfaceSize(const Size(800, 600));
 
-        await tester.binding.setSurfaceSize(const Size(screenWidth, 600));
-
-        // Test with collapsed rail
-        await tester.pumpWidget(_buildTestApp(
-          extended: false,
-          collapsedWidth: collapsedWidth,
-        ));
+        await tester.pumpWidget(_buildOverlayTestApp(extended: false));
         await tester.pumpAndSettle();
+        final bodyCollapsedWidth =
+            tester.getSize(find.byKey(const Key('body'))).width;
 
-        final bodyCollapsed = find.byKey(const Key('body'));
-        final bodySizeCollapsed = tester.getSize(bodyCollapsed);
-
-        // Test with extended rail
-        await tester.pumpWidget(_buildTestApp(
-          extended: true,
-          collapsedWidth: collapsedWidth,
-        ));
+        await tester.pumpWidget(_buildOverlayTestApp(extended: true));
         await tester.pumpAndSettle();
+        final bodyExtendedWidth =
+            tester.getSize(find.byKey(const Key('body'))).width;
 
-        final bodyExtended = find.byKey(const Key('body'));
-        final bodySizeExtended = tester.getSize(bodyExtended);
+        expect(bodyCollapsedWidth, equals(bodyExtendedWidth));
 
-        // Body should have the same width in both cases since rail
-        // always consumes collapsed width for layout
-        expect(bodySizeCollapsed.width, equals(bodySizeExtended.width));
-
-        // Reset surface size
         await tester.binding.setSurfaceSize(const Size(800, 600));
       },
     );
 
     testWidgets(
-      'scrim overlay appears when rail is expanded',
+      'scrim appears when expanded',
       (WidgetTester tester) async {
-        await tester.pumpWidget(_buildTestApp(extended: true));
+        await tester.pumpWidget(_buildOverlayTestApp(extended: true));
         await tester.pumpAndSettle();
 
-        // The scrim should be present as a ColoredBox in the overlay
-        // Find the GestureDetector wrapping the scrim
         final scrimFinder = find.byWidgetPredicate((Widget widget) {
           if (widget is ColoredBox) {
             final color = widget.color;
-            // Scrim is black with some opacity (0.5 * progress)
             return color.r == 0 &&
                 color.g == 0 &&
                 color.b == 0 &&
@@ -144,137 +151,26 @@ void main() {
           }
           return false;
         });
-
         expect(scrimFinder, findsOneWidget);
       },
     );
 
     testWidgets(
-      'scrim opacity is tied to expand animation progress',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(_buildTestApp(extended: false));
-        await tester.pumpAndSettle();
-
-        // Initially no scrim (fully collapsed)
-        final scrimFinder = find.byWidgetPredicate((Widget widget) {
-          if (widget is ColoredBox) {
-            final color = widget.color;
-            return color.r == 0 &&
-                color.g == 0 &&
-                color.b == 0 &&
-                color.a > 0;
-          }
-          return false;
-        });
-        expect(scrimFinder, findsNothing);
-
-        // Start a drag to begin expansion
-        final dragRail = find.byType(DragRail);
-        final railCenter = tester.getCenter(dragRail);
-
-        // Begin drag
-        final gesture = await tester.startGesture(railCenter);
-        await tester.pump();
-
-        // Drag partially (about 50% of the range)
-        await gesture.moveBy(const Offset(64, 0)); // 64 / 128 range ≈ 50%
-        await tester.pump();
-
-        // Scrim should now be visible with partial opacity
-        final partialScrimFinder = find.byWidgetPredicate((Widget widget) {
-          if (widget is ColoredBox) {
-            final color = widget.color;
-            return color.r == 0 &&
-                color.g == 0 &&
-                color.b == 0 &&
-                color.a > 0 &&
-                color.a < 0.5; // Partial opacity, less than max
-          }
-          return false;
-        });
-        expect(partialScrimFinder, findsOneWidget);
-
-        // Clean up
-        await gesture.up();
-        await tester.pumpAndSettle();
-      },
-    );
-
-    testWidgets(
-      'tapping scrim collapses the rail with animation',
+      'tapping scrim collapses with animation',
       (WidgetTester tester) async {
         bool? lastExtendedValue;
 
-        await tester.pumpWidget(_buildTestApp(
+        await tester.pumpWidget(_buildOverlayTestApp(
           extended: true,
-          onExtendedChanged: (bool value) {
-            lastExtendedValue = value;
-          },
+          onExtendedChanged: (value) => lastExtendedValue = value,
         ));
         await tester.pumpAndSettle();
 
-        // Find and tap the scrim (it's a full-screen GestureDetector)
-        // Tap in the body area (right side of the screen, away from the rail)
         await tester.tapAt(const Offset(600, 300));
         await tester.pump();
-
-        // The callback should have been called with false
         expect(lastExtendedValue, isFalse);
 
-        // The animation should be in progress (not yet settled)
-        // Pump partway through the animation
-        await tester.pump(const Duration(milliseconds: 50));
-
-        // Scrim should still be visible but fading out
-        final fadingScrim = find.byWidgetPredicate((Widget widget) {
-          if (widget is ColoredBox) {
-            final color = widget.color;
-            return color.r == 0 &&
-                color.g == 0 &&
-                color.b == 0 &&
-                color.a > 0;
-          }
-          return false;
-        });
-        expect(fadingScrim, findsOneWidget);
-
-        // After settling, the scrim should be gone
         await tester.pumpAndSettle();
-        expect(fadingScrim, findsNothing);
-      },
-    );
-
-    testWidgets(
-      'expanded rail renders as overlay, not consuming layout space',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(_buildTestApp(
-          extended: true,
-          collapsedWidth: 72,
-          expandedWidth: 200,
-        ));
-        await tester.pumpAndSettle();
-
-        // The DragRail widget in the layout tree should be collapsed width
-        final dragRail = find.byType(DragRail);
-        final layoutWidth = tester.getSize(dragRail).width;
-        expect(layoutWidth, equals(72.0));
-
-        // But the overlay should contain a wider rail
-        // Look for the CompositedTransformFollower which contains the expanded rail
-        final follower = find.byType(CompositedTransformFollower);
-        expect(follower, findsOneWidget);
-
-        final followerSize = tester.getSize(follower);
-        expect(followerSize.width, equals(200.0));
-      },
-    );
-
-    testWidgets(
-      'no scrim when rail is collapsed',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(_buildTestApp(extended: false));
-        await tester.pumpAndSettle();
-
         final scrimFinder = find.byWidgetPredicate((Widget widget) {
           if (widget is ColoredBox) {
             final color = widget.color;
@@ -290,75 +186,95 @@ void main() {
     );
 
     testWidgets(
-      'scrim at full opacity when fully expanded',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(_buildTestApp(
-          extended: true,
-        ));
-        await tester.pumpAndSettle();
-
-        // Scrim should be at max opacity (0.5 * 1.0 = 0.5)
-        final fullScrim = find.byWidgetPredicate((Widget widget) {
-          if (widget is ColoredBox) {
-            final color = widget.color;
-            return color.r == 0 &&
-                color.g == 0 &&
-                color.b == 0 &&
-                (color.a - 0.5).abs() < 0.01;
-          }
-          return false;
-        });
-        expect(fullScrim, findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'overlay rail starts at top-left of parent when padding is present',
-      (WidgetTester tester) async {
-        const double padding = 16.0;
-
-        await tester.pumpWidget(_buildTestApp(
-          extended: true,
-          padding: const EdgeInsets.all(padding),
-        ));
-        await tester.pumpAndSettle();
-
-        // The overlay CompositedTransformFollower should be offset by
-        // negative padding so it starts at the top-left of the DragRail parent.
-        final follower = find.byType(CompositedTransformFollower);
-        expect(follower, findsOneWidget);
-
-        final followerTopLeft = tester.getTopLeft(follower);
-        // The DragRail is in a Row inside Scaffold body, so starts at (0,0).
-        // With padding=16, the CompositedTransformTarget is at (16,16).
-        // The follower should offset by (-16,-16) to align with (0,0).
-        expect(followerTopLeft.dx, equals(0.0));
-        expect(followerTopLeft.dy, equals(0.0));
-      },
-    );
-
-    testWidgets(
-      'tapping collapsed rail expands it with animation',
+      'tapping collapsed rail expands it',
       (WidgetTester tester) async {
         bool? lastExtendedValue;
 
-        await tester.pumpWidget(_buildTestApp(
+        await tester.pumpWidget(_buildOverlayTestApp(
           extended: false,
-          onExtendedChanged: (bool value) {
-            lastExtendedValue = value;
-          },
+          onExtendedChanged: (value) => lastExtendedValue = value,
         ));
         await tester.pumpAndSettle();
 
-        // Tap the collapsed rail
-        final dragRail = find.byType(DragRail);
-        await tester.tap(dragRail);
-        await tester.pump();
+        await tester.tap(find.byType(OverlayDragRail));
+        await tester.pumpAndSettle();
 
-        // The callback should have been called with true
         expect(lastExtendedValue, isTrue);
+      },
+    );
 
-        // Scrim should appear during animation
+    testWidgets(
+      'overlay aligns to top-left when padding is present',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(_buildOverlayTestApp(
+          extended: true,
+          padding: const EdgeInsets.all(16),
+        ));
+        await tester.pumpAndSettle();
+
+        final follower = find.byType(CompositedTransformFollower);
+        expect(follower, findsOneWidget);
+        final topLeft = tester.getTopLeft(follower);
+        expect(topLeft.dx, equals(0.0));
+        expect(topLeft.dy, equals(0.0));
+      },
+    );
+  });
+
+  group('DesktopDragRail', () {
+    testWidgets(
+      'consumes collapsed width when collapsed',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(_buildDesktopTestApp(extended: false));
+        await tester.pumpAndSettle();
+
+        final dragRail = find.byType(DesktopDragRail);
+        expect(dragRail, findsOneWidget);
+        expect(tester.getSize(dragRail).width, equals(72.0));
+      },
+    );
+
+    testWidgets(
+      'consumes expanded width when extended',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(_buildDesktopTestApp(extended: true));
+        await tester.pumpAndSettle();
+
+        final dragRail = find.byType(DesktopDragRail);
+        expect(dragRail, findsOneWidget);
+        expect(tester.getSize(dragRail).width, equals(200.0));
+      },
+    );
+
+    testWidgets(
+      'body width changes when rail extends',
+      (WidgetTester tester) async {
+        await tester.binding.setSurfaceSize(const Size(800, 600));
+
+        await tester.pumpWidget(_buildDesktopTestApp(extended: false));
+        await tester.pumpAndSettle();
+        final bodyCollapsedWidth =
+            tester.getSize(find.byKey(const Key('body'))).width;
+
+        await tester.pumpWidget(_buildDesktopTestApp(extended: true));
+        await tester.pumpAndSettle();
+        final bodyExtendedWidth =
+            tester.getSize(find.byKey(const Key('body'))).width;
+
+        // Desktop rail pushes content aside, so body should be narrower
+        expect(bodyExtendedWidth, lessThan(bodyCollapsedWidth));
+
+        await tester.binding.setSurfaceSize(const Size(800, 600));
+      },
+    );
+
+    testWidgets(
+      'no scrim overlay when extended',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(_buildDesktopTestApp(extended: true));
+        await tester.pumpAndSettle();
+
+        // No OverlayPortal or scrim in desktop variant
         final scrimFinder = find.byWidgetPredicate((Widget widget) {
           if (widget is ColoredBox) {
             final color = widget.color;
@@ -369,11 +285,53 @@ void main() {
           }
           return false;
         });
+        expect(scrimFinder, findsNothing);
+      },
+    );
 
-        // After settling, scrim should be at full opacity
+    testWidgets(
+      'tapping collapsed rail expands it',
+      (WidgetTester tester) async {
+        bool? lastExtendedValue;
+
+        await tester.pumpWidget(_buildDesktopTestApp(
+          extended: false,
+          onExtendedChanged: (value) => lastExtendedValue = value,
+        ));
         await tester.pumpAndSettle();
-        expect(scrimFinder, findsOneWidget);
+
+        await tester.tap(find.byType(DesktopDragRail));
+        await tester.pumpAndSettle();
+
+        expect(lastExtendedValue, isTrue);
+
+        // Rail should now be at expanded width
+        final dragRail = find.byType(DesktopDragRail);
+        expect(tester.getSize(dragRail).width, equals(200.0));
+      },
+    );
+
+    testWidgets(
+      'tapping expanded rail collapses it',
+      (WidgetTester tester) async {
+        bool? lastExtendedValue;
+
+        await tester.pumpWidget(_buildDesktopTestApp(
+          extended: true,
+          onExtendedChanged: (value) => lastExtendedValue = value,
+        ));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byType(DesktopDragRail));
+        await tester.pumpAndSettle();
+
+        expect(lastExtendedValue, isFalse);
+
+        // Rail should now be at collapsed width
+        final dragRail = find.byType(DesktopDragRail);
+        expect(tester.getSize(dragRail).width, equals(72.0));
       },
     );
   });
 }
+

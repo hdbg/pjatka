@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_adaptive_scaffold/src/rail/drag_rail.dart';
+import 'package:flutter_adaptive_scaffold/src/rail/desktop_drag_rail.dart';
+import 'package:flutter_adaptive_scaffold/src/rail/overlay_drag_rail.dart';
 
 import 'adaptive_layout.dart';
 import 'breakpoints.dart';
@@ -337,12 +338,10 @@ class AdaptiveScaffold extends StatefulWidget {
     );
   }
 
-  /// Creates a Material 3 Design Spec abiding [NavigationRail] from a
-  /// list of [NavigationDestination]s.
+  /// Creates an [OverlayDragRail] for smaller breakpoints.
   ///
-  /// Takes in a [selectedIndex] property for the current selected item in
-  /// the [NavigationRail] and [extended] for whether the [NavigationRail]
-  /// is extended or not.
+  /// The expanded rail renders as an overlay with a scrim, without
+  /// consuming extra layout space. Suitable for medium breakpoints.
   ///
   /// If [labelType] is null, then the default value is
   /// [NavigationRailLabelType.none].
@@ -366,11 +365,57 @@ class AdaptiveScaffold extends StatefulWidget {
     TextStyle? unSelectedLabelTextStyle,
     NavigationRailLabelType? labelType = NavigationRailLabelType.none,
   }) {
-    // if (extended && collapsedWidth == 72) {
-    //   collapsedWidth = 192;
-    // }
     return Builder(builder: (BuildContext context) {
-      return DragRail(
+      return OverlayDragRail(
+        labelType: labelType,
+        leadingCollapsed: leadingCollapsed,
+        leadingExtended: leadingExpanded,
+        trailing: trailing,
+        onDestinationSelected: onDestinationSelected,
+        groupAlignment: groupAlignment,
+        backgroundColor: backgroundColor,
+        extended: extended,
+        selectedIndex: selectedIndex,
+        selectedIconTheme: selectedIconTheme,
+        unselectedIconTheme: unselectedIconTheme,
+        selectedLabelTextStyle: selectedLabelTextStyle,
+        unSelectedLabelTextStyle: unSelectedLabelTextStyle,
+        collapsedWidth: collapsedWidth,
+        expandedWidth: expandedWidth,
+        destinations: destinations,
+      );
+    });
+  }
+
+  /// Creates a [DesktopDragRail] for larger breakpoints.
+  ///
+  /// The expanded rail pushes content aside, with click-to-expand and
+  /// click-to-collapse support. Suitable for desktop breakpoints.
+  ///
+  /// If [labelType] is null, then the default value is
+  /// [NavigationRailLabelType.none].
+  static Builder desktopNavigationRail({
+    required List<NavigationRailDestination> destinations,
+    double collapsedWidth = 72,
+    double expandedWidth = 192,
+    int? selectedIndex,
+    bool extended = false,
+    Color? backgroundColor,
+    EdgeInsetsGeometry padding =
+        const EdgeInsets.all(kNavigationRailDefaultPadding),
+    Widget? leadingExpanded,
+    Widget? leadingCollapsed,
+    Widget? trailing,
+    void Function(int)? onDestinationSelected,
+    double? groupAlignment,
+    IconThemeData? selectedIconTheme,
+    IconThemeData? unselectedIconTheme,
+    TextStyle? selectedLabelTextStyle,
+    TextStyle? unSelectedLabelTextStyle,
+    NavigationRailLabelType? labelType = NavigationRailLabelType.none,
+  }) {
+    return Builder(builder: (BuildContext context) {
+      return DesktopDragRail(
         labelType: labelType,
         leadingCollapsed: leadingCollapsed,
         leadingExtended: leadingExpanded,
@@ -622,7 +667,7 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
             ),
             widget.mediumLargeBreakpoint: SlotLayout.from(
               key: const Key('primaryNavigation1'),
-              builder: (_) => AdaptiveScaffold.dragNavigationRail(
+              builder: (_) => AdaptiveScaffold.desktopNavigationRail(
                 collapsedWidth: widget.navigationRailWidth,
                 extended: true,
                 expandedWidth: widget.extendedNavigationRailWidth,
@@ -644,7 +689,7 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
             ),
             widget.largeBreakpoint: SlotLayout.from(
               key: const Key('primaryNavigation2'),
-              builder: (_) => AdaptiveScaffold.dragNavigationRail(
+              builder: (_) => AdaptiveScaffold.desktopNavigationRail(
                 collapsedWidth: widget.navigationRailWidth,
                 extended: true,
                 expandedWidth: widget.extendedNavigationRailWidth,
@@ -667,7 +712,7 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
             ),
             widget.extraLargeBreakpoint: SlotLayout.from(
               key: const Key('primaryNavigation3'),
-              builder: (_) => AdaptiveScaffold.dragNavigationRail(
+              builder: (_) => AdaptiveScaffold.desktopNavigationRail(
                 collapsedWidth: widget.navigationRailWidth,
                 extended: true,
                 expandedWidth: widget.extendedNavigationRailWidth,
