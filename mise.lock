@@ -8,7 +8,7 @@ backend = "aqua:openai/codex"
 "platforms.windows-x64" = { checksum = "sha256:75ecabd51d77ec65d1bbc64aa3d294a4672d3544de4302878056b77ef704d4c6", url = "https://github.com/openai/codex/releases/download/rust-v0.104.0/codex-x86_64-pc-windows-msvc.exe.zst"}
 
 [[tools.flutter]]
-version = "3.41.2-stable"
+version = "3.38.9-stable"
 backend = "asdf:flutter"
 
 [[tools.helix]]
