@@ -8,7 +8,8 @@ ENV PATH="/root/.local/bin:${PATH}"
 WORKDIR /app
 
 COPY mise.toml mise.lock ./
-RUN mise install
+ENV MISE_YES=1
+RUN mise trust && mise install
 ENV PATH="/root/.local/share/mise/shims:${PATH}"
 
 COPY packages ./packages
