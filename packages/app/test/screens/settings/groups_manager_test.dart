@@ -160,8 +160,6 @@ void main() {
   group('showDeleteDialog', () {
     testWidgets('displays confirmation dialog with correct count',
         (tester) async {
-      late WidgetRef capturedRef;
-
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -173,7 +171,6 @@ void main() {
             theme: ThemeData.dark(),
             home: Consumer(
               builder: (context, ref, _) {
-                capturedRef = ref;
                 return Scaffold(
                   body: ElevatedButton(
                     onPressed: () =>

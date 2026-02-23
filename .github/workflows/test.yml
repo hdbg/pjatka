@@ -12,6 +12,9 @@ concurrency:
   group: "test-${{ github.ref }}"
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   test-core:
     name: Core library tests
