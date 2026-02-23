@@ -14,7 +14,8 @@
       ],
       "caches": ["pub"],
       "commands": [
-        "PATH:/sdks/flutter/bin:/sdks/flutter/bin/cache/dart-sdk/bin",
+        { "path": "/sdks/flutter/bin" },
+        { "path": "/sdks/flutter/bin/cache/dart-sdk/bin" },
         { "cmd": "flutter pub get", "customName": "Install dependencies" },
         {
           "cmd": "flutter build web --release",

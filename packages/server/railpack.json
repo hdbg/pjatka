@@ -14,7 +14,7 @@
       ],
       "caches": ["pub"],
       "commands": [
-        "PATH:/usr/lib/dart/bin",
+        { "path": "/usr/lib/dart/bin" },
         { "cmd": "apt-get update && apt-get install -y libsqlite3-dev", "customName": "Install SQLite dev libs" },
         { "cmd": "dart pub get", "customName": "Install dependencies" },
         {
