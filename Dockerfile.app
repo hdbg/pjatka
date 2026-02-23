@@ -1,15 +1,11 @@
-FROM ubuntu:24.04 AS builder
-
-RUN apt-get update && apt-get install -y curl git unzip xz-utils clang cmake ninja-build pkg-config libgtk-3-dev jq && rm -rf /var/lib/apt/lists/*
-
-RUN curl https://mise.run | sh
-ENV PATH="/root/.local/bin:${PATH}"
+FROM jdxcode/mise:latest AS builder
 
 WORKDIR /app
 
 COPY mise.toml mise.lock ./
 ENV MISE_YES=1
-RUN mise trust && mise install flutter
+RUN mise trust
+RUN mise install flutter 
 
 RUN git config --global --add safe.directory '*'
 
