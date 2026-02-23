@@ -28,6 +28,7 @@ Widget _buildTestApp({
   bool extended = false,
   double collapsedWidth = 72,
   double expandedWidth = 200,
+  EdgeInsetsGeometry padding = EdgeInsets.zero,
   ValueChanged<bool>? onExtendedChanged,
 }) {
   return MaterialApp(
@@ -40,7 +41,7 @@ Widget _buildTestApp({
             expandedWidth: expandedWidth,
             extended: extended,
             onExtendedChanged: onExtendedChanged,
-            padding: EdgeInsets.zero,
+            padding: padding,
           ),
           const Expanded(
             child: ColoredBox(
@@ -308,6 +309,30 @@ void main() {
           return false;
         });
         expect(fullScrim, findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'overlay rail starts at top of parent when padding is present',
+      (WidgetTester tester) async {
+        const double padding = 16.0;
+
+        await tester.pumpWidget(_buildTestApp(
+          extended: true,
+          padding: const EdgeInsets.all(padding),
+        ));
+        await tester.pumpAndSettle();
+
+        // The overlay CompositedTransformFollower should be offset by
+        // negative padding.top so it starts at the top of the DragRail parent.
+        final follower = find.byType(CompositedTransformFollower);
+        expect(follower, findsOneWidget);
+
+        final followerTopLeft = tester.getTopLeft(follower);
+        // The DragRail is in a Row inside Scaffold body, so starts at y=0.
+        // With padding=16, the CompositedTransformTarget is at y=16.
+        // The follower should offset by -16 to align with y=0.
+        expect(followerTopLeft.dy, equals(0.0));
       },
     );
   });

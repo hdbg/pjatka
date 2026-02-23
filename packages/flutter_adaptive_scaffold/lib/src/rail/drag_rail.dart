@@ -238,6 +238,8 @@ class _DragRailState extends State<DragRail>
 
     final screenHeight = MediaQuery.sizeOf(context).height;
     final overlayActive = _overlayController.isShowing;
+    final resolvedPadding =
+        widget.padding.resolve(Directionality.of(context));
 
     return Padding(
       padding: widget.padding,
@@ -260,10 +262,12 @@ class _DragRailState extends State<DragRail>
                     ),
                   ),
                 ),
-                // Expanded rail positioned at the same location as the collapsed rail
+                // Expanded rail positioned at the same location as the collapsed rail,
+                // offset upward by padding.top so the overlay covers the full height
                 CompositedTransformFollower(
                   link: _layerLink,
                   showWhenUnlinked: false,
+                  offset: Offset(0, -resolvedPadding.top),
                   child: SizedBox(
                     width: _currentWidth,
                     height: screenHeight,
