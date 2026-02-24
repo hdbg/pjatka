@@ -2,41 +2,44 @@ import 'dart:async';
 
 import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
-import 'package:pjatk_core/database/models.dart';
 import 'package:pjatk_core/parsing/parsers/class_deductor.dart';
 import 'package:pjatka/features/database/database.dart';
 import 'package:pjatka/screens/groups_retriever/ics_resolver/form.dart';
 import 'package:pjatka/screens/groups_retriever/ics_resolver/ical_parser.dart';
+import 'package:pjatka/screens/groups_retriever/ics_resolver/inductor.dart';
 import 'package:pjatka/utils.dart';
 import 'package:sizer/sizer.dart';
 
 const _examMarker = 'Egzamin';
 
-class _CandidateClass {
-  final String code;
-  final ClassKind kind;
-  final String? room;
-
-  final DateTime from;
-  final DateTime to;
-
-  _CandidateClass._({
-    required this.code,
-    required this.kind,
-    required this.room,
-    required this.from,
-    required this.to,
-  });
-
+/// A [ScheduleInductor] that parses iCalendar (ICS) data exported from the
+/// PJATK timetable website.
+///
+/// Supported summary formats:
+/// - `WSI wykład s. A/1`
+/// - `Egzamin …` (exam entries are silently skipped)
+class ICalInductor extends ScheduleInductor {
   @override
-  String toString() =>
-      '_CandidateClass(code: $code, kind: $kind, room: $room, from: $from, to: $to)';
+  List<CandidateClass> extractCandidates(String data) {
+    final candidates = <CandidateClass>[];
+    final calendar = IcsParser.parse(data);
+
+    for (final event in calendar.events) {
+      try {
+        candidates.add(_fromEvent(event));
+      } on FormatException catch (e) {
+        talker.warning('Failed to parse event: ${e.message}');
+      }
+    }
+
+    return candidates;
+  }
 
   /// There is basically two formats in iCalendar file:
   /// - WSI wykład s. A/1
   /// - Egzamin Wprowadzenie do systemów informacyjnych  Gago Piotr s.B/217 egzamin s. B/217
   /// We are ignoring exam entries for now
-  factory _CandidateClass.fromEvent(Event event) {
+  CandidateClass _fromEvent(Event event) {
     final summaryElements = event.summary.trim().split(' ');
 
     if (summaryElements.first.toLowerCase() == _examMarker.toLowerCase()) {
@@ -61,7 +64,7 @@ class _CandidateClass {
     for (final kind in PjatkRawKind.values) {
       for (final displayName in kind.displayNames) {
         if (displayName.toLowerCase() == kindString.toLowerCase()) {
-          return _CandidateClass._(
+          return CandidateClass(
             code: code,
             kind: kind.toClassKind(),
             room: room,
@@ -76,7 +79,7 @@ class _CandidateClass {
   }
 }
 
-Future<Set<String>> queryGroupsFromCandidate(_CandidateClass candidate) async {
+Future<Set<String>> queryGroupsFromCandidate(CandidateClass candidate) async {
   final groupsQuery =
       scheduleDb.selectOnly(scheduleDb.group, distinct: true).join([
           innerJoin(
@@ -129,26 +132,24 @@ Future<Set<String>> queryGroupsFromCandidate(_CandidateClass candidate) async {
 }
 
 /// This function works by probabilstic calculation which groups user is in by comparing time, subject and room to the database
-Future<List<Set<String>>> _parseIcalAndQueryGroups(String icalData) async {
+Future<List<Set<String>>> _queryGroupsFromInductor(
+  String data,
+  ScheduleInductor inductor,
+) async {
   final candidateGroupSets = <Set<String>>[];
-  final calendar = IcsParser.parse(icalData);
+  final candidates = inductor.extractCandidates(data);
 
-  for (final child in calendar.events) {
-    try {
-      final candidateClass = _CandidateClass.fromEvent(child);
-      final candidateGroups = await queryGroupsFromCandidate(candidateClass);
+  for (final candidate in candidates) {
+    final candidateGroups = await queryGroupsFromCandidate(candidate);
 
-      if (candidateGroups.isEmpty) {
-        talker.warning(
-          'No groups found for event: ${child.summary} at ${child.start}: ${candidateClass.toString()}',
-        );
-        continue;
-      }
-
-      candidateGroupSets.add(candidateGroups);
-    } on FormatException catch (e) {
-      talker.warning('Failed to parse event: ${e.message}');
+    if (candidateGroups.isEmpty) {
+      talker.warning(
+        'No groups found for candidate: ${candidate.toString()}',
+      );
+      continue;
     }
+
+    candidateGroupSets.add(candidateGroups);
   }
 
   return candidateGroupSets;
@@ -199,7 +200,10 @@ Set<String> resolveGroupsFromSets(List<Set<String>> candidateGroupSets) {
 }
 
 Future<Set<String>> resolveGroups(String icalData) async {
-  final candidateGroupSets = await _parseIcalAndQueryGroups(icalData);
+  final candidateGroupSets = await _queryGroupsFromInductor(
+    icalData,
+    ICalInductor(),
+  );
   return resolveGroupsFromSets(candidateGroupSets);
 }
 
