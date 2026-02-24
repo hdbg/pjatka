@@ -16,6 +16,9 @@ _SettingsState _$SettingsStateFromJson(Map<String, dynamic> json) =>
       cacheTTLMinutes:
           (json['cacheTTLMinutes'] as num?)?.toInt() ??
           ReconcilerConfig.defaultCacheTTLMinutes,
+      soonDaysThreshold:
+          (json['soonDaysThreshold'] as num?)?.toInt() ??
+          ReconcilerConfig.defaultSoonDaysThreshold,
     );
 
 Map<String, dynamic> _$SettingsStateToJson(_SettingsState instance) =>
@@ -24,4 +27,5 @@ Map<String, dynamic> _$SettingsStateToJson(_SettingsState instance) =>
       'minDateDaysOffset': instance.minDateDaysOffset,
       'maxDateDaysOffset': instance.maxDateDaysOffset,
       'cacheTTLMinutes': instance.cacheTTLMinutes,
+      'soonDaysThreshold': instance.soonDaysThreshold,
     };

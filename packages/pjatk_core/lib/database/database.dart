@@ -115,7 +115,7 @@ class ClassTeacher extends Table {
 class DayInfo extends Table {
   DateTimeColumn get date => dateTime()();
 
-  DateTimeColumn get lastUpdate => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get nextParseTs => dateTime().withDefault(currentDateAndTime)();
 
   @override
   Set<Column> get primaryKey => {date};

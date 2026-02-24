@@ -122,6 +122,10 @@ class Settings extends _$Settings {
   void setCacheTTLMinutes(int minutes) {
     state = state.copyWith(cacheTTLMinutes: minutes);
   }
+
+  void setSoonDaysThreshold(int days) {
+    state = state.copyWith(soonDaysThreshold: days);
+  }
 }
 
 const _onboardingKey = 'onboarding_completed';

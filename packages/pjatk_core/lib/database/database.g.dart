@@ -1600,12 +1600,12 @@ class $DayInfoTable extends DayInfo with TableInfo<$DayInfoTable, DayInfoData> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _lastUpdateMeta = const VerificationMeta(
-    'lastUpdate',
+  static const VerificationMeta _nextParseTsMeta = const VerificationMeta(
+    'nextParseTs',
   );
   @override
-  late final GeneratedColumn<DateTime> lastUpdate = GeneratedColumn<DateTime>(
-    'last_update',
+  late final GeneratedColumn<DateTime> nextParseTs = GeneratedColumn<DateTime>(
+    'next_parse_ts',
     aliasedName,
     false,
     type: DriftSqlType.dateTime,
@@ -1613,7 +1613,7 @@ class $DayInfoTable extends DayInfo with TableInfo<$DayInfoTable, DayInfoData> {
     defaultValue: currentDateAndTime,
   );
   @override
-  List<GeneratedColumn> get $columns => [date, lastUpdate];
+  List<GeneratedColumn> get $columns => [date, nextParseTs];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1634,10 +1634,13 @@ class $DayInfoTable extends DayInfo with TableInfo<$DayInfoTable, DayInfoData> {
     } else if (isInserting) {
       context.missing(_dateMeta);
     }
-    if (data.containsKey('last_update')) {
+    if (data.containsKey('next_parse_ts')) {
       context.handle(
-        _lastUpdateMeta,
-        lastUpdate.isAcceptableOrUnknown(data['last_update']!, _lastUpdateMeta),
+        _nextParseTsMeta,
+        nextParseTs.isAcceptableOrUnknown(
+          data['next_parse_ts']!,
+          _nextParseTsMeta,
+        ),
       );
     }
     return context;
@@ -1653,9 +1656,9 @@ class $DayInfoTable extends DayInfo with TableInfo<$DayInfoTable, DayInfoData> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}date'],
       )!,
-      lastUpdate: attachedDatabase.typeMapping.read(
+      nextParseTs: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
-        data['${effectivePrefix}last_update'],
+        data['${effectivePrefix}next_parse_ts'],
       )!,
     );
   }
@@ -1668,18 +1671,18 @@ class $DayInfoTable extends DayInfo with TableInfo<$DayInfoTable, DayInfoData> {
 
 class DayInfoData extends DataClass implements Insertable<DayInfoData> {
   final DateTime date;
-  final DateTime lastUpdate;
-  const DayInfoData({required this.date, required this.lastUpdate});
+  final DateTime nextParseTs;
+  const DayInfoData({required this.date, required this.nextParseTs});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['date'] = Variable<DateTime>(date);
-    map['last_update'] = Variable<DateTime>(lastUpdate);
+    map['next_parse_ts'] = Variable<DateTime>(nextParseTs);
     return map;
   }
 
   DayInfoCompanion toCompanion(bool nullToAbsent) {
-    return DayInfoCompanion(date: Value(date), lastUpdate: Value(lastUpdate));
+    return DayInfoCompanion(date: Value(date), nextParseTs: Value(nextParseTs));
   }
 
   factory DayInfoData.fromJson(
@@ -1689,7 +1692,7 @@ class DayInfoData extends DataClass implements Insertable<DayInfoData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return DayInfoData(
       date: serializer.fromJson<DateTime>(json['date']),
-      lastUpdate: serializer.fromJson<DateTime>(json['lastUpdate']),
+      nextParseTs: serializer.fromJson<DateTime>(json['nextParseTs']),
     );
   }
   @override
@@ -1697,20 +1700,20 @@ class DayInfoData extends DataClass implements Insertable<DayInfoData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'date': serializer.toJson<DateTime>(date),
-      'lastUpdate': serializer.toJson<DateTime>(lastUpdate),
+      'nextParseTs': serializer.toJson<DateTime>(nextParseTs),
     };
   }
 
-  DayInfoData copyWith({DateTime? date, DateTime? lastUpdate}) => DayInfoData(
+  DayInfoData copyWith({DateTime? date, DateTime? nextParseTs}) => DayInfoData(
     date: date ?? this.date,
-    lastUpdate: lastUpdate ?? this.lastUpdate,
+    nextParseTs: nextParseTs ?? this.nextParseTs,
   );
   DayInfoData copyWithCompanion(DayInfoCompanion data) {
     return DayInfoData(
       date: data.date.present ? data.date.value : this.date,
-      lastUpdate: data.lastUpdate.present
-          ? data.lastUpdate.value
-          : this.lastUpdate,
+      nextParseTs: data.nextParseTs.present
+          ? data.nextParseTs.value
+          : this.nextParseTs,
     );
   }
 
@@ -1718,55 +1721,55 @@ class DayInfoData extends DataClass implements Insertable<DayInfoData> {
   String toString() {
     return (StringBuffer('DayInfoData(')
           ..write('date: $date, ')
-          ..write('lastUpdate: $lastUpdate')
+          ..write('nextParseTs: $nextParseTs')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(date, lastUpdate);
+  int get hashCode => Object.hash(date, nextParseTs);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is DayInfoData &&
           other.date == this.date &&
-          other.lastUpdate == this.lastUpdate);
+          other.nextParseTs == this.nextParseTs);
 }
 
 class DayInfoCompanion extends UpdateCompanion<DayInfoData> {
   final Value<DateTime> date;
-  final Value<DateTime> lastUpdate;
+  final Value<DateTime> nextParseTs;
   final Value<int> rowid;
   const DayInfoCompanion({
     this.date = const Value.absent(),
-    this.lastUpdate = const Value.absent(),
+    this.nextParseTs = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   DayInfoCompanion.insert({
     required DateTime date,
-    this.lastUpdate = const Value.absent(),
+    this.nextParseTs = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : date = Value(date);
   static Insertable<DayInfoData> custom({
     Expression<DateTime>? date,
-    Expression<DateTime>? lastUpdate,
+    Expression<DateTime>? nextParseTs,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (date != null) 'date': date,
-      if (lastUpdate != null) 'last_update': lastUpdate,
+      if (nextParseTs != null) 'next_parse_ts': nextParseTs,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
   DayInfoCompanion copyWith({
     Value<DateTime>? date,
-    Value<DateTime>? lastUpdate,
+    Value<DateTime>? nextParseTs,
     Value<int>? rowid,
   }) {
     return DayInfoCompanion(
       date: date ?? this.date,
-      lastUpdate: lastUpdate ?? this.lastUpdate,
+      nextParseTs: nextParseTs ?? this.nextParseTs,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1777,8 +1780,8 @@ class DayInfoCompanion extends UpdateCompanion<DayInfoData> {
     if (date.present) {
       map['date'] = Variable<DateTime>(date.value);
     }
-    if (lastUpdate.present) {
-      map['last_update'] = Variable<DateTime>(lastUpdate.value);
+    if (nextParseTs.present) {
+      map['next_parse_ts'] = Variable<DateTime>(nextParseTs.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -1790,7 +1793,7 @@ class DayInfoCompanion extends UpdateCompanion<DayInfoData> {
   String toString() {
     return (StringBuffer('DayInfoCompanion(')
           ..write('date: $date, ')
-          ..write('lastUpdate: $lastUpdate, ')
+          ..write('nextParseTs: $nextParseTs, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3893,13 +3896,13 @@ typedef $$ClassTeacherTableProcessedTableManager =
 typedef $$DayInfoTableCreateCompanionBuilder =
     DayInfoCompanion Function({
       required DateTime date,
-      Value<DateTime> lastUpdate,
+      Value<DateTime> nextParseTs,
       Value<int> rowid,
     });
 typedef $$DayInfoTableUpdateCompanionBuilder =
     DayInfoCompanion Function({
       Value<DateTime> date,
-      Value<DateTime> lastUpdate,
+      Value<DateTime> nextParseTs,
       Value<int> rowid,
     });
 
@@ -3917,8 +3920,8 @@ class $$DayInfoTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<DateTime> get lastUpdate => $composableBuilder(
-    column: $table.lastUpdate,
+  ColumnFilters<DateTime> get nextParseTs => $composableBuilder(
+    column: $table.nextParseTs,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -3937,8 +3940,8 @@ class $$DayInfoTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<DateTime> get lastUpdate => $composableBuilder(
-    column: $table.lastUpdate,
+  ColumnOrderings<DateTime> get nextParseTs => $composableBuilder(
+    column: $table.nextParseTs,
     builder: (column) => ColumnOrderings(column),
   );
 }
@@ -3955,8 +3958,8 @@ class $$DayInfoTableAnnotationComposer
   GeneratedColumn<DateTime> get date =>
       $composableBuilder(column: $table.date, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get lastUpdate => $composableBuilder(
-    column: $table.lastUpdate,
+  GeneratedColumn<DateTime> get nextParseTs => $composableBuilder(
+    column: $table.nextParseTs,
     builder: (column) => column,
   );
 }
@@ -3993,21 +3996,21 @@ class $$DayInfoTableTableManager
           updateCompanionCallback:
               ({
                 Value<DateTime> date = const Value.absent(),
-                Value<DateTime> lastUpdate = const Value.absent(),
+                Value<DateTime> nextParseTs = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DayInfoCompanion(
                 date: date,
-                lastUpdate: lastUpdate,
+                nextParseTs: nextParseTs,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
                 required DateTime date,
-                Value<DateTime> lastUpdate = const Value.absent(),
+                Value<DateTime> nextParseTs = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DayInfoCompanion.insert(
                 date: date,
-                lastUpdate: lastUpdate,
+                nextParseTs: nextParseTs,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

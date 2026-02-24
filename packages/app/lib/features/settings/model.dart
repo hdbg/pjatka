@@ -14,6 +14,8 @@ abstract class SettingsState with _$SettingsState {
     @Default(30) int maxDateDaysOffset,
 
     @Default(ReconcilerConfig.defaultCacheTTLMinutes) int cacheTTLMinutes,
+
+    @Default(ReconcilerConfig.defaultSoonDaysThreshold) int soonDaysThreshold,
   }) = _SettingsState;
 
   factory SettingsState.fromJson(Map<String, dynamic> json) =>

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SettingsState {
 
- Set<String> get groups; int get minDateDaysOffset; int get maxDateDaysOffset; int get cacheTTLMinutes;
+ Set<String> get groups; int get minDateDaysOffset; int get maxDateDaysOffset; int get cacheTTLMinutes; int get soonDaysThreshold;
 /// Create a copy of SettingsState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $SettingsStateCopyWith<SettingsState> get copyWith => _$SettingsStateCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SettingsState&&const DeepCollectionEquality().equals(other.groups, groups)&&(identical(other.minDateDaysOffset, minDateDaysOffset) || other.minDateDaysOffset == minDateDaysOffset)&&(identical(other.maxDateDaysOffset, maxDateDaysOffset) || other.maxDateDaysOffset == maxDateDaysOffset)&&(identical(other.cacheTTLMinutes, cacheTTLMinutes) || other.cacheTTLMinutes == cacheTTLMinutes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SettingsState&&const DeepCollectionEquality().equals(other.groups, groups)&&(identical(other.minDateDaysOffset, minDateDaysOffset) || other.minDateDaysOffset == minDateDaysOffset)&&(identical(other.maxDateDaysOffset, maxDateDaysOffset) || other.maxDateDaysOffset == maxDateDaysOffset)&&(identical(other.cacheTTLMinutes, cacheTTLMinutes) || other.cacheTTLMinutes == cacheTTLMinutes)&&(identical(other.soonDaysThreshold, soonDaysThreshold) || other.soonDaysThreshold == soonDaysThreshold));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(groups),minDateDaysOffset,maxDateDaysOffset,cacheTTLMinutes);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(groups),minDateDaysOffset,maxDateDaysOffset,cacheTTLMinutes,soonDaysThreshold);
 
 @override
 String toString() {
-  return 'SettingsState(groups: $groups, minDateDaysOffset: $minDateDaysOffset, maxDateDaysOffset: $maxDateDaysOffset, cacheTTLMinutes: $cacheTTLMinutes)';
+  return 'SettingsState(groups: $groups, minDateDaysOffset: $minDateDaysOffset, maxDateDaysOffset: $maxDateDaysOffset, cacheTTLMinutes: $cacheTTLMinutes, soonDaysThreshold: $soonDaysThreshold)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $SettingsStateCopyWith<$Res>  {
   factory $SettingsStateCopyWith(SettingsState value, $Res Function(SettingsState) _then) = _$SettingsStateCopyWithImpl;
 @useResult
 $Res call({
- Set<String> groups, int minDateDaysOffset, int maxDateDaysOffset, int cacheTTLMinutes
+ Set<String> groups, int minDateDaysOffset, int maxDateDaysOffset, int cacheTTLMinutes, int soonDaysThreshold
 });
 
 
@@ -65,12 +65,13 @@ class _$SettingsStateCopyWithImpl<$Res>
 
 /// Create a copy of SettingsState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? groups = null,Object? minDateDaysOffset = null,Object? maxDateDaysOffset = null,Object? cacheTTLMinutes = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? groups = null,Object? minDateDaysOffset = null,Object? maxDateDaysOffset = null,Object? cacheTTLMinutes = null,Object? soonDaysThreshold = null,}) {
   return _then(_self.copyWith(
 groups: null == groups ? _self.groups : groups // ignore: cast_nullable_to_non_nullable
 as Set<String>,minDateDaysOffset: null == minDateDaysOffset ? _self.minDateDaysOffset : minDateDaysOffset // ignore: cast_nullable_to_non_nullable
 as int,maxDateDaysOffset: null == maxDateDaysOffset ? _self.maxDateDaysOffset : maxDateDaysOffset // ignore: cast_nullable_to_non_nullable
 as int,cacheTTLMinutes: null == cacheTTLMinutes ? _self.cacheTTLMinutes : cacheTTLMinutes // ignore: cast_nullable_to_non_nullable
+as int,soonDaysThreshold: null == soonDaysThreshold ? _self.soonDaysThreshold : soonDaysThreshold // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
@@ -156,10 +157,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Set<String> groups,  int minDateDaysOffset,  int maxDateDaysOffset,  int cacheTTLMinutes)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Set<String> groups,  int minDateDaysOffset,  int maxDateDaysOffset,  int cacheTTLMinutes,  int soonDaysThreshold)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SettingsState() when $default != null:
-return $default(_that.groups,_that.minDateDaysOffset,_that.maxDateDaysOffset,_that.cacheTTLMinutes);case _:
+return $default(_that.groups,_that.minDateDaysOffset,_that.maxDateDaysOffset,_that.cacheTTLMinutes,_that.soonDaysThreshold);case _:
   return orElse();
 
 }
@@ -177,10 +178,10 @@ return $default(_that.groups,_that.minDateDaysOffset,_that.maxDateDaysOffset,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Set<String> groups,  int minDateDaysOffset,  int maxDateDaysOffset,  int cacheTTLMinutes)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Set<String> groups,  int minDateDaysOffset,  int maxDateDaysOffset,  int cacheTTLMinutes,  int soonDaysThreshold)  $default,) {final _that = this;
 switch (_that) {
 case _SettingsState():
-return $default(_that.groups,_that.minDateDaysOffset,_that.maxDateDaysOffset,_that.cacheTTLMinutes);case _:
+return $default(_that.groups,_that.minDateDaysOffset,_that.maxDateDaysOffset,_that.cacheTTLMinutes,_that.soonDaysThreshold);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +198,10 @@ return $default(_that.groups,_that.minDateDaysOffset,_that.maxDateDaysOffset,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Set<String> groups,  int minDateDaysOffset,  int maxDateDaysOffset,  int cacheTTLMinutes)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Set<String> groups,  int minDateDaysOffset,  int maxDateDaysOffset,  int cacheTTLMinutes,  int soonDaysThreshold)?  $default,) {final _that = this;
 switch (_that) {
 case _SettingsState() when $default != null:
-return $default(_that.groups,_that.minDateDaysOffset,_that.maxDateDaysOffset,_that.cacheTTLMinutes);case _:
+return $default(_that.groups,_that.minDateDaysOffset,_that.maxDateDaysOffset,_that.cacheTTLMinutes,_that.soonDaysThreshold);case _:
   return null;
 
 }
@@ -212,7 +213,7 @@ return $default(_that.groups,_that.minDateDaysOffset,_that.maxDateDaysOffset,_th
 @JsonSerializable()
 
 class _SettingsState implements SettingsState {
-  const _SettingsState({final  Set<String> groups = const {}, this.minDateDaysOffset = 7, this.maxDateDaysOffset = 30, this.cacheTTLMinutes = ReconcilerConfig.defaultCacheTTLMinutes}): _groups = groups;
+  const _SettingsState({final  Set<String> groups = const {}, this.minDateDaysOffset = 7, this.maxDateDaysOffset = 30, this.cacheTTLMinutes = ReconcilerConfig.defaultCacheTTLMinutes, this.soonDaysThreshold = ReconcilerConfig.defaultSoonDaysThreshold}): _groups = groups;
   factory _SettingsState.fromJson(Map<String, dynamic> json) => _$SettingsStateFromJson(json);
 
  final  Set<String> _groups;
@@ -225,6 +226,7 @@ class _SettingsState implements SettingsState {
 @override@JsonKey() final  int minDateDaysOffset;
 @override@JsonKey() final  int maxDateDaysOffset;
 @override@JsonKey() final  int cacheTTLMinutes;
+@override@JsonKey() final  int soonDaysThreshold;
 
 /// Create a copy of SettingsState
 /// with the given fields replaced by the non-null parameter values.
@@ -239,16 +241,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SettingsState&&const DeepCollectionEquality().equals(other._groups, _groups)&&(identical(other.minDateDaysOffset, minDateDaysOffset) || other.minDateDaysOffset == minDateDaysOffset)&&(identical(other.maxDateDaysOffset, maxDateDaysOffset) || other.maxDateDaysOffset == maxDateDaysOffset)&&(identical(other.cacheTTLMinutes, cacheTTLMinutes) || other.cacheTTLMinutes == cacheTTLMinutes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SettingsState&&const DeepCollectionEquality().equals(other._groups, _groups)&&(identical(other.minDateDaysOffset, minDateDaysOffset) || other.minDateDaysOffset == minDateDaysOffset)&&(identical(other.maxDateDaysOffset, maxDateDaysOffset) || other.maxDateDaysOffset == maxDateDaysOffset)&&(identical(other.cacheTTLMinutes, cacheTTLMinutes) || other.cacheTTLMinutes == cacheTTLMinutes)&&(identical(other.soonDaysThreshold, soonDaysThreshold) || other.soonDaysThreshold == soonDaysThreshold));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_groups),minDateDaysOffset,maxDateDaysOffset,cacheTTLMinutes);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_groups),minDateDaysOffset,maxDateDaysOffset,cacheTTLMinutes,soonDaysThreshold);
 
 @override
 String toString() {
-  return 'SettingsState(groups: $groups, minDateDaysOffset: $minDateDaysOffset, maxDateDaysOffset: $maxDateDaysOffset, cacheTTLMinutes: $cacheTTLMinutes)';
+  return 'SettingsState(groups: $groups, minDateDaysOffset: $minDateDaysOffset, maxDateDaysOffset: $maxDateDaysOffset, cacheTTLMinutes: $cacheTTLMinutes, soonDaysThreshold: $soonDaysThreshold)';
 }
 
 
@@ -259,7 +261,7 @@ abstract mixin class _$SettingsStateCopyWith<$Res> implements $SettingsStateCopy
   factory _$SettingsStateCopyWith(_SettingsState value, $Res Function(_SettingsState) _then) = __$SettingsStateCopyWithImpl;
 @override @useResult
 $Res call({
- Set<String> groups, int minDateDaysOffset, int maxDateDaysOffset, int cacheTTLMinutes
+ Set<String> groups, int minDateDaysOffset, int maxDateDaysOffset, int cacheTTLMinutes, int soonDaysThreshold
 });
 
 
@@ -276,12 +278,13 @@ class __$SettingsStateCopyWithImpl<$Res>
 
 /// Create a copy of SettingsState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? groups = null,Object? minDateDaysOffset = null,Object? maxDateDaysOffset = null,Object? cacheTTLMinutes = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? groups = null,Object? minDateDaysOffset = null,Object? maxDateDaysOffset = null,Object? cacheTTLMinutes = null,Object? soonDaysThreshold = null,}) {
   return _then(_SettingsState(
 groups: null == groups ? _self._groups : groups // ignore: cast_nullable_to_non_nullable
 as Set<String>,minDateDaysOffset: null == minDateDaysOffset ? _self.minDateDaysOffset : minDateDaysOffset // ignore: cast_nullable_to_non_nullable
 as int,maxDateDaysOffset: null == maxDateDaysOffset ? _self.maxDateDaysOffset : maxDateDaysOffset // ignore: cast_nullable_to_non_nullable
 as int,cacheTTLMinutes: null == cacheTTLMinutes ? _self.cacheTTLMinutes : cacheTTLMinutes // ignore: cast_nullable_to_non_nullable
+as int,soonDaysThreshold: null == soonDaysThreshold ? _self.soonDaysThreshold : soonDaysThreshold // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }

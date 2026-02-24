@@ -66,22 +66,15 @@ class ScheduleDao {
 
   ScheduleDao(this.db, {required this.talker});
 
-  Future<DateTime?> getEarliestUpdateForDate(DateTime date) async {
-    final earliest = db.select(db.dayInfo)
+  Future<DateTime?> getNextParseTs(DateTime date) async {
+    final dateOnly = DateTime(date.year, date.month, date.day);
+    final query = db.select(db.dayInfo)
       ..limit(1)
-      ..where(
-        (t) =>
-            t.date.year.equals(date.year) &
-            t.date.month.equals(date.month) &
-            t.date.day.equals(date.day),
-      )
-      ..orderBy([
-        (t) => OrderingTerm(expression: t.lastUpdate, mode: OrderingMode.asc),
-      ]);
+      ..where((t) => t.date.equals(dateOnly));
 
-    final result = await earliest.getSingleOrNull();
+    final result = await query.getSingleOrNull();
 
-    return result?.lastUpdate;
+    return result?.nextParseTs;
   }
 
   Stream<List<ScheduledClass>> watchClasses({
@@ -186,8 +179,9 @@ class ScheduleDao {
 
   Future<void> syncClasses(
     DateTime date,
-    List<ScheduledClass> parsedClasses,
-  ) async {
+    List<ScheduledClass> parsedClasses, {
+    required DateTime nextParseTs,
+  }) async {
     talker.debug('Syncing ${parsedClasses.length} meetings for date');
 
     await db.transaction(() async {
@@ -287,7 +281,7 @@ class ScheduleDao {
           .insertOnConflictUpdate(
             DayInfoCompanion(
               date: Value(DateTime(date.year, date.month, date.day)),
-              lastUpdate: Value(DateTime.now()),
+              nextParseTs: Value(nextParseTs),
             ),
           );
     });
