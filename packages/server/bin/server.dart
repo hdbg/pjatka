@@ -5,7 +5,6 @@ import 'package:pjatk_core/database/database.dart';
 import 'package:relic/io_adapter.dart';
 import 'package:relic/relic.dart';
 import 'package:server/endpoints.dart';
-import 'package:server/proxy.dart';
 import 'package:server/reconcile.dart';
 import 'package:server/server.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -36,8 +35,6 @@ Future<void> main(List<String> arguments) async {
     ..options('/**', (_) => Response(204))
     ..get('/classes', classesHandler)
     ..get('/healthz', (request) => Response.ok(body: Body.fromString('OK\n')))
-    ..get('/**', proxyHandler)
-    ..post('/**', proxyHandler)
     ..fallback = respondWith(
       (_) => Response.notFound(
         body: Body.fromString("Sorry, that doesn't compute.\n"),
