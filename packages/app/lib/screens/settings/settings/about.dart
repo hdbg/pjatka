@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:pjatka/features/config/constants.dart';
 import 'package:pjatka/screens/settings/screen.dart';
+import 'package:sizer/sizer.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-const _repoUrl = 'https://github.com/hdbg/pjatka';
-const _issuesUrl = 'https://github.com/hdbg/pjatka/issues/new';
 
 class About extends StatelessWidget {
   const About({super.key});
@@ -11,12 +10,12 @@ class About extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(2.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const _AboutHeader(),
-          const SizedBox(height: 24),
+          SizedBox(height: 3.h),
           const _AboutLinks(),
         ],
       ),
@@ -36,11 +35,11 @@ class _AboutHeader extends StatelessWidget {
       elevation: 0,
       color: colorScheme.primaryContainer.withValues(alpha: 0.5),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(2.5.h),
         child: Column(
           children: [
-            Icon(Icons.school, size: 48, color: colorScheme.primary),
-            const SizedBox(height: 12),
+            Icon(Icons.school, size: 5.h, color: colorScheme.primary),
+            SizedBox(height: 1.5.h),
             Text(
               'PJATKA',
               style: theme.textTheme.headlineSmall?.copyWith(
@@ -48,7 +47,7 @@ class _AboutHeader extends StatelessWidget {
                 color: colorScheme.onPrimaryContainer,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 1.h),
             Text(
               'Student companion app for PJATK',
               style: theme.textTheme.bodyMedium?.copyWith(
@@ -92,16 +91,16 @@ class _AboutLinks extends StatelessWidget {
           subtitle: 'View the project on GitHub',
           color: colorScheme.primaryContainer,
           iconColor: colorScheme.primary,
-          onTap: () => _launch(context, _repoUrl),
+          onTap: () => _launch(context, repoUrl),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 1.5.h),
         _AboutCard(
           icon: Icons.bug_report_outlined,
           title: 'Report an Issue',
           subtitle: 'Encountered a problem? Let us know',
           color: colorScheme.errorContainer,
           iconColor: colorScheme.error,
-          onTap: () => _launch(context, _issuesUrl),
+          onTap: () => _launch(context, issuesUrl),
         ),
       ],
     );
@@ -135,7 +134,7 @@ class _AboutCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(2.h),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -149,14 +148,14 @@ class _AboutCard extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: EdgeInsets.all(1.5.h),
                 decoration: BoxDecoration(
                   color: iconColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, size: 28, color: iconColor),
+                child: Icon(icon, size: 3.h, color: iconColor),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 4.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,7 +166,7 @@ class _AboutCard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 0.5.h),
                     Text(
                       subtitle,
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -179,7 +178,7 @@ class _AboutCard extends StatelessWidget {
               ),
               Icon(
                 Icons.arrow_forward_ios_rounded,
-                size: 16,
+                size: 2.h,
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
               ),
             ],
@@ -196,3 +195,4 @@ final aboutSetting = Setting(
   description: 'App info, source code & issue reporting',
   builder: (context) => const About(),
 );
+
