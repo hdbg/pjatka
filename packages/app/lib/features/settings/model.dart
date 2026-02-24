@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:pjatk_core/reconciler.dart';
 
 part 'model.freezed.dart';
 part 'model.g.dart';
@@ -12,7 +13,7 @@ abstract class SettingsState with _$SettingsState {
 
     @Default(30) int maxDateDaysOffset,
 
-    @Default(24) int cacheTTLHours,
+    @Default(ReconcilerConfig.defaultCacheTTLMinutes) int cacheTTLMinutes,
   }) = _SettingsState;
 
   factory SettingsState.fromJson(Map<String, dynamic> json) =>

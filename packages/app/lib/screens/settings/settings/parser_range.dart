@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pjatka/features/settings/provider.dart';
 import 'package:pjatka/screens/settings/screen.dart';
+import 'package:sizer/sizer.dart';
 
 class _ParserRangeHeader extends StatelessWidget {
   const _ParserRangeHeader();
@@ -88,6 +89,8 @@ class ParserRangeSettings extends HookConsumerWidget {
                   _MinOffsetField(),
                   SizedBox(height: 16),
                   _MaxOffsetField(),
+                  SizedBox(height: 16),
+                  _CacheTTLField(),
                   SizedBox(height: 24),
                   _InfoCard(),
                 ],
@@ -264,6 +267,101 @@ class _MaxOffsetField extends HookConsumerWidget {
   }
 }
 
+String _formatMinutes(int minutes) {
+  if (minutes <= 60) return '$minutes min';
+  final hours = minutes ~/ 60;
+  final remainingMinutes = minutes % 60;
+  if (remainingMinutes == 0) return '$hours h';
+  return '$hours h $remainingMinutes min';
+}
+
+class _CacheTTLField extends HookConsumerWidget {
+  const _CacheTTLField();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final settings = ref.watch(settingsProvider);
+    final sliderValue = useState(settings.cacheTTLMinutes.toDouble());
+
+    useEffect(() {
+      sliderValue.value = settings.cacheTTLMinutes.toDouble();
+      return null;
+    }, [settings.cacheTTLMinutes]);
+
+    return Card(
+      elevation: 0,
+      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.refresh,
+                  color: colorScheme.primary,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Refresh Interval',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 1.h),
+            Text(
+              'How often to re-fetch schedules from the server',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
+            ),
+            SizedBox(height: 2.h),
+            Row(
+              children: [
+                Flexible(
+                  flex: 10,
+                  child: Slider(
+                    value: sliderValue.value,
+                    min: 1,
+                    max: 1440,
+                    divisions: 1439,
+                    label: _formatMinutes(sliderValue.value.round()),
+                    onChanged: (value) {
+                      sliderValue.value = value;
+                    },
+                    onChangeEnd: (value) {
+                      ref
+                          .read(settingsProvider.notifier)
+                          .setCacheTTLMinutes(value.round());
+                    },
+                  ),
+                ),
+                Flexible(
+                  flex: 2,
+                  child: Text(
+                    _formatMinutes(sliderValue.value.round()),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.primary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _InfoCard extends StatelessWidget {
   const _InfoCard();
 
@@ -292,9 +390,10 @@ class _InfoCard extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'These settings control the date range for schedule parsing. '
+              'These settings control the date range and refresh interval for schedule parsing. '
               'The minimum offset determines how far back in time to fetch schedules, '
-              'while the maximum offset determines how far into the future.',
+              'the maximum offset determines how far into the future, '
+              'and the refresh interval controls how often cached schedules are re-fetched.',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),

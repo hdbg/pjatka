@@ -67,7 +67,7 @@ final class ClassesReconcilerProvider
   ClassesReconciler create() => ClassesReconciler();
 }
 
-String _$classesReconcilerHash() => r'32341626ef4c3485c5d78f9ded0a5cae96864916';
+String _$classesReconcilerHash() => r'263043a5396204306b64376c5ff71b8ee5a6c32a';
 
 abstract class _$ClassesReconciler extends $AsyncNotifier<ReconcileState> {
   FutureOr<ReconcileState> build();

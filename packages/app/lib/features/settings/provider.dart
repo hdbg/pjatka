@@ -118,6 +118,10 @@ class Settings extends _$Settings {
   void setMaxDateDaysOffset(int offset) {
     state = state.copyWith(maxDateDaysOffset: offset);
   }
+
+  void setCacheTTLMinutes(int minutes) {
+    state = state.copyWith(cacheTTLMinutes: minutes);
+  }
 }
 
 const _onboardingKey = 'onboarding_completed';

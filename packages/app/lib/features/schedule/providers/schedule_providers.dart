@@ -105,7 +105,7 @@ class ClassesReconciler extends _$ClassesReconciler {
           config: ReconcilerConfig(
             maxDayOffset: settings.maxDateDaysOffset,
             minDateDaysOffset: settings.minDateDaysOffset,
-            cacheTTLHours: settings.cacheTTLHours,
+            cacheTTLMinutes: settings.cacheTTLMinutes,
           ),
           parser: parser,
           talker: talker,

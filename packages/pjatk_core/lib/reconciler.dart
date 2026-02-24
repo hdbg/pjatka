@@ -3,13 +3,15 @@ import 'package:pjatk_core/database/models.dart';
 import 'package:talker/talker.dart';
 
 class ReconcilerConfig {
+  static const defaultCacheTTLMinutes = 1440;
+
   final int minDateDaysOffset;
   final int maxDayOffset;
-  final int cacheTTLHours;
+  final int cacheTTLMinutes;
   const ReconcilerConfig({
     this.minDateDaysOffset = 7,
     this.maxDayOffset = 30,
-    this.cacheTTLHours = 24,
+    this.cacheTTLMinutes = defaultCacheTTLMinutes,
   });
 }
 
@@ -33,11 +35,11 @@ class ScheduleReconciler {
   Future<void> _parseOneDay(DateTime date) async {
     final earliestUpdate = await dao.getEarliestUpdateForDate(date);
     if (earliestUpdate != null) {
-      final hoursSinceUpdate =
-          DateTime.now().difference(earliestUpdate).inHours.abs();
-      if (hoursSinceUpdate < config.cacheTTLHours) {
+      final minutesSinceUpdate =
+          DateTime.now().difference(earliestUpdate).inMinutes.abs();
+      if (minutesSinceUpdate < config.cacheTTLMinutes) {
         talker.debug(
-          'Skipping schedule load for $date; last update was $hoursSinceUpdate hours ago',
+          'Skipping schedule load for $date; last update was $minutesSinceUpdate minutes ago',
         );
         return;
       }
