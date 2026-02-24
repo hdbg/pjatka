@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pjatka/features/database/database.dart';
 import 'package:pjatka/features/settings/provider.dart';
-import 'package:pjatka/screens/groups_retriever/groups_retriever.dart';
 import 'package:pjatka/screens/settings/screen.dart';
 import 'package:pjatka/utils.dart';
 import 'package:talker_flutter/talker_flutter.dart';
@@ -89,16 +88,6 @@ class _DebugActionCards extends ConsumerWidget {
               builder: (context) => TalkerScreen(talker: talker),
             ),
           ),
-        ),
-        const SizedBox(height: 12),
-        _DebugCard(
-          icon: Icons.login_outlined,
-          title: 'Trigger Group Retriever',
-          subtitle: 'Invokes gakko login to retrieve your study groups',
-          color: Colors.purple.shade300,
-          iconColor: colorScheme.primary,
-          isDangerous: false,
-          onTap: () => showGroupsRetriever(context),
         ),
         const SizedBox(height: 12),
         _DebugCard(
