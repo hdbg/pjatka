@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pjatka/home.dart';
+import 'package:pjatka/screens/settings/settings/about.dart';
 import 'package:pjatka/screens/settings/settings/debug.dart';
 import 'package:pjatka/screens/settings/settings/groups_manager.dart';
 import 'package:pjatka/screens/settings/settings/groups_retrieval.dart';
@@ -15,6 +16,7 @@ final List<Setting> allSettings = [
   groupsRetrievalSetting,
   parserRangeSetting,
   debugSetting,
+  aboutSetting,
 ];
 
 class Setting {
