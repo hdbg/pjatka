@@ -13,8 +13,8 @@ part of 'schedule_providers.dart';
 final bestAvailableParserProvider = BestAvailableParserProvider._();
 
 final class BestAvailableParserProvider
-    extends $FunctionalProvider<AsyncValue<Parser>, Parser, FutureOr<Parser>>
-    with $FutureModifier<Parser>, $FutureProvider<Parser> {
+    extends $FunctionalProvider<AsyncValue<Parser?>, Parser?, FutureOr<Parser?>>
+    with $FutureModifier<Parser?>, $FutureProvider<Parser?> {
   BestAvailableParserProvider._()
     : super(
         from: null,
@@ -31,24 +31,23 @@ final class BestAvailableParserProvider
 
   @$internal
   @override
-  $FutureProviderElement<Parser> $createElement($ProviderPointer pointer) =>
+  $FutureProviderElement<Parser?> $createElement($ProviderPointer pointer) =>
       $FutureProviderElement(pointer);
 
   @override
-  FutureOr<Parser> create(Ref ref) {
+  FutureOr<Parser?> create(Ref ref) {
     return bestAvailableParser(ref);
   }
 }
 
 String _$bestAvailableParserHash() =>
-    r'8995b3b82a92157170e5ae87c0707ea8c3895b32';
+    r'79f83a0cd6b8a972210a3ed3fbd8312016ae997b';
 
-@ProviderFor(classesReconciler)
+@ProviderFor(ClassesReconciler)
 final classesReconcilerProvider = ClassesReconcilerProvider._();
 
 final class ClassesReconcilerProvider
-    extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
-    with $FutureModifier<void>, $FutureProvider<void> {
+    extends $AsyncNotifierProvider<ClassesReconciler, ReconcileState> {
   ClassesReconcilerProvider._()
     : super(
         from: null,
@@ -65,13 +64,25 @@ final class ClassesReconcilerProvider
 
   @$internal
   @override
-  $FutureProviderElement<void> $createElement($ProviderPointer pointer) =>
-      $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<void> create(Ref ref) {
-    return classesReconciler(ref);
-  }
+  ClassesReconciler create() => ClassesReconciler();
 }
 
-String _$classesReconcilerHash() => r'161961b1da1ad0fc5ba23342ced0b2cd460588c9';
+String _$classesReconcilerHash() => r'32341626ef4c3485c5d78f9ded0a5cae96864916';
+
+abstract class _$ClassesReconciler extends $AsyncNotifier<ReconcileState> {
+  FutureOr<ReconcileState> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<ReconcileState>, ReconcileState>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<ReconcileState>, ReconcileState>,
+              AsyncValue<ReconcileState>,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}

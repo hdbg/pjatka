@@ -33,7 +33,7 @@ final class OnboardingSetupProvider
   OnboardingSetup create() => OnboardingSetup();
 }
 
-String _$onboardingSetupHash() => r'ae31ad9985242ccb48eb3dd99ad2df96155fda52';
+String _$onboardingSetupHash() => r'74a1397dc21e391a2bd7792fe4ad83f2be212391';
 
 abstract class _$OnboardingSetup extends $AsyncNotifier<bool> {
   FutureOr<bool> build();

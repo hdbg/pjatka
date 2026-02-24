@@ -6,19 +6,32 @@ import 'package:pjatka/features/database/providers.dart';
 import 'package:pjatka/features/schedule/providers/schedule_providers.dart';
 import 'package:pjatka/screens/schedule/calendar_adapter.dart';
 import 'package:pjatka/features/settings/provider.dart';
+import 'package:pjatka/utils.dart';
 import 'package:sizer/sizer.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
-class TopLoader extends ConsumerWidget {
+class TopLoader extends HookConsumerWidget {
   const TopLoader({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isLoading = ref.watch(classesReconcilerProvider).isLoading;
+    final reconciler = ref.watch(classesReconcilerProvider);
+    final serverUnavailable =
+        reconciler.value == ReconcileState.serverUnavailable;
+
+    if (serverUnavailable) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyError(
+          context,
+          'Connection Error',
+          'Cannot connect to server. Schedule won\'t be updated until connection is restored.',
+        );
+      });
+    } 
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
-      child: isLoading
+      child: reconciler.isLoading
           ? LinearProgressIndicator(
               color: Theme.of(context).colorScheme.primary,
               backgroundColor: Theme.of(

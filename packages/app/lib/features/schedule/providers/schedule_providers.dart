@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pjatk_core/database/dao/schedule_dao.dart';
 import 'package:pjatk_core/database/database.dart';
@@ -5,6 +8,7 @@ import 'package:pjatk_core/database/models.dart';
 import 'package:pjatk_core/parsing/parsing.dart';
 import 'package:pjatk_core/reconciler.dart';
 import 'package:pjatka/features/config/api_config.dart';
+import 'package:pjatka/features/config/constants.dart';
 import 'package:pjatka/features/database/database.dart';
 import 'package:pjatka/features/database/providers.dart';
 import 'package:pjatka/utils.dart';
@@ -53,37 +57,64 @@ class _ServerReconciler implements Parser {
 }
 
 @riverpod
-Future<Parser> bestAvailableParser(Ref ref) async {
+Future<Parser?> bestAvailableParser(Ref ref) async {
   final serverReconciler = _ServerReconciler();
 
   if (await serverReconciler.isServerAvailable()) {
     talker.info('Using remote cache server for parsing');
     return serverReconciler;
-  } else {
-    talker.info('Using local parser for parsing');
-    return PjatkParser(talker: talker);
   }
+
+  if (kIsWeb) {
+    talker.warning('Cache server is not available on web');
+    return null;
+  }
+
+  talker.info('Using local parser for parsing');
+  return PjatkParser(talker: talker);
+}
+
+enum ReconcileState {
+  success,
+  serverUnavailable,
 }
 
 @Riverpod(keepAlive: true)
-Future<void> classesReconciler(Ref ref) async {
-  final settings = await ref.watch(settingsProvider);
-  final parser = await ref.watch(bestAvailableParserProvider.future);
+class ClassesReconciler extends _$ClassesReconciler {
+  Timer? _retryTimer;
 
-  await scheduleDb.computeWithDatabase(
-    computation: (db) async {
-      final reconciler = ScheduleReconciler(
-        dao: ScheduleDao(db, talker: talker),
-        config: ReconcilerConfig(
-          maxDayOffset: settings.maxDateDaysOffset,
-          minDateDaysOffset: settings.minDateDaysOffset,
-          cacheTTLHours: settings.cacheTTLHours,
-        ),
-        parser: parser,
-        talker: talker,
-      );
-      await reconciler.reconcileOnce();
-    },
-    connect: (connection) => ScheduleDatabase(connection),
-  );
+  @override
+  Future<ReconcileState> build() async {
+    ref.onDispose(() => _retryTimer?.cancel());
+
+    final settings = await ref.watch(settingsProvider);
+    final parser = await ref.watch(bestAvailableParserProvider.future);
+
+    if (parser == null) {
+      _retryTimer?.cancel();
+      _retryTimer = Timer(serverRetryCooldown, () {
+        ref.invalidateSelf();
+      });
+      return ReconcileState.serverUnavailable;
+    }
+
+    await scheduleDb.computeWithDatabase(
+      computation: (db) async {
+        final reconciler = ScheduleReconciler(
+          dao: ScheduleDao(db, talker: talker),
+          config: ReconcilerConfig(
+            maxDayOffset: settings.maxDateDaysOffset,
+            minDateDaysOffset: settings.minDateDaysOffset,
+            cacheTTLHours: settings.cacheTTLHours,
+          ),
+          parser: parser,
+          talker: talker,
+        );
+        await reconciler.reconcileOnce();
+      },
+      connect: (connection) => ScheduleDatabase(connection),
+    );
+
+    return ReconcileState.success;
+  }
 }

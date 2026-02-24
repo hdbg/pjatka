@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:pjatka/features/config/api_config.dart';
+import 'package:pjatk_core/api_config.dart';
 import 'package:pjatka/utils.dart';
 import 'package:html/parser.dart' as html_parser;
 
@@ -89,9 +89,7 @@ class _GroupsRetrieverNative extends StatelessWidget {
       onLoadStop: (controller, url) async {
         talker.debug('Page loaded: $url');
 
-        if (!url.toString().trim().contains(
-          ApiConfig.pjatkPersonalScheduleEndpoint,
-        )) {
+        if (!url.toString().trim().contains('TwojPlan.aspx')) {
           return;
         }
 
@@ -113,7 +111,9 @@ class _GroupsRetrieverNative extends StatelessWidget {
           onDone.completeError(e);
         }
       },
-      initialUrlRequest: URLRequest(url: WebUri(ApiConfig.fullLoginUrl)),
+      initialUrlRequest: URLRequest(
+        url: WebUri('${ApiConfig.pjatkScheduleBase}/Logowanie.aspx'),
+      ),
     );
 
     return webview;
