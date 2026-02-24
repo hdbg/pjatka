@@ -7,6 +7,7 @@ import 'package:pjatka/screens/groups_retriever/ics_resolver/ical_resolver.dart'
 import 'package:pjatka/screens/settings/screen.dart';
 import 'package:pjatka/screens/settings/settings/groups_manager.dart';
 import 'package:pjatka/utils.dart';
+import 'package:sizer/sizer.dart';
 
 class GroupsRetrieval extends ConsumerWidget {
   const GroupsRetrieval({super.key});
@@ -14,12 +15,12 @@ class GroupsRetrieval extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(1.6.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _GroupsRetrievalHeader(),
-          const SizedBox(height: 24),
+          SizedBox(height: 2.4.h),
           GroupSetupWidget(
             onIcalSetup: () => _handleIcalSetup(context, ref),
             onAutomaticSetup: () => _handleAutomaticSetup(context, ref),
@@ -86,11 +87,11 @@ class _GroupsRetrievalHeader extends StatelessWidget {
       elevation: 0,
       color: colorScheme.primaryContainer.withValues(alpha: 0.5),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(2.h),
         child: Column(
           children: [
-            Icon(Icons.manage_search, size: 48, color: colorScheme.primary),
-            const SizedBox(height: 12),
+            Icon(Icons.manage_search, size: 4.8.h, color: colorScheme.primary),
+            SizedBox(height: 1.2.h),
             Text(
               'Groups Retrieval',
               style: theme.textTheme.headlineSmall?.copyWith(
@@ -98,7 +99,7 @@ class _GroupsRetrievalHeader extends StatelessWidget {
                 color: colorScheme.onPrimaryContainer,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 0.8.h),
             Text(
               'Re-run a retrieval method to update your study groups',
               style: theme.textTheme.bodyMedium?.copyWith(
