@@ -12,6 +12,7 @@ import 'package:pjatka/features/config/constants.dart';
 import 'package:pjatka/features/database/database.dart';
 import 'package:pjatka/features/database/providers.dart';
 import 'package:pjatka/utils.dart';
+import 'package:pjatka/features/settings/model.dart';
 import 'package:pjatka/features/settings/provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -82,6 +83,7 @@ enum ReconcileState {
 @Riverpod(keepAlive: true)
 class ClassesReconciler extends _$ClassesReconciler {
   Timer? _retryTimer;
+  SettingsState? _previousSettings;
 
   @override
   Future<ReconcileState> build() async {
@@ -98,6 +100,9 @@ class ClassesReconciler extends _$ClassesReconciler {
       return ReconcileState.serverUnavailable;
     }
 
+    final previousSettings = _previousSettings;
+    _previousSettings = settings;
+
     await scheduleDb.computeWithDatabase(
       computation: (db) async {
         final reconciler = ScheduleReconciler(
@@ -111,6 +116,14 @@ class ClassesReconciler extends _$ClassesReconciler {
           parser: parser,
           talker: talker,
         );
+
+        if (previousSettings != null &&
+            (settings.cacheTTLMinutes < previousSettings.cacheTTLMinutes ||
+                settings.soonDaysThreshold >
+                    previousSettings.soonDaysThreshold)) {
+          await reconciler.invalidateCachedDays(now: DateTime.now());
+        }
+
         await reconciler.reconcileOnce();
       },
       connect: (connection) => ScheduleDatabase(connection),

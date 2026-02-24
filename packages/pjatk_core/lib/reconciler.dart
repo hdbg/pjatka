@@ -68,6 +68,16 @@ class ScheduleReconciler {
     return now.add(Duration(minutes: daysFromToday * config.cacheTTLMinutes));
   }
 
+  /// Invalidates cached days whose [DayInfo.nextParseTs] is farther in the
+  /// future than the current [ReconcilerConfig.cacheTTLMinutes] allows.
+  ///
+  /// Call this when [cacheTTLMinutes] has been reduced so that affected days
+  /// are reparsed promptly under the new TTL.
+  Future<void> invalidateCachedDays({required DateTime now}) async {
+    final threshold = now.add(Duration(minutes: config.cacheTTLMinutes));
+    await dao.invalidateDaysBeyondTs(threshold);
+  }
+
   Future<void> reconcileOnce({DateTime? now}) async {
     final effectiveNow = now ?? DateTime.now();
     final today = _stripTime(effectiveNow);

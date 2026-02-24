@@ -287,6 +287,19 @@ class ScheduleDao {
     });
   }
 
+  /// Resets [DayInfo.nextParseTs] to the Unix epoch for all days whose
+  /// [nextParseTs] is strictly after [threshold], forcing them to be reparsed
+  /// on the next [ScheduleReconciler.reconcileOnce] call.
+  Future<void> invalidateDaysBeyondTs(DateTime threshold) async {
+    await (db.update(db.dayInfo)
+          ..where((t) => t.nextParseTs.isBiggerThanValue(threshold)))
+        .write(
+          DayInfoCompanion(
+            nextParseTs: Value(DateTime.fromMillisecondsSinceEpoch(0)),
+          ),
+        );
+  }
+
   Future<void> ignoreSubject({
     required String name,
     required String code,
