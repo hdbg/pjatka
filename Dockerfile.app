@@ -1,4 +1,4 @@
-FROM ghcr.io/cirruslabs/flutter:3.29.3 AS builder
+FROM ghcr.io/cirruslabs/flutter:stable AS builder
 
 RUN git config --global --add safe.directory '*'
 
