@@ -17,7 +17,7 @@ COPY packages ./packages
 WORKDIR /app/packages/app
 RUN mise exec flutter -- flutter pub get
 ARG API_URL
-RUN mise exec flutter -- flutter build web --release --dart-define=API_URL=${API_URL}
+RUN mise exec flutter -- flutter build web --wasm --release --dart-define=API_URL=${API_URL}
 
 FROM nginx:alpine
 COPY --from=builder /app/packages/app/build/web /usr/share/nginx/html
