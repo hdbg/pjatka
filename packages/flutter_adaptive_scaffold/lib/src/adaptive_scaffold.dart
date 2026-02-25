@@ -813,11 +813,6 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
         ),
         secondaryBody: SlotLayout(
           config: <Breakpoint, SlotLayoutConfig?>{
-            Breakpoints.standard: SlotLayout.from(
-              key: const Key('sBody'),
-              outAnimation: AdaptiveScaffold.stayOnScreen,
-              builder: widget.secondaryBody,
-            ),
             if (widget.smallSecondaryBody != null)
               widget.smallBreakpoint:
                   (widget.smallSecondaryBody != AdaptiveScaffold.emptyBuilder)

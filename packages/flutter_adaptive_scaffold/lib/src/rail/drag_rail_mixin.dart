@@ -137,6 +137,9 @@ mixin DragRailStateMixin<T extends StatefulWidget>
     required bool showExtendedLabels,
     bool showLeadingTrailing = true,
   }) {
+    final resolvedBackgroundColor =
+        backgroundColor ?? Theme.of(context).colorScheme.surfaceDim;
+
     return IntrinsicHeight(
       child: ControllableNavRail(
         minWidth: collapsedWidth,
@@ -148,7 +151,7 @@ mixin DragRailStateMixin<T extends StatefulWidget>
         trailing: showLeadingTrailing ? trailing : null,
         onDestinationSelected: onDestinationSelected,
         groupAlignment: groupAlignment,
-        backgroundColor: backgroundColor,
+        backgroundColor: resolvedBackgroundColor,
         extended: showExtendedLabels,
         extendedController: animationController,
         selectedIndex: selectedIndex,

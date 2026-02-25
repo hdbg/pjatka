@@ -192,36 +192,37 @@ class _OverlayDragRailState extends State<OverlayDragRail>
 
     final screenHeight = MediaQuery.sizeOf(context).height;
     final overlayActive = _overlayController.isShowing;
-    final resolvedPadding = padding.resolve(Directionality.of(context));
 
-    return Padding(
-      padding: padding,
-      child: CompositedTransformTarget(
-        link: _layerLink,
-        child: OverlayPortal(
-          controller: _overlayController,
-          overlayChildBuilder: (BuildContext context) {
-            final progress = expandProgress;
-            return Stack(
-              children: [
-                // Scrim: dims main content, tapping collapses the rail
-                Positioned.fill(
-                  child: GestureDetector(
-                    onTap: () => _setExtendedOverlay(false),
-                    child: ColoredBox(
-                      color: Colors.black.withValues(
-                        alpha: widget.scrimMaxOpacity * progress,
-                      ),
+    const borderRadius = BorderRadius.only(
+      topRight: Radius.circular(12),
+      bottomRight: Radius.circular(12),
+    );
+
+    return CompositedTransformTarget(
+      link: _layerLink,
+      child: OverlayPortal(
+        controller: _overlayController,
+        overlayChildBuilder: (BuildContext context) {
+          final progress = expandProgress;
+          return Stack(
+            children: [
+              // Scrim: dims main content, tapping collapses the rail
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: () => _setExtendedOverlay(false),
+                  child: ColoredBox(
+                    color: Colors.black.withValues(
+                      alpha: widget.scrimMaxOpacity * progress,
                     ),
                   ),
                 ),
-                // Expanded rail positioned at the same location as the collapsed rail,
-                // offset by negative padding so the overlay covers the full area
-                CompositedTransformFollower(
-                  link: _layerLink,
-                  showWhenUnlinked: false,
-                  offset:
-                      Offset(-resolvedPadding.left, -resolvedPadding.top),
+              ),
+              // Expanded rail positioned at the same location as the collapsed rail
+              CompositedTransformFollower(
+                link: _layerLink,
+                showWhenUnlinked: false,
+                child: ClipRRect(
+                  borderRadius: borderRadius,
                   child: SizedBox(
                     width: currentWidth,
                     height: screenHeight,
@@ -244,9 +245,12 @@ class _OverlayDragRailState extends State<OverlayDragRail>
                     ),
                   ),
                 ),
-              ],
-            );
-          },
+              ),
+            ],
+          );
+        },
+        child: ClipRRect(
+          borderRadius: borderRadius,
           child: SizedBox(
             width: collapsedWidth,
             height: screenHeight,

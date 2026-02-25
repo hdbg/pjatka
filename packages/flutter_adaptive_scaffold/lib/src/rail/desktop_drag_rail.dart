@@ -124,8 +124,11 @@ class _DesktopDragRailState extends State<DesktopDragRail>
 
     final screenHeight = MediaQuery.sizeOf(context).height;
 
-    return Padding(
-      padding: padding,
+    return ClipRRect(
+      borderRadius: const BorderRadius.only(
+        topRight: Radius.circular(12),
+        bottomRight: Radius.circular(12),
+      ),
       child: SizedBox(
         width: currentWidth,
         height: screenHeight,
