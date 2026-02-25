@@ -174,6 +174,18 @@ class _OverlayDragRailState extends State<OverlayDragRail>
   }
 
   @override
+  void onHorizontalDragEnd(DragEndDetails details) {
+    super.onHorizontalDragEnd(details);
+    // If the drag collapsed the rail and the animation already reached
+    // dismissed (e.g. user dragged all the way closed), the status listener
+    // would have skipped _hideOverlay because isDragging was still true at
+    // that point. Ensure the overlay is cleaned up.
+    if (!isExtended && animationController.isDismissed) {
+      _hideOverlay();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final showExtendedLabels =
         isDragging ? dragProgress >= snapThreshold : isExtended;
