@@ -64,3 +64,4 @@ flutter:
   assets:
     - ./assets/
     - ./assets/ical_guide/export.png
+    - ./assets/ical_guide/upcoming_semester.png

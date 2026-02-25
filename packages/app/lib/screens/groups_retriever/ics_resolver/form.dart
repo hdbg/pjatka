@@ -19,7 +19,9 @@ class _FormException implements Exception {
   String toString() => 'FormException: $message';
 }
 
-class _ICalGuide extends StatelessWidget {
+enum _SemesterMode { current, upcoming }
+
+class _ICalGuide extends HookWidget {
   const _ICalGuide();
 
   static const _planUrl = 'https://planzajec.pjwstk.edu.pl/TwojPlan.aspx';
@@ -27,6 +29,7 @@ class _ICalGuide extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final mode = useState(_SemesterMode.upcoming);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -38,7 +41,63 @@ class _ICalGuide extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        SizedBox(height: 2.h),
+        SizedBox(height: 1.5.h),
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 3.w,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Radio<_SemesterMode>(
+                  value: _SemesterMode.current,
+                  groupValue: mode.value,
+                  onChanged: (v) => mode.value = v!,
+                ),
+                GestureDetector(
+                  onTap: () => mode.value = _SemesterMode.current,
+                  child: Text('Current semester', style: theme.textTheme.bodySmall),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Radio<_SemesterMode>(
+                  value: _SemesterMode.upcoming,
+                  groupValue: mode.value,
+                  onChanged: (v) => mode.value = v!,
+                ),
+                GestureDetector(
+                  onTap: () => mode.value = _SemesterMode.upcoming,
+                  child: Text('Upcoming semester', style: theme.textTheme.bodySmall),
+                ),
+              ],
+            ),
+          ],
+        ),
+        SizedBox(height: 1.5.h),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: mode.value == _SemesterMode.current
+              ? _CurrentSemesterGuide(key: const ValueKey('current'))
+              : _UpcomingSemesterGuide(key: const ValueKey('upcoming')),
+        ),
+      ],
+    );
+  }
+}
+
+class _CurrentSemesterGuide extends StatelessWidget {
+  const _CurrentSemesterGuide({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
         ConstrainedBox(
           constraints: BoxConstraints(maxHeight: 25.h),
           child: ClipRRect(
@@ -62,7 +121,7 @@ class _ICalGuide extends StatelessWidget {
                 ),
                 recognizer: TapGestureRecognizer()
                   ..onTap = () async {
-                    await launchUrl(Uri.parse(_planUrl));
+                    await launchUrl(Uri.parse(_ICalGuide._planUrl));
                   },
               ),
               const TextSpan(
@@ -70,6 +129,59 @@ class _ICalGuide extends StatelessWidget {
                     '\n2. Scroll to bottom. Make sure "Aktualny semestr" is selected and press "Eksportuj do iCalendar".\n'
                     '3. Download the file to your device.\n'
                     '4. Use the "Choose iCal file" button below to select the downloaded file.',
+              ),
+            ],
+          ),
+          style: theme.textTheme.bodyMedium,
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+}
+
+class _UpcomingSemesterGuide extends StatelessWidget {
+  const _UpcomingSemesterGuide({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: 37.5.h),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.asset(
+              './assets/ical_guide/upcoming_semester.png',
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
+        SizedBox(height: 2.h),
+        Text.rich(
+          TextSpan(
+            children: [
+              const TextSpan(text: '1. Go to '),
+              TextSpan(
+                text: 'your timetable',
+                style: TextStyle(
+                  color: theme.colorScheme.primary,
+                  decoration: TextDecoration.underline,
+                ),
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () async {
+                    await launchUrl(Uri.parse(_ICalGuide._planUrl));
+                  },
+              ),
+              const TextSpan(
+                text:
+                    '\n2. Scroll to bottom. Select "Zakres dat" and choose a date range that covers at least one month of your upcoming classes.\n'
+                    '3. Press "Eksportuj do iCalendar".\n'
+                    '4. Download the file to your device.\n'
+                    '5. Use the "Choose iCal file" button below to select the downloaded file.',
               ),
             ],
           ),
