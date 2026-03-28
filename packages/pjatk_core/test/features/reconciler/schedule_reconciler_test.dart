@@ -218,6 +218,102 @@ void main() {
       },
     );
 
+    test('invalidateCachedDays forces reparse after TTL is reduced', () async {
+      const oldTTL = 240;
+      const newTTL = 60;
+      final now = DateTime(2026, 3, 1, 12, 0);
+      final today = DateTime(2026, 3, 1);
+
+      stubAllDays(today, maxDayOffset: 3);
+
+      // Parse with old (large) TTL; all days become "soon" so they use flat TTL.
+      final oldReconciler = ScheduleReconciler(
+        dao: dao,
+        config: const ReconcilerConfig(
+          maxDayOffset: 3,
+          minDateDaysOffset: 0,
+          cacheTTLMinutes: oldTTL,
+          soonDaysThreshold: 10,
+        ),
+        parser: mockParser,
+        talker: talker,
+      );
+      await oldReconciler.reconcileOnce(now: now);
+
+      // All days should be cached until now + 240 min.
+      for (var i = 0; i <= 3; i++) {
+        final ts = await dao.getNextParseTs(today.add(Duration(days: i)));
+        expect(ts, equals(now.add(const Duration(minutes: oldTTL))));
+      }
+
+      clearInteractions(mockParser);
+
+      // Switch to a reconciler with a reduced TTL.
+      final newReconciler = ScheduleReconciler(
+        dao: dao,
+        config: const ReconcilerConfig(
+          maxDayOffset: 3,
+          minDateDaysOffset: 0,
+          cacheTTLMinutes: newTTL,
+          soonDaysThreshold: 10,
+        ),
+        parser: mockParser,
+        talker: talker,
+      );
+
+      // Invalidate days that are cached beyond the new TTL, then reconcile.
+      await newReconciler.invalidateCachedDays(now: now);
+      await newReconciler.reconcileOnce(now: now);
+
+      // All days should have been reparsed because their old nextParseTs
+      // (now + 240 min) exceeded the new TTL threshold (now + 60 min).
+      for (var i = 0; i <= 3; i++) {
+        verify(mockParser.parseDay(today.add(Duration(days: i)))).called(1);
+      }
+
+      // Subsequent reconcile within the new TTL should skip all days.
+      clearInteractions(mockParser);
+      await newReconciler.reconcileOnce(
+        now: now.add(const Duration(minutes: newTTL - 1)),
+      );
+      verifyNever(mockParser.parseDay(any));
+    });
+
+    test(
+      'invalidateCachedDays does not affect days within the new TTL',
+      () async {
+        const ttl = 60;
+        final now = DateTime(2026, 3, 1, 12, 0);
+        final today = DateTime(2026, 3, 1);
+
+        stubAllDays(today, maxDayOffset: 3);
+
+        final reconciler = ScheduleReconciler(
+          dao: dao,
+          config: const ReconcilerConfig(
+            maxDayOffset: 3,
+            minDateDaysOffset: 0,
+            cacheTTLMinutes: ttl,
+            soonDaysThreshold: 10,
+          ),
+          parser: mockParser,
+          talker: talker,
+        );
+
+        await reconciler.reconcileOnce(now: now);
+        clearInteractions(mockParser);
+
+        // Invalidate with the same TTL — no day exceeds the threshold.
+        await reconciler.invalidateCachedDays(now: now);
+
+        // All days are still within TTL; none should be reparsed.
+        await reconciler.reconcileOnce(
+          now: now.add(const Duration(minutes: ttl - 1)),
+        );
+        verifyNever(mockParser.parseDay(any));
+      },
+    );
+
     test('after 7-day time skip, new date range is parsed', () async {
       final now1 = DateTime(2026, 3, 1, 12, 0);
       final today1 = DateTime(2026, 3, 1);
